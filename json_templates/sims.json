@@ -1,0 +1,55 @@
+{
+	"output": [
+			"crop", [
+				["Year", "LAST"],
+				["DOY|SowDOY", "FIRST"],
+				["LAI|MaxLAI", "MAX"],
+				["PercolationRate|WDrain", 15, "SUM"],
+				["Act_ET|CumET", "SUM"],
+				["Act_Ev|Evap", "SUM"],
+				["Mois|SoilAvW", [1, 15, "SUM"], "LAST"],
+				["RunOff|Runoff", "SUM"],
+				["ET0|Eto", "SUM"],
+				["Tmax|TMAXAve", "AVG"],
+
+				["Yield", "LAST"],
+				["AbBiom|Biom-ma", "LAST"],
+				["AbBiomN|CroN-ma", "LAST"],
+				["GrainN", "LAST"]
+			],
+
+			{"while": ["Stage", "=", 5]}, [
+				["Year", "LAST"],
+				["DOY|AntDOY", "FIRST"],
+				["AbBiom|Biom-an", "First"],
+				["AbBiomN|CroN-an", "FIRST"]
+			],
+
+			{"while": ["Stage", "=", 7]}, [
+				["Year", "LAST"],
+				["Yield", "FIRST"],
+				["DOY|MatDOY", "FIRST"], 
+				["AbBiom|Biom-ma", "First"],
+				["AbBiomN|CroN-ma", "FIRST"],
+				["GrainN", "FIRST"]
+			],
+			
+			{"while": ["Stage", "=", 2]}, [
+				["Year", "LAST"],
+				["DOY|EmergDOY", "FIRST"]
+			]
+	],
+	
+	"treatments": [
+		{
+			"TrtNo": "T1",
+			"ProdCase": "Pot",
+			"WaterDeficitResponseOn": false
+		},
+		{
+			"TrtNo": "T2",
+			"ProdCase": "WL",
+			"WaterDeficitResponseOn": true
+		}
+	]	
+}

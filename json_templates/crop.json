@@ -1,0 +1,60 @@
+  {
+	"crops": {
+		"Ecudor": {
+			"cropParams": {
+				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"cultivar": ["include-from-file", "projects/soybean-EU/Ecudor.json"]
+			},
+			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+		},
+		"Isidor": {
+			"cropParams": {
+				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"cultivar": ["include-from-file", "projects/soybean-EU/Isidor.json"]
+			},
+			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+		},
+		"Sultana": {
+			"cropParams": {
+				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"cultivar": ["include-from-file", "projects/soybean-EU/Sultana.json"]
+			},
+			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+		}
+	},
+	
+	"fert-params": {
+		"AN": ["include-from-file", "mineral-fertilisers/AN.json"],
+		"CADLM": ["include-from-file", "organic-fertilisers/CADLM.json"]
+	}, 
+
+	"cropRotation": [
+		{
+			"worksteps": [
+				{ "date": "0000-01-01", "type": "SetValue", "var": ["Mois", [1,20]], "value": "init_mois" },
+				{
+					"date": "0000-mm-dd", 
+					"type": "Sowing", 
+					"crop": [
+						"ref", 
+						"crops", 
+						"my_crop"
+					]
+				}, 
+				{
+					"max-3d-precip-sum": 99, 
+					"harvest-time": "maturity", 
+					"max-curr-day-precip": 99, 
+					"min-%-asw": 0, 
+					"max-%-asw": 100, 
+					"latest-date": "0000-10-30", 
+					"type": "AutomaticHarvest"
+				}
+			]
+		}
+	],
+
+	"CropParameters": {
+		"DEFAULT": ["include-from-file", "general/crop.json"]
+	}
+}
