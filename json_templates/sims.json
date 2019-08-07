@@ -10,15 +10,18 @@
 				["Mois|SoilAvW", [1, 15, "SUM"], "LAST"],
 				["RunOff|Runoff", "SUM"],
 				["ET0|Eto", "SUM"],
-				["Tmax|TMAXAve", "AVG"],
+				["RelDev|reldev", "LAST"],
+				["FrostRed|frostred", "LAST"],
+				["TraDef|tradef", "AVG"],
+				["Count|cycle-length", "SUM"],
 
 				["Yield", "LAST"],
-				["AbBiom|Biom-ma", "LAST"],
-				["AbBiomN|CroN-ma", "LAST"],
+				["AbBiom|Biom-harv", "LAST"],
+				["AbBiomN|CroN-harv", "LAST"],
 				["GrainN", "LAST"]
 			],
 
-			{"while": ["Stage", "=", 5]}, [
+			{"while": ["Stage", "=", 4]}, [
 				["Year", "LAST"],
 				["DOY|AntDOY", "FIRST"],
 				["AbBiom|Biom-an", "First"],

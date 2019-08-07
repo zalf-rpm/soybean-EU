@@ -51,17 +51,22 @@ PATHS = {
     },
     "localProducer-remoteMonica": {
         "monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/archiv-daten/md/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/", # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     }
+}
+
+server = {
+    "localProducer-localMonica": "localhost",
+    "localProducer-remoteMonica": "login01.cluster.zalf.de"
 }
 
 CONFIGURATION = {
         "mode": USER_MODE,
-        "server": "localhost",
+        "server": server[USER_MODE],
         "server-port": "6666",
         "start-row": 1, 
         "end-row": 8157,
-        "run-periods": ["0", "2", "3"]
+        "run-periods": ["0", "2"]
     }
 
 script_path = os.path.dirname(os.path.abspath(__file__))
@@ -99,54 +104,16 @@ def run_producer(config):
 
     period_gcm_co2s = [
         {"id": "C1", "period": "0", "gcm": "0_0", "co2_value": 360},
-        {"id": "C2", "period": "2", "gcm": "GFDL-CM3_45", "co2_value": 360},
-        {"id": "C3", "period": "3", "gcm": "GFDL-CM3_45", "co2_value": 360},
-        {"id": "C4", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 360},
-        {"id": "C5", "period": "3", "gcm": "GFDL-CM3_85", "co2_value": 360},
-        {"id": "C6", "period": "2", "gcm": "GISS-E2-R_45", "co2_value": 360},
-        {"id": "C7", "period": "3", "gcm": "GISS-E2-R_45", "co2_value": 360},
-        {"id": "C8", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 360},
-        {"id": "C9", "period": "3", "gcm": "GISS-E2-R_85", "co2_value": 360},
-        {"id": "C10", "period": "2", "gcm": "HadGEM2-ES_26", "co2_value": 360},
-        {"id": "C11", "period": "3", "gcm": "HadGEM2-ES_26", "co2_value": 360},
-        {"id": "C12", "period": "2", "gcm": "HadGEM2-ES_45", "co2_value": 360},
-        {"id": "C13", "period": "3", "gcm": "HadGEM2-ES_45", "co2_value": 360},
-        {"id": "C14", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 360},
-        {"id": "C15", "period": "3", "gcm": "HadGEM2-ES_85", "co2_value": 360},
-        {"id": "C16", "period": "2", "gcm": "MIROC5_45", "co2_value": 360},
-        {"id": "C17", "period": "3", "gcm": "MIROC5_45", "co2_value": 360},
-        {"id": "C18", "period": "2", "gcm": "MIROC5_85", "co2_value": 360},
-        {"id": "C19", "period": "3", "gcm": "MIROC5_85", "co2_value": 360},
-        {"id": "C20", "period": "2", "gcm": "MPI-ESM-MR_26", "co2_value": 360},
-        {"id": "C21", "period": "3", "gcm": "MPI-ESM-MR_26", "co2_value": 360},
-        {"id": "C22", "period": "2", "gcm": "MPI-ESM-MR_45", "co2_value": 360},
-        {"id": "C23", "period": "3", "gcm": "MPI-ESM-MR_45", "co2_value": 360},
-        {"id": "C24", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 360},
-        {"id": "C25", "period": "3", "gcm": "MPI-ESM-MR_85", "co2_value": 360},
         {"id": "C26", "period": "2", "gcm": "GFDL-CM3_45", "co2_value": 499},
-        {"id": "C27", "period": "3", "gcm": "GFDL-CM3_45", "co2_value": 532},
         {"id": "C28", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 571},
-        {"id": "C29", "period": "3", "gcm": "GFDL-CM3_85", "co2_value": 801},
         {"id": "C30", "period": "2", "gcm": "GISS-E2-R_45", "co2_value": 499},
-        {"id": "C31", "period": "3", "gcm": "GISS-E2-R_45", "co2_value": 532},
         {"id": "C32", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 571},
-        {"id": "C33", "period": "3", "gcm": "GISS-E2-R_85", "co2_value": 801},
-        {"id": "C34", "period": "2", "gcm": "HadGEM2-ES_26", "co2_value": 442},
-        {"id": "C35", "period": "3", "gcm": "HadGEM2-ES_26", "co2_value": 429},
         {"id": "C36", "period": "2", "gcm": "HadGEM2-ES_45", "co2_value": 499},
-        {"id": "C37", "period": "3", "gcm": "HadGEM2-ES_45", "co2_value": 532},
         {"id": "C38", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 571},
-        {"id": "C39", "period": "3", "gcm": "HadGEM2-ES_85", "co2_value": 801},
         {"id": "C40", "period": "2", "gcm": "MIROC5_45", "co2_value": 499},
-        {"id": "C41", "period": "3", "gcm": "MIROC5_45", "co2_value": 532},
         {"id": "C42", "period": "2", "gcm": "MIROC5_85", "co2_value": 571},
-        {"id": "C43", "period": "3", "gcm": "MIROC5_85", "co2_value": 801},
-        {"id": "C44", "period": "2", "gcm": "MPI-ESM-MR_26", "co2_value": 442},
-        {"id": "C45", "period": "3", "gcm": "MPI-ESM-MR_26", "co2_value": 429},
         {"id": "C46", "period": "2", "gcm": "MPI-ESM-MR_45", "co2_value": 499},
-        {"id": "C47", "period": "3", "gcm": "MPI-ESM-MR_45", "co2_value": 532},
-        {"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571},
-        {"id": "C49", "period": "3", "gcm": "MPI-ESM-MR_85", "co2_value": 801}
+        {"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571}
     ]
 
     soil = {}
@@ -174,23 +141,7 @@ def run_producer(config):
                 "clay-topsoil": float(row[16]),
                 "clay-subsoil": float(row[19]),
             }
-
-    def read_sowing_doys(path_to_file):
-        with open(path_to_file) as _:
-            sowing_doys = {}
-            reader = csv.reader(_)
-            reader.next()
-            for line in reader:
-                cell_doys = []
-                row_, col_ = line[0].split("_")
-                row, col = (int(row_), int(col_))
-                for i in range(1, len(line)):
-                    cell_doys.append(int(line[i]))
-                sowing_doys[(row, col)] = cell_doys
-            return sowing_doys
-
-    sowing_doys = read_sowing_doys("sowing_dates_soybean.csv")
-
+    
     def get_custom_site(row, col):
         "update function"
         cell_soil = soil[(row, col)]
@@ -244,6 +195,9 @@ def run_producer(config):
     print "running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end]
     
     for row, col in row_cols_:
+        #if row==48 and col==42:
+        #    #test
+        #    continue
                 
         custom_site = get_custom_site(row, col)
 
@@ -251,64 +205,62 @@ def run_producer(config):
         site["SiteParameters"]["SoilProfileParameters"] = custom_site["soil-profile"]
 
         for crop_id in crop["crops"].keys():
-            for s_doy in sowing_doys[(row, col)]:
-                s_date = date(2019, 1, 1) + timedelta(days=s_doy-1)
-                for ws in crop["cropRotation"][0]["worksteps"]:
-                    if ws["type"] == "Sowing":
-                        #set sowing dates        
-                        ws["date"] = unicode(s_date.strftime("0000-%m-%d"))
-                        #set crop ref
-                        ws["crop"][2] = crop_id
-                    if ws["type"] == "SetValue":
-                        #set mois
-                        ws["value"] = custom_site["sw-init"]
-                
-                env = monica_io.create_env_json_from_json_config({
-                    "crop": crop,
-                    "site": site,
-                    "sim": sim,
-                    "climate": ""
-                })
-                
-                env["csvViaHeaderOptions"] = sim["climate.csv-options"]
+            for ws in crop["cropRotation"][0]["worksteps"]:
+                if ws["type"] == "AutomaticSowing":
+                    #set crop ref
+                    ws["crop"][2] = crop_id
+                if ws["type"] == "SetValue":
+                    #set mois
+                    ws["value"] = custom_site["sw-init"]
+            
+            #force max rooting depth
+            #site["SiteParameters"]["ImpenetrableLayerDepth"] = crop["crops"][crop_id]["cropParams"]["cultivar"]["CropSpecificMaxRootingDepth"]
 
-                for pgc in period_gcm_co2s:
-                    co2_id = pgc["id"]
-                    co2_value = pgc["co2_value"]
-                    period = pgc["period"]
-                    gcm = pgc["gcm"]
+            env = monica_io.create_env_json_from_json_config({
+                "crop": crop,
+                "site": site,
+                "sim": sim,
+                "climate": ""
+            })
+            
+            env["csvViaHeaderOptions"] = sim["climate.csv-options"]
 
-                    if period not in config["run-periods"]:
-                        continue
+            for pgc in period_gcm_co2s:
+                co2_id = pgc["id"]
+                co2_value = pgc["co2_value"]
+                period = pgc["period"]
+                gcm = pgc["gcm"]
 
-                    env["params"]["userEnvironmentParameters"]["AtmosphericCO2"] = co2_value
+                if period not in config["run-periods"]:
+                    continue
 
-                    climate_filename = "{}_{:03d}_v1.csv".format(row, col)
-                    #if not os.path.exists(path_to_climate_file):
-                    #    continue
+                env["params"]["userEnvironmentParameters"]["AtmosphericCO2"] = co2_value
 
-                    #read climate data on the server and send just the path to the climate data csv file
-                    env["pathToClimateCSV"] = paths["monica-path-to-climate-dir"] + period + "/" + gcm + "/" + climate_filename
+                climate_filename = "{}_{:03d}_v1.csv".format(row, col)
+                #if not os.path.exists(path_to_climate_file):
+                #    continue
 
-                    env["events"] = sims["output"]
+                #read climate data on the server and send just the path to the climate data csv file
+                env["pathToClimateCSV"] = paths["monica-path-to-climate-dir"] + period + "/" + gcm + "/" + climate_filename
 
-                    for sim_ in sims["treatments"]:
-                        env["params"]["simulationParameters"]["UseAutomaticIrrigation"] = sim_["UseAutomaticIrrigation"]
-                        env["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = sims["irrigation-amount"][crop_id]
-                                            
-                        env["customId"] = str(row) + "/" + str(col) + ")" \
-                                            + "|" + period \
-                                            + "|" + gcm \
-                                            + "|(" + co2_id + "/" + str(co2_value) + ")" \
-                                            + "|" + sim_["TrtNo"] \
-                                            + "|" + sim_["ProdCase"]
+                env["events"] = sims["output"]
 
-                        socket.send_json(env)
-                        print "sent env ", i, " customId: ", env["customId"]
-                        i += 1
-                        #break
-                    #break
-                #break
+                for sim_ in sims["treatments"]:
+                    env["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                    env["params"]["simulationParameters"]["WaterDeficitResponseOn"] = sim_["WaterDeficitResponseOn"]
+                                        
+                    env["customId"] = str(row) + "/" + str(col) + ")" \
+                                        + "|" + period \
+                                        + "|" + gcm \
+                                        + "|(" + co2_id + "/" + str(co2_value) + ")" \
+                                        + "|" + sim_["TrtNo"] \
+                                        + "|" + sim_["ProdCase"] \
+                                        + "|" + crop_id
+
+                    socket.send_json(env)                    
+                    print "sent env ", i, " customId: ", env["customId"]
+                    i += 1
+        exit()
 
     stop_store = time.clock()
 
