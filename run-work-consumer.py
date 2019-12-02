@@ -35,8 +35,8 @@ print "pyzmq version: ", zmq.pyzmq_version(), " zmq version: ", zmq.zmq_version(
 import monica_io
 #print "path to monica_io: ", monica_io.__file__
 
-USER_MODE = "localConsumer-localMonica"
-#USER_MODE = "localConsumer-remoteMonica"
+#USER_MODE = "localConsumer-localMonica"
+USER_MODE = "localConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
@@ -45,9 +45,9 @@ server = {
 
 CONFIGURATION = {
         "server": server[USER_MODE],
-        "server-port": "7777",
+        "server-port": "7778",
         "write_normal_output_files": False,
-        "start_writing_lines_threshold": 10#5880
+        "start_writing_lines_threshold": 100#5880
     }
 
 def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
@@ -91,6 +91,8 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
 
         for year, vals in year_to_vals.iteritems():
             if len(vals) > 0 and year > 1980:
+                '''
+                #long output version
                 out.append([
                     "MO",
                     str(row) + "_" + str(col),
@@ -128,19 +130,60 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
                     vals.get("reldev", "na"),
                     vals.get("tradef", "na"),
                     vals.get("frostred", "na"),
-                    vals.get("cycle-length", "na")
+                    vals.get("frost-risk-days", 0),
+                    vals.get("cycle-length", "na"),
+                    vals.get("STsow", "na"),
+                    vals.get("ATsow", "na")
+                ])
+                '''
+
+                out.append([
+                    "MO",
+                    str(row) + "_" + str(col),
+                    "soy_" + crop_id,
+                    co2_id,
+                    period,
+                    gcm,
+                    str(co2_value),
+                    trt_no,
+                    prod_case,
+                    year,
+
+                    #vals.get("Stage", "na"),
+                    #vals.get("HeatRed", "na"),
+                    #vals.get("RelDev", "na"),
+
+                    vals.get("Yield", "na"),
+                    vals.get("MaxLAI", "na"),
+                    vals.get("SowDOY", "na"),
+                    vals.get("EmergDOY", "na"),
+                    vals.get("AntDOY", "na"),
+                    vals.get("MatDOY", "na"),
+                    vals.get("HarvDOY", "na"),                    
+                    vals.get("cycle-length", "na"),
+                    vals.get("tradef", "na"),
+                    vals.get("frostred", "na")
                 ])
 
     return out
 
 #+"Stage,HeatRed,RelDev,"\
-HEADER = "Model,row_col,Crop,ClimPerCO2_ID,period," \
+HEADER_long = "Model,row_col,Crop,ClimPerCO2_ID,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield,AntDOY,MatDOY,Biom-an,Biom-ma," \
          + "MaxLAI,WDrain,CumET,SoilAvW,Runoff,Transp,Evap,CroN-an,CroN-ma," \
-         + "GrainN,ET0,SowDOY,EmergDOY,reldev,tradef,frostred,cycle-length" \
+         + "GrainN,ET0,SowDOY,EmergDOY,reldev,tradef,frostred,frost-risk-days,cycle-length,STsow,ATsow" \
          + "\n"
+
+HEADER = "Model,row_col,Crop,ClimPerCO2_ID,period," \
+         + "sce,CO2,TrtNo,ProductionCase," \
+         + "Year," \
+         + "Yield," \
+         + "MaxLAI," \
+         + "SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,cycle-length,tradef,frostred" \
+         + "\n"
+
 
 #overwrite_list = set()
 def write_data(row, col, data):

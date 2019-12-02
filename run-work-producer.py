@@ -40,8 +40,8 @@ import monica_io
 #print "sys.path: ", sys.path
 #print "sys.version: ", sys.version
 
-USER_MODE = "localProducer-localMonica"
-#USER_MODE = "localProducer-remoteMonica"
+#USER_MODE = "localProducer-localMonica"
+USER_MODE = "localProducer-remoteMonica"
 
 PATHS = {
     # adjust the local path to your environment
@@ -63,7 +63,7 @@ server = {
 CONFIGURATION = {
         "mode": USER_MODE,
         "server": server[USER_MODE],
-        "server-port": "6666",
+        "server-port": "6667",
         "start-row": 1, 
         "end-row": 8157,
         "run-periods": ["0", "2"]
@@ -92,6 +92,10 @@ def run_producer(config):
     with open(template_folder + "sim.json") as _:
         sim = json.load(_)
         sim["include-file-base-path"] = paths["monica-parameters-path"]
+        if USER_MODE == "localProducer-localMonica":
+            sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 1
+        elif USER_MODE == "localProducer-remoteMonica":
+            sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 2
 
     with open(template_folder + "site.json") as _:
         site = json.load(_)
@@ -105,15 +109,15 @@ def run_producer(config):
     period_gcm_co2s = [
         {"id": "C1", "period": "0", "gcm": "0_0", "co2_value": 360},
         {"id": "C26", "period": "2", "gcm": "GFDL-CM3_45", "co2_value": 499},
-        {"id": "C28", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 571},
+        #{"id": "C28", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 571},
         {"id": "C30", "period": "2", "gcm": "GISS-E2-R_45", "co2_value": 499},
-        {"id": "C32", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 571},
+        #{"id": "C32", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 571},
         {"id": "C36", "period": "2", "gcm": "HadGEM2-ES_45", "co2_value": 499},
-        {"id": "C38", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 571},
+        #{"id": "C38", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 571},
         {"id": "C40", "period": "2", "gcm": "MIROC5_45", "co2_value": 499},
-        {"id": "C42", "period": "2", "gcm": "MIROC5_85", "co2_value": 571},
+        #{"id": "C42", "period": "2", "gcm": "MIROC5_85", "co2_value": 571},
         {"id": "C46", "period": "2", "gcm": "MPI-ESM-MR_45", "co2_value": 499},
-        {"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571}
+        #{"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571}
     ]
 
     soil = {}
@@ -195,8 +199,9 @@ def run_producer(config):
     print "running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end]
     
     for row, col in row_cols_:
-        #if row==48 and col==42:
-        #    #test
+        #if row != 48 or col != 42:
+        #    continue
+        #if row < 170:
         #    continue
                 
         custom_site = get_custom_site(row, col)
@@ -205,6 +210,8 @@ def run_producer(config):
         site["SiteParameters"]["SoilProfileParameters"] = custom_site["soil-profile"]
 
         for crop_id in crop["crops"].keys():
+            #if crop_id not in ["0000", "II"]:
+            #    continue
             for ws in crop["cropRotation"][0]["worksteps"]:
                 if ws["type"] == "AutomaticSowing":
                     #set crop ref
@@ -235,8 +242,12 @@ def run_producer(config):
                     continue
 
                 env["params"]["userEnvironmentParameters"]["AtmosphericCO2"] = co2_value
-
-                climate_filename = "{}_{:03d}_v1.csv".format(row, col)
+                
+                if USER_MODE == "localProducer-localMonica":
+                    climatefile_version = "v1"
+                elif USER_MODE == "localProducer-remoteMonica":
+                    climatefile_version = "v2"
+                climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
                 #if not os.path.exists(path_to_climate_file):
                 #    continue
 
@@ -248,6 +259,7 @@ def run_producer(config):
                 for sim_ in sims["treatments"]:
                     env["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
                     env["params"]["simulationParameters"]["WaterDeficitResponseOn"] = sim_["WaterDeficitResponseOn"]
+                    env["params"]["simulationParameters"]["FrostKillOn"] = sim_["FrostKillOn"]
                                         
                     env["customId"] = str(row) + "/" + str(col) + ")" \
                                         + "|" + period \
@@ -260,7 +272,7 @@ def run_producer(config):
                     socket.send_json(env)                    
                     print "sent env ", i, " customId: ", env["customId"]
                     i += 1
-        exit()
+        #exit()
 
     stop_store = time.clock()
 

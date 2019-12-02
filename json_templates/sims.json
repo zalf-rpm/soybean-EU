@@ -1,5 +1,36 @@
 {
 	"output": [
+		"crop", [
+			["Year", "LAST"],
+			["DOY|SowDOY", "FIRST"],
+			["DOY|HarvDOY", "LAST"],
+			["LAI|MaxLAI", "MAX"],
+			
+			["TraDef|tradef", "AVG"],
+			["FrostRed|frostred", "LAST"],
+			["Count|cycle-length", "SUM"],
+
+			["Yield", "LAST"]
+		],
+
+		{"while": ["Stage", "=", 2]}, [
+			["Year", "LAST"],
+			["DOY|EmergDOY", "FIRST"]
+		],
+
+		{"while": ["Stage", "=", 4]}, [
+			["Year", "LAST"],
+			["DOY|AntDOY", "FIRST"]
+		],
+
+		{"while": ["Stage", "=", 7]}, [
+			["Year", "LAST"],
+			["DOY|MatDOY", "FIRST"]
+		]	
+		
+	],
+
+	"output_long": [
 			"crop", [
 				["Year", "LAST"],
 				["DOY|SowDOY", "FIRST"],
@@ -11,14 +42,16 @@
 				["RunOff|Runoff", "SUM"],
 				["ET0|Eto", "SUM"],
 				["RelDev|reldev", "LAST"],
-				["FrostRed|frostred", "LAST"],
 				["TraDef|tradef", "AVG"],
+				["FrostRed|frostred", "LAST"],
 				["Count|cycle-length", "SUM"],
 
 				["Yield", "LAST"],
 				["AbBiom|Biom-harv", "LAST"],
 				["AbBiomN|CroN-harv", "LAST"],
-				["GrainN", "LAST"]
+				["GrainN", "LAST"],
+				["STemp|STsow", [1, 2, "AVG"], "FIRST"],
+				["Tavg|ATsow", "FIRST"]
 			],
 
 			{"while": ["Stage", "=", 4]}, [
@@ -40,19 +73,50 @@
 			{"while": ["Stage", "=", 2]}, [
 				["Year", "LAST"],
 				["DOY|EmergDOY", "FIRST"]
-			]
+			],
+
+			{"from": "Sowing", "to": "Harvest", "while": ["Tmin", "<", 0]},[
+				["Year", "LAST"],
+				["Count|frost-risk-days", "SUM"]				
+			],
+			
+
+			"_daily", [
+				"Date",
+				"Crop",
+				"Stage",
+				"AbBiom",
+				"LAI",
+				"Yield",
+				"TraDef",
+				"FrostRed"
+			]			
 	],
 	
 	"treatments": [
 		{
 			"TrtNo": "T1",
-			"ProdCase": "Pot",
-			"WaterDeficitResponseOn": false
+			"ProdCase": "Actual",
+			"WaterDeficitResponseOn": true,
+			"FrostKillOn": true
 		},
 		{
 			"TrtNo": "T2",
-			"ProdCase": "WL",
-			"WaterDeficitResponseOn": true
+			"ProdCase": "Unlimited water",
+			"WaterDeficitResponseOn": false,
+			"FrostKillOn": true
+		},
+		{
+			"TrtNo": "T3",
+			"ProdCase": "No frost",
+			"WaterDeficitResponseOn": true,
+			"FrostKillOn": false
+		},
+		{
+			"TrtNo": "T4",
+			"ProdCase": "Potential",
+			"WaterDeficitResponseOn": false,
+			"FrostKillOn": false
 		}
 	]	
 }

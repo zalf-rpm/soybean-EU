@@ -972,6 +972,42 @@
 		}
 	],
 
+	"cropRotation_setvalue": [
+		{
+			"worksteps": [
+				{ "date": "0000-01-01", "type": "SetValue", "var": ["Mois", [1,20]], "value": "init_mois" },
+				{ 
+					"type": "AutomaticSowing", 
+					"crop": ["ref", "crops", "my_crop"],
+					"earliest-date": "0000-03-15",
+					"latest-date": "0000-05-30",
+					"min-temp": 12,
+					"days-in-temp-window": 7,
+					"min-%-asw": 0,
+					"max-%-asw": 100,
+					"max-3d-precip-sum": 999,
+					"max-curr-day-precip": 999,
+					"temp-sum-above-base-temp": 0,
+					"base-temp": 0,
+					"avg-soil-temp": {
+						"depth": 0.1,
+						"days": 5,
+						"Tavg": 10
+					}
+				},
+				{
+					"max-3d-precip-sum": 999, 
+					"harvest-time": "maturity", 
+					"max-curr-day-precip": 999, 
+					"min-%-asw": 0, 
+					"max-%-asw": 100, 
+					"latest-date": "0000-10-31", 
+					"type": "AutomaticHarvest"
+				}
+			]
+		}
+	],
+
 	"CropParameters": {
 		"DEFAULT": ["include-from-file", "general/crop.json"]
 	}
