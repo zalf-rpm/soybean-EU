@@ -40,7 +40,8 @@ USER_MODE = "localConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
-    "localConsumer-remoteMonica": "login01.cluster.zalf.de"
+    "localConsumer-remoteMonica": "login01.cluster.zalf.de",
+    "remoteConsumer-remoteMonica": "login01.cluster.zalf.de"
 }
 
 CONFIGURATION = {
@@ -189,7 +190,10 @@ HEADER = "Model,row_col,Crop,ClimPerCO2_ID,period," \
 def write_data(row, col, data):
     "write data"
 
-    path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+    if USER_MODE=="remoteConsumer-remoteMonica":
+        path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+    else:
+        path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
 
     if not os.path.isfile(path_to_file):# or (row, col) not in overwrite_list:
         with open(path_to_file, "w") as _:

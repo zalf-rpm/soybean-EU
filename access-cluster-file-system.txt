@@ -1,0 +1,2 @@
+- connect to login01.cluster.zalf.de via winSCP
+- stella folders are either in home/ or beegfs/. the latter is for parallel computing
