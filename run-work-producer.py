@@ -54,7 +54,7 @@ PATHS = {
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
-        "monica-parameters-path": "/beegfs/stella/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "/beegfs/stella/GitHub/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     }
 }
