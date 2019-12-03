@@ -141,7 +141,7 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
                     "MO",
                     str(row) + "_" + str(col),
                     "soy_" + crop_id,
-                    co2_id,
+                    #co2_id,
                     period,
                     gcm,
                     str(co2_value),
@@ -168,7 +168,7 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
     return out
 
 #+"Stage,HeatRed,RelDev,"\
-HEADER_long = "Model,row_col,Crop,ClimPerCO2_ID,period," \
+HEADER_long = "Model,row_col,Crop,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield,AntDOY,MatDOY,Biom-an,Biom-ma," \
