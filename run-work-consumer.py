@@ -36,7 +36,7 @@ import monica_io
 #print "path to monica_io: ", monica_io.__file__
 
 #USER_MODE = "localConsumer-localMonica"
-USER_MODE = "localConsumer-remoteMonica"
+USER_MODE = "remoteConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
@@ -48,7 +48,7 @@ CONFIGURATION = {
         "server": server[USER_MODE],
         "server-port": "7778",
         "write_normal_output_files": False,
-        "start_writing_lines_threshold": 100#5880
+        "start_writing_lines_threshold": 1000#5880
     }
 
 def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, prod_case, result):

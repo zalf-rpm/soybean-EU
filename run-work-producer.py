@@ -41,7 +41,7 @@ import monica_io
 #print "sys.version: ", sys.version
 
 #USER_MODE = "localProducer-localMonica"
-USER_MODE = "localProducer-remoteMonica"
+USER_MODE = "remoteProducer-remoteMonica"
 
 PATHS = {
     # adjust the local path to your environment
