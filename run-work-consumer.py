@@ -210,12 +210,22 @@ def write_data(row, col, data):
 def main():
     "collect data from workers"
 
+    config = CONFIGURATION
+
+    if len(sys.argv) > 1 and __name__ == "__main__":
+        for arg in sys.argv[1:]:
+            k,v = arg.split("=")
+            if k in config:
+                config[k] = v
+
+    print("consumer config:", config)
+
     data = defaultdict(list)
 
     i = 1
     context = zmq.Context()
     socket = context.socket(zmq.PULL)
-    socket.connect("tcp://" + CONFIGURATION["server"] + ":" + str(CONFIGURATION["server-port"]))
+    socket.connect("tcp://" + config["server"] + ":" + config["port"])
     socket.RCVTIMEO = 1000
     leave = False
     write_normal_output_files = CONFIGURATION["write_normal_output_files"]

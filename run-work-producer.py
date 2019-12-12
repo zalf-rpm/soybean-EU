@@ -67,10 +67,10 @@ server = {
 CONFIGURATION = {
         "mode": USER_MODE,
         "server": server[USER_MODE],
-        "server-port": "6667",
+        "port": "6667",
         "start-row": 1, 
         "end-row": 8157,
-        "run-periods": ["0", "2"]
+        "run-periods": "[0,2]"
     }
 
 script_path = os.path.dirname(os.path.abspath(__file__))
@@ -201,7 +201,8 @@ def run_producer(config):
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
     #row_cols_ = [(66,117)]
     print "running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end]
-    
+    run_periods = map(str, json.loads(config["run-periods"]))
+
     for row, col in row_cols_:
         #if row != 48 or col != 42:
         #    continue
@@ -242,7 +243,7 @@ def run_producer(config):
                 period = pgc["period"]
                 gcm = pgc["gcm"]
 
-                if period not in config["run-periods"]:
+                if period not in run_periods:
                     continue
 
                 env["params"]["userEnvironmentParameters"]["AtmosphericCO2"] = co2_value
