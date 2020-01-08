@@ -107,6 +107,8 @@ def run_producer(config):
             sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 1
         elif USER_MODE == "localProducer-remoteMonica":
             sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 2
+        elif USER_MODE == "remoteProducer-remoteMonica":
+            sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 2
 
     with open(template_folder + "site.json") as _:
         site = json.load(_)
@@ -261,6 +263,8 @@ def run_producer(config):
                 if USER_MODE == "localProducer-localMonica":
                     climatefile_version = "v1"
                 elif USER_MODE == "localProducer-remoteMonica":
+                    climatefile_version = "v2"
+                elif USER_MODE == "remoteProducer-remoteMonica":
                     climatefile_version = "v2"
                 climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
                 #if not os.path.exists(path_to_climate_file):
