@@ -20,7 +20,7 @@ import sys
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Release")
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\src\\python")
 #sys.path.insert(0, "C:\\Program Files (x86)\\MONICA")
-print sys.path
+print(sys.path)
 
 import gc
 import csv
@@ -30,10 +30,10 @@ from datetime import datetime
 from collections import defaultdict
 
 import zmq
-print "pyzmq version: ", zmq.pyzmq_version(), " zmq version: ", zmq.zmq_version()
+print("pyzmq version: ", zmq.pyzmq_version(), " zmq version: ", zmq.zmq_version())
 
-import monica_io
-#print "path to monica_io: ", monica_io.__file__
+import monica_io3
+#print("path to monica_io: ", monica_io.__file__)
 
 #USER_MODE = "localConsumer-localMonica"
 #USER_MODE = "remoteConsumer-remoteMonica"
@@ -47,7 +47,7 @@ server = {
 
 CONFIGURATION = {
         "server": server[USER_MODE],
-        "port": "7778",
+        "port": "7779",
         "write_normal_output_files": False,
         "start_writing_lines_threshold": 1000#5880
     }
@@ -79,19 +79,19 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
 
                     name = oid["name"] if len(oid["displayName"]) == 0 else oid["displayName"]
 
-                    if isinstance(val, types.ListType):
+                    if isinstance(val, list):
                         for val_ in val:
                             vals[name] = val_
                     else:
                         vals[name] = val
 
                 if "Year" not in vals:
-                    print "Missing Year in result section. Skipping results section."
+                    print("Missing Year in result section. Skipping results section.")
                     continue
 
                 year_to_vals[vals.get("Year", 0)].update(vals)
 
-        for year, vals in year_to_vals.iteritems():
+        for year, vals in year_to_vals.items():
             if len(vals) > 0 and year > 1980:
                 '''
                 #long output version
@@ -244,7 +244,7 @@ def write_data(row, col, data):
             _.write(HEADER)
         #overwrite_list.add((row, col))
 
-    with open(path_to_file, 'ab') as _:
+    with open(path_to_file, 'a', newline="") as _:
         writer = csv.writer(_, delimiter=",")
         for row_ in data[(row, col)]:
             writer.writerow(row_)
@@ -281,7 +281,7 @@ def main():
             result = socket.recv_json(encoding="latin-1")
             #result = socket.recv_string(encoding="latin-1")
             #result = socket.recv_string()
-            #print result
+            #print(result)
             #with open("out/out-latin1.csv", "w") as _:
             #    _.write(result)
             #continue
@@ -292,11 +292,11 @@ def main():
             continue
 
         if result["type"] == "finish":
-            print "received finish message"
+            print("received finish message")
             leave = True
 
         elif not write_normal_output_files:
-            print "received work result ", i, " customId: ", result.get("customId", "")
+            print("received work result ", i, " customId: ", result.get("customId", ""))
 
             custom_id = result["customId"]
             ci_parts = custom_id.split("|")
@@ -319,7 +319,7 @@ def main():
             i = i + 1
 
         elif write_normal_output_files:
-            print "received work result ", i, " customId: ", result.get("customId", "")
+            print("received work result ", i, " customId: ", result.get("customId", ""))
 
             with open("out/out-" + str(i) + ".csv", 'wb') as _:
                 writer = csv.writer(_, delimiter=",")
@@ -331,13 +331,13 @@ def main():
 
                     if len(results) > 0:
                         writer.writerow([orig_spec.replace("\"", "")])
-                        for row in monica_io.write_output_header_rows(output_ids,
+                        for row in monica_io3.write_output_header_rows(output_ids,
                                                                       include_header_row=True,
                                                                       include_units_row=True,
                                                                       include_time_agg=False):
                             writer.writerow(row)
 
-                        for row in monica_io.write_output(output_ids, results):
+                        for row in monica_io3.write_output(output_ids, results):
                             writer.writerow(row)
 
                     writer.writerow([])

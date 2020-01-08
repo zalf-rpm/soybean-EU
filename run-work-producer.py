@@ -28,17 +28,17 @@ import sys
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Debug")
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\src\\python")
 #sys.path.insert(0, "C:\\Program Files (x86)\\MONICA")
-#print sys.path
+#print(sys.path)
 #sys.path.append('C:/Users/berg.ZALF-AD/GitHub/util/soil')
 #from soil_conversion import *
 #import monica_python
 import zmq
-import monica_io
-#print "path to monica_io: ", monica_io.__file__
+import monica_io3
+#print("path to monica_io: ", monica_io.__file__)
 
-#print "pyzmq version: ", zmq.pyzmq_version()
-#print "sys.path: ", sys.path
-#print "sys.version: ", sys.version
+#print("pyzmq version: ", zmq.pyzmq_version())
+#print("sys.path: ", sys.path)
+#print("sys.version: ", sys.version)
 
 #USER_MODE = "localProducer-localMonica"
 #USER_MODE = "remoteProducer-remoteMonica"
@@ -51,11 +51,12 @@ PATHS = {
         "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/", # mounted path to archive accessable by monica executable
     },
     "localProducer-remoteMonica": {
-        "monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "C:/Users/berg.ZALF-AD/GitHub/monica-parameters/", # path to monica-parameters
+        #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
-        "monica-parameters-path": "/beegfs/stella/GitHub/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "/beegfs/common/GitHub/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     }
 }
@@ -68,7 +69,7 @@ server = {
 CONFIGURATION = {
         "mode": USER_MODE,
         "server": server[USER_MODE],
-        "server-port": "6667",
+        "server-port": "6668",
         "start-row": 1, 
         "end-row": 8157,
         "run-periods": "[0,2]"
@@ -86,7 +87,7 @@ def run_producer(config):
         "rotate the crops in the rotation"
         crop_rotation.insert(0, crop_rotation.pop())
 
-    print "config:", config
+    print("config:", config)
 
     context = zmq.Context()
     socket = context.socket(zmq.PUSH)
@@ -136,7 +137,7 @@ def run_producer(config):
     row_cols = []
     with open("JRC_soil_macsur_v3.csv") as _:
         reader = csv.reader(_)
-        reader.next()
+        next(reader)
         for row in reader:
             row_col = (int(row[1]), int(row[0]))
             row_cols.append(row_col)
@@ -199,7 +200,7 @@ def run_producer(config):
 
 
     #assert len(row_cols) == len(pheno["GM"].keys()) == len(pheno["WW"].keys())
-    print "# of rowsCols = ", len(row_cols)
+    print("# of rowsCols = ", len(row_cols))
 
     i = 0
     start_store = time.clock()
@@ -208,7 +209,7 @@ def run_producer(config):
     row_cols_ = row_cols[start:end+1]
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
     #row_cols_ = [(66,117)]
-    print "running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end]
+    print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     run_periods = map(str, json.loads(config["run-periods"]))
 
     for row, col in row_cols_:
@@ -236,7 +237,7 @@ def run_producer(config):
             #force max rooting depth
             #site["SiteParameters"]["ImpenetrableLayerDepth"] = crop["crops"][crop_id]["cropParams"]["cultivar"]["CropSpecificMaxRootingDepth"]
 
-            env = monica_io.create_env_json_from_json_config({
+            env = monica_io3.create_env_json_from_json_config({
                 "crop": crop,
                 "site": site,
                 "sim": sim,
@@ -305,14 +306,14 @@ def run_producer(config):
                                             + "|" + first_cp
 
                         socket.send_json(env)                    
-                        print "sent env ", i, " customId: ", env["customId"]
+                        print("sent env ", i, " customId: ", env["customId"])
                         i += 1
         #exit()
 
     stop_store = time.clock()
 
-    print "sending ", i, " envs took ", (stop_store - start_store), " seconds"
-    print "ran from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end]
+    print("sending ", i, " envs took ", (stop_store - start_store), " seconds")
+    print("ran from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     return
 
 
