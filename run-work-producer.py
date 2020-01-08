@@ -63,7 +63,8 @@ PATHS = {
 
 server = {
     "localProducer-localMonica": "localhost",
-    "localProducer-remoteMonica": "login01.cluster.zalf.de"
+    "localProducer-remoteMonica": "login01.cluster.zalf.de",
+    "remoteProducer-remoteMonica": "login01.cluster.zalf.de"
 }
 
 CONFIGURATION = {
