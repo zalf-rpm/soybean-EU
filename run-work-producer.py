@@ -41,8 +41,8 @@ import monica_io3
 #print("sys.version: ", sys.version)
 
 #USER_MODE = "localProducer-localMonica"
-USER_MODE = "remoteProducer-remoteMonica"
-#USER_MODE = "localProducer-remoteMonica"
+#USER_MODE = "remoteProducer-remoteMonica"
+USER_MODE = "localProducer-remoteMonica"
 
 PATHS = {
     # adjust the local path to your environment
@@ -68,8 +68,8 @@ server = {
 }
 
 CONFIGURATION = {
-        "mode": USER_MODE,
-        "server": server[USER_MODE],
+        "mode": "localProducer-localMonica",
+        "server": None,
         "server-port": "6668",
         "start-row": 1, 
         "end-row": 8157,
@@ -83,6 +83,9 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 
 def run_producer(config):
     "main"
+
+    if not config["server"]:
+        config["server"] = server[config["mode"]]
 
     def rotate(crop_rotation):
         "rotate the crops in the rotation"
@@ -213,14 +216,14 @@ def run_producer(config):
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
     #row_cols_ = [(66,117)]
     print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
-    run_periods = map(str, json.loads(config["run-periods"]))
+    run_periods = list(map(str, json.loads(config["run-periods"])))
 
     for row, col in row_cols_:
         #if row != 48 or col != 42:
         #    continue
         #if row < 170:
         #    continue
-                
+
         custom_site = get_custom_site(row, col)
 
         site["Latitude"] = custom_site["latitude"]
@@ -301,17 +304,19 @@ def run_producer(config):
                         except:
                             first_cp = env["cropRotation"][0]["worksteps"][0]["crop"]["cropParams"]["species"]["SpeciesName"]
                         
-                        env["customId"] = str(row) + "/" + str(col) + ")" \
-                                            + "|" + period \
-                                            + "|" + gcm \
-                                            + "|(" + co2_id + "/" + str(co2_value) + ")" \
-                                            + "|" + sim_["TrtNo"] \
-                                            + "|" + sim_["ProdCase"] \
-                                            + "|" + crop_id \
-                                            + "|" + first_cp
+                        env["customId"] = {
+                            "row": row, "col": col,
+                            "period": period,
+                            "gcm": gcm,
+                            "co2_id": co2_id, "co2_value": co2_value,
+                            "trt_no": sim_["TrtNo"],
+                            "prod_case": sim_["ProdCase"],
+                            "crop_id": crop_id,
+                            "first_cp": first_cp
+                        }
 
                         socket.send_json(env)                    
-                        print("sent env ", i, " customId: ", env["customId"])
+                        print("sent env ", i, " customId: ", list(env["customId"].values()))
                         i += 1
         #exit()
 

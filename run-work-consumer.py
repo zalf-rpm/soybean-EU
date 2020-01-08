@@ -36,8 +36,8 @@ import monica_io3
 #print("path to monica_io: ", monica_io.__file__)
 
 #USER_MODE = "localConsumer-localMonica"
-USER_MODE = "remoteConsumer-remoteMonica"
-#USER_MODE = "localConsumer-remoteMonica"
+#USER_MODE = "remoteConsumer-remoteMonica"
+USER_MODE = "localConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
@@ -46,7 +46,8 @@ server = {
 }
 
 CONFIGURATION = {
-        "server": server[USER_MODE],
+        "mode": "localConsumer-localMonica",
+        "server": None,
         "port": "7779",
         "write_normal_output_files": False,
         "start_writing_lines_threshold": 1000#5880
@@ -263,6 +264,9 @@ def main():
             if k in config:
                 config[k] = v
 
+    if not config["server"]:
+        config["server"] = server[config["mode"]]
+
     print("consumer config:", config)
 
     data = defaultdict(list)
@@ -297,19 +301,18 @@ def main():
             leave = True
 
         elif not write_normal_output_files:
-            print("received work result ", i, " customId: ", result.get("customId", ""))
+            print("received work result ", i, " customId: ", list(result.get("customId", "").values()))
 
             custom_id = result["customId"]
-            ci_parts = custom_id.split("|")
-            row_, col_ = ci_parts[0][0:-1].split("/")
-            row, col = (int(row_), int(col_))
-            period = ci_parts[1]
-            gcm = ci_parts[2]
-            co2_id, co2_value_ = ci_parts[3][1:-1].split("/")
-            co2_value = int(co2_value_)
-            trt_no = ci_parts[4]
-            prod_case = ci_parts[5]
-            crop_id = ci_parts[6]
+            row = custom_id["row"]
+            col = custom_id["col"]
+            period = custom_id["period"]
+            gcm = custom_id["gcm"]
+            co2_id = custom_id["co2_id"]
+            co2_value = custom_id["co2_value"]
+            trt_no = custom_id["trt_no"]
+            prod_case = custom_id["prod_case"]
+            crop_id = custom_id["crop_id"]
             
             res = create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
             data[(row, col)].extend(res)
