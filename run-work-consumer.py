@@ -36,8 +36,8 @@ import monica_io3
 #print("path to monica_io: ", monica_io.__file__)
 
 #USER_MODE = "localConsumer-localMonica"
-#USER_MODE = "remoteConsumer-remoteMonica"
-USER_MODE = "localConsumer-remoteMonica"
+USER_MODE = "remoteConsumer-remoteMonica"
+#USER_MODE = "localConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
@@ -235,7 +235,8 @@ def write_data(row, col, data):
     "write data"
 
     if USER_MODE=="remoteConsumer-remoteMonica":
-        path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        #path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
     else:
         path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
 
