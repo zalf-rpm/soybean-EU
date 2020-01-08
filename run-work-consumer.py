@@ -36,7 +36,8 @@ import monica_io
 #print "path to monica_io: ", monica_io.__file__
 
 #USER_MODE = "localConsumer-localMonica"
-USER_MODE = "remoteConsumer-remoteMonica"
+#USER_MODE = "remoteConsumer-remoteMonica"
+USER_MODE = "localConsumer-remoteMonica"
 
 server = {
     "localConsumer-localMonica": "localhost",
@@ -46,7 +47,7 @@ server = {
 
 CONFIGURATION = {
         "server": server[USER_MODE],
-        "server-port": "7778",
+        "port": "7778",
         "write_normal_output_files": False,
         "start_writing_lines_threshold": 1000#5880
     }
@@ -137,11 +138,34 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
                     vals.get("ATsow", "na")
                 ])
                 '''
+                current_crop = vals["Crop"],
+                if "maize" in current_crop[0]:
+                    AntDOY = vals.get("AntDOY_maize", "na")
+                elif "soy" in current_crop[0]:
+                    AntDOY = vals.get("AntDOY_soy", "na")
+                
+                #calculate SWC (i.e., SWC-PWP [mm])
+                def convert_SWC(SWC, PWP, depth_mm):
+                    return max((SWC-PWP) * depth_mm, 0)
+                
+                #
+                AWC_30_14Mar = convert_SWC(vals["Mois_0_30_14Mar"], vals["Pwp_0_30"], 300)
+                AWC_30_sow = convert_SWC(vals["Mois_0_30_sow"], vals["Pwp_0_30"], 300)
+                AWC_30_harv = convert_SWC(vals["Mois_0_30_harv"], vals["Pwp_0_30"], 300)
+                #
+                AWC_60_14Mar = convert_SWC(vals["Mois_30_60_14Mar"], vals["Pwp_30_60"], 300)
+                AWC_60_sow = convert_SWC(vals["Mois_30_60_sow"], vals["Pwp_30_60"], 300)
+                AWC_60_harv = convert_SWC(vals["Mois_30_60_harv"], vals["Pwp_30_60"], 300)
+                #
+                AWC_90_14Mar = convert_SWC(vals["Mois_60_90_14Mar"], vals["Pwp_60_90"], 300)
+                AWC_90_sow = convert_SWC(vals["Mois_60_90_sow"], vals["Pwp_60_90"], 300)
+                AWC_90_harv = convert_SWC(vals["Mois_60_90_harv"], vals["Pwp_60_90"], 300)
 
                 out.append([
                     "MO",
                     str(row) + "_" + str(col),
-                    "soy_" + crop_id,
+                    current_crop[0],
+                    #"soy_" + crop_id,
                     #co2_id,
                     period,
                     gcm,
@@ -158,12 +182,28 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
                     vals.get("MaxLAI", "na"),
                     vals.get("SowDOY", "na"),
                     vals.get("EmergDOY", "na"),
-                    vals.get("AntDOY", "na"),
+                    AntDOY,
                     vals.get("MatDOY", "na"),
                     vals.get("HarvDOY", "na"),                    
                     vals.get("cycle-length", "na"),
+
+                    vals.get("cum_ET", "na"),
+
+                    AWC_30_14Mar,
+                    AWC_60_14Mar,
+                    AWC_90_14Mar,
+
+                    AWC_30_sow,
+                    AWC_60_sow,
+                    AWC_90_sow,
+
+                    AWC_30_harv,
+                    AWC_60_harv,
+                    AWC_90_harv,
+
                     vals.get("tradef", "na"),
-                    vals.get("frostred", "na")
+                    vals.get("frostred", "na"),
+                    vals.get("cum_irri", "na")
                 ])
 
     return out
@@ -177,12 +217,16 @@ HEADER_long = "Model,row_col,Crop,period," \
          + "GrainN,ET0,SowDOY,EmergDOY,reldev,tradef,frostred,frost-risk-days,cycle-length,STsow,ATsow" \
          + "\n"
 
-HEADER = "Model,row_col,Crop,ClimPerCO2_ID,period," \
+HEADER = "Model,row_col,Crop,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield," \
          + "MaxLAI," \
-         + "SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,cycle-length,tradef,frostred" \
+         + "SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,cycle-length,sum_ET," \
+         + "AWC_30_14Mar,AWC_60_14Mar,AWC_90_14Mar," \
+         + "AWC_30_sow,AWC_60_sow,AWC_90_sow," \
+         + "AWC_30_harv,AWC_60_harv,AWC_90_harv," \
+         + "tradef,frostred, sum_irri" \
          + "\n"
 
 

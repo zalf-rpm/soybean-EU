@@ -1,6 +1,7 @@
 {
 	"output": [
 		"crop", [
+			["Crop", "FIRST"],
 			["Year", "LAST"],
 			["DOY|SowDOY", "FIRST"],
 			["DOY|HarvDOY", "LAST"],
@@ -10,7 +11,26 @@
 			["FrostRed|frostred", "LAST"],
 			["Count|cycle-length", "SUM"],
 
+			["Act_ET|cum_ET", "SUM"],
+			["Mois|Mois_0_30_sow", [1, 3, "AVG"], "FIRST"],
+			["Mois|Mois_0_30_harv", [1, 3, "AVG"], "LAST"],
+			["Mois|Mois_30_60_sow", [4, 6, "AVG"], "FIRST"],
+			["Mois|Mois_30_60_harv", [4, 6, "AVG"], "LAST"],
+			["Mois|Mois_60_90_sow", [7, 9, "AVG"], "FIRST"],
+			["Mois|Mois_60_90_harv", [7, 9, "AVG"], "LAST"],
+			["Pwp|Pwp_0_30", [1, 3, "AVG"], "FIRST"],
+			["Pwp|Pwp_30_60", [4, 6, "AVG"], "FIRST"],
+			["Pwp|Pwp_60_90", [7, 9, "AVG"], "FIRST"],
+			["Irrig|cum_irri", "SUM"],
+
 			["Yield", "LAST"]
+		],
+
+		{"at": "xxxx-03-14"}, [
+			["Year", "LAST"],
+			["Mois|Mois_0_30_14Mar", [1, 3, "AVG"]],
+			["Mois|Mois_30_60_14Mar", [4, 6, "AVG"]],
+			["Mois|Mois_60_90_14Mar", [7, 9, "AVG"]]
 		],
 
 		{"while": ["Stage", "=", 2]}, [
@@ -20,7 +40,12 @@
 
 		{"while": ["Stage", "=", 4]}, [
 			["Year", "LAST"],
-			["DOY|AntDOY", "FIRST"]
+			["DOY|AntDOY_soy", "FIRST"]
+		],
+
+		{"while": ["Stage", "=", 5]}, [
+			["Year", "LAST"],
+			["DOY|AntDOY_maize", "FIRST"]
 		],
 
 		{"while": ["Stage", "=", 7]}, [
@@ -98,25 +123,29 @@
 			"TrtNo": "T1",
 			"ProdCase": "Actual",
 			"WaterDeficitResponseOn": true,
-			"FrostKillOn": true
+			"FrostKillOn": true,
+			"Irrigate": false
 		},
 		{
 			"TrtNo": "T2",
 			"ProdCase": "Unlimited water",
-			"WaterDeficitResponseOn": false,
-			"FrostKillOn": true
+			"WaterDeficitResponseOn": true,
+			"FrostKillOn": true,
+			"Irrigate": true
 		},
 		{
 			"TrtNo": "T3",
 			"ProdCase": "No frost",
 			"WaterDeficitResponseOn": true,
-			"FrostKillOn": false
+			"FrostKillOn": false,
+			"Irrigate": false
 		},
 		{
 			"TrtNo": "T4",
 			"ProdCase": "Potential",
-			"WaterDeficitResponseOn": false,
-			"FrostKillOn": false
+			"WaterDeficitResponseOn": true,
+			"FrostKillOn": false,
+			"Irrigate": true
 		}
 	]	
 }

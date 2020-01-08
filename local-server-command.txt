@@ -1,3 +1,9 @@
 cd C:\Users\stella\Documents\GitHub\monica
 
-_cmake_vs2019_win64\Release\monica-zmq-server -bi -i tcp://*:6666 -bo -o tcp://*:7777
+_cmake_vs2019_win64\Release\monica-zmq-server -bi -i tcp://*:6667 -bo -o tcp://*:7778
+
+{"at": "xxxx-03-14"}, [
+			["Mois|Mois_0_30_Mar", [1, 3, "AVG"]],
+			["Mois|Mois_30_60_Mar", [4, 6, "AVG"]],
+			["Mois|Mois_60_90_Mar", [7, 9, "AVG"]]
+		],

@@ -41,7 +41,8 @@ import monica_io
 #print "sys.version: ", sys.version
 
 #USER_MODE = "localProducer-localMonica"
-USER_MODE = "remoteProducer-remoteMonica"
+#USER_MODE = "remoteProducer-remoteMonica"
+USER_MODE = "localProducer-remoteMonica"
 
 PATHS = {
     # adjust the local path to your environment
@@ -67,7 +68,7 @@ server = {
 CONFIGURATION = {
         "mode": USER_MODE,
         "server": server[USER_MODE],
-        "port": "6667",
+        "server-port": "6667",
         "start-row": 1, 
         "end-row": 8157,
         "run-periods": "[0,2]"
@@ -80,6 +81,10 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 
 def run_producer(config):
     "main"
+
+    def rotate(crop_rotation):
+        "rotate the crops in the rotation"
+        crop_rotation.insert(0, crop_rotation.pop())
 
     print "config:", config
 
@@ -109,6 +114,9 @@ def run_producer(config):
 
     with open(template_folder + "sims.json") as _:
         sims = json.load(_)
+
+    with open(template_folder +"irrigations.json") as _:
+        irrigation = json.load(_)
 
     period_gcm_co2s = [
         {"id": "C1", "period": "0", "gcm": "0_0", "co2_value": 360},
@@ -214,16 +222,16 @@ def run_producer(config):
         site["Latitude"] = custom_site["latitude"]
         site["SiteParameters"]["SoilProfileParameters"] = custom_site["soil-profile"]
 
-        for crop_id in crop["crops"].keys():
+        for crop_id in crop["soybean"].keys():
             #if crop_id not in ["0000", "II"]:
             #    continue
             for ws in crop["cropRotation"][0]["worksteps"]:
                 if ws["type"] == "AutomaticSowing":
                     #set crop ref
                     ws["crop"][2] = crop_id
-                if ws["type"] == "SetValue":
-                    #set mois
-                    ws["value"] = custom_site["sw-init"]
+                #if ws["type"] == "SetValue":
+                #    #set mois
+                #    ws["value"] = custom_site["sw-init"]
             
             #force max rooting depth
             #site["SiteParameters"]["ImpenetrableLayerDepth"] = crop["crops"][crop_id]["cropParams"]["cultivar"]["CropSpecificMaxRootingDepth"]
@@ -265,18 +273,40 @@ def run_producer(config):
                     env["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
                     env["params"]["simulationParameters"]["WaterDeficitResponseOn"] = sim_["WaterDeficitResponseOn"]
                     env["params"]["simulationParameters"]["FrostKillOn"] = sim_["FrostKillOn"]
-                                        
-                    env["customId"] = str(row) + "/" + str(col) + ")" \
-                                        + "|" + period \
-                                        + "|" + gcm \
-                                        + "|(" + co2_id + "/" + str(co2_value) + ")" \
-                                        + "|" + sim_["TrtNo"] \
-                                        + "|" + sim_["ProdCase"] \
-                                        + "|" + crop_id
 
-                    socket.send_json(env)                    
-                    print "sent env ", i, " customId: ", env["customId"]
-                    i += 1
+                    n_steps = len(env["cropRotation"][0]["worksteps"])
+                    if sim_["Irrigate"]:
+                        if n_steps ==2:
+                            #add irrigation
+                            for irri in irrigation["irristeps"]:
+                                env["cropRotation"][0]["worksteps"].append(irri)
+                                env["cropRotation"][1]["worksteps"].append(irri)
+                    if not sim_["Irrigate"]:
+                        if n_steps == 35:
+                            #remove irrigation
+                            env["cropRotation"][0]["worksteps"] = [env["cropRotation"][0]["worksteps"][0], env["cropRotation"][0]["worksteps"][1]]
+                            env["cropRotation"][1]["worksteps"] = [env["cropRotation"][1]["worksteps"][0], env["cropRotation"][1]["worksteps"][1]]
+                    
+
+                    for j in range(len(env["cropRotation"])):
+                        rotate(env["cropRotation"])
+                        try:
+                            first_cp = env["cropRotation"][0]["worksteps"][0]["crop"]["cropParams"]["species"]["="]["SpeciesName"]
+                        except:
+                            first_cp = env["cropRotation"][0]["worksteps"][0]["crop"]["cropParams"]["species"]["SpeciesName"]
+                        
+                        env["customId"] = str(row) + "/" + str(col) + ")" \
+                                            + "|" + period \
+                                            + "|" + gcm \
+                                            + "|(" + co2_id + "/" + str(co2_value) + ")" \
+                                            + "|" + sim_["TrtNo"] \
+                                            + "|" + sim_["ProdCase"] \
+                                            + "|" + crop_id \
+                                            + "|" + first_cp
+
+                        socket.send_json(env)                    
+                        print "sent env ", i, " customId: ", env["customId"]
+                        i += 1
         #exit()
 
     stop_store = time.clock()
