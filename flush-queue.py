@@ -22,22 +22,24 @@ import sys
 import zmq
 #print "pyzmq version: ", zmq.pyzmq_version(), " zmq version: ", zmq.zmq_version()
 
-LOCAL_RUN = False
+config = {
+    "server": "localhost",
+    "port": "7777"
+}
 
-def main():
-    "simply empty queue"
+if len(sys.argv) > 1:
+    for arg in sys.argv[1:]:
+        k, v = arg.split("=")
+        if k in config:
+            config[k] = v
 
-    context = zmq.Context()
-    socket = context.socket(zmq.PULL)
-    if LOCAL_RUN:
-        socket.connect("tcp://localhost:7777")
-    else:
-        socket.connect("tcp://login01.cluster.zalf.de:7777")
+context = zmq.Context()
+socket = context.socket(zmq.PULL)
+socket.connect("tcp://" + config["server"] + ":" + config["port"])
 
-    i = 0
-    while True:
-        socket.recv_json(encoding="latin-1")
-        print i,
-        i = i + 1
-
-main()
+i = 0
+while True:
+    socket.recv_json(encoding="latin-1")
+    if i%10 == 0:
+        print(i, end="")
+    i = i + 1
