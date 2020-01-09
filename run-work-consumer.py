@@ -49,11 +49,11 @@ CONFIGURATION = {
         "mode": "localConsumer-localMonica",
         "server": None,
         "port": "7779",
-        "write_normal_output_files": False,
+        "write_normal_output_files": "false",
         "start_writing_lines_threshold": 1000#5880
     }
 
-def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
+def create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
     "create crop output lines"
 
     out = []
@@ -165,6 +165,7 @@ def create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, pro
                 out.append([
                     "MO",
                     str(row) + "_" + str(col),
+                    first_cp,
                     current_crop[0],
                     #"soy_" + crop_id,
                     #co2_id,
@@ -218,7 +219,7 @@ HEADER_long = "Model,row_col,Crop,period," \
          + "GrainN,ET0,SowDOY,EmergDOY,reldev,tradef,frostred,frost-risk-days,cycle-length,STsow,ATsow" \
          + "\n"
 
-HEADER = "Model,row_col,Crop,period," \
+HEADER = "Model,row_col,first_crop,Crop,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield," \
@@ -277,7 +278,7 @@ def main():
     socket.connect("tcp://" + config["server"] + ":" + config["port"])
     socket.RCVTIMEO = 1000
     leave = False
-    write_normal_output_files = CONFIGURATION["write_normal_output_files"]
+    write_normal_output_files = CONFIGURATION["write_normal_output_files"] == "true"
     start_writing_lines_threshold = CONFIGURATION["start_writing_lines_threshold"]
     while not leave:
 
@@ -313,8 +314,9 @@ def main():
             trt_no = custom_id["trt_no"]
             prod_case = custom_id["prod_case"]
             crop_id = custom_id["crop_id"]
+            first_cp = custom_id["first_cp"]
             
-            res = create_output(row, col, crop_id, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
+            res = create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
             data[(row, col)].extend(res)
 
             if len(data[(row, col)]) >= start_writing_lines_threshold:
@@ -325,7 +327,7 @@ def main():
         elif write_normal_output_files:
             print("received work result ", i, " customId: ", result.get("customId", ""))
 
-            with open("out/out-" + str(i) + ".csv", 'wb') as _:
+            with open("out/out-" + str(i) + ".csv", 'w') as _:
                 writer = csv.writer(_, delimiter=",")
 
                 for data_ in result.get("data", []):

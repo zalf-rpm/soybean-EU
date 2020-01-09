@@ -47,7 +47,8 @@ USER_MODE = "localProducer-remoteMonica"
 PATHS = {
     # adjust the local path to your environment
     "localProducer-localMonica": {
-        "monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "C:/Users/berg.ZALF-AD/GitHub/monica-parameters/", # path to monica-parameters
+        #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/", # mounted path to archive accessable by monica executable
     },
     "localProducer-remoteMonica": {
@@ -219,8 +220,8 @@ def run_producer(config):
     run_periods = list(map(str, json.loads(config["run-periods"])))
 
     for row, col in row_cols_:
-        #if row != 48 or col != 42:
-        #    continue
+        if row != 119 or col != 57:
+            continue
         #if row < 170:
         #    continue
 
