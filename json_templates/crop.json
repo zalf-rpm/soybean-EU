@@ -4,7 +4,7 @@
 			"cropParams": {
 				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/000.json"],
+					"=": ["include-from-file", "crops/soybean/0000.json"],
 					"StageTemperatureSum":[  
 						[  
 						  100,
