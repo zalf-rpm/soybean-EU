@@ -220,8 +220,8 @@ def run_producer(config):
     run_periods = list(map(str, json.loads(config["run-periods"])))
 
     for row, col in row_cols_:
-        if row != 119 or col != 57:
-            continue
+        #if row != 119 or col != 57:
+        #    continue
         #if row < 170:
         #    continue
 
