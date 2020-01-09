@@ -68,13 +68,13 @@ server = {
 }
 
 CONFIGURATION = {
-        "mode": "localProducer-localMonica",
-        "server": None,
-        "server-port": "6668",
-        "start-row": 1, 
-        "end-row": 8157,
-        "run-periods": "[0,2]"
-    }
+    "mode": "localProducer-localMonica",
+    "server": None,
+    "server-port": "6668",
+    "start-row": 1, 
+    "end-row": 8157,
+    "run-periods": "[0,2]"
+}
 
 script_path = os.path.dirname(os.path.abspath(__file__))
 
