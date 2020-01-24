@@ -976,8 +976,8 @@
 					"type": "AutomaticSowing", 
 					"crop": ["ref", "soybean", "my_crop"],
 					"earliest-date": "0000-03-15",
-					"latest-date": "0000-05-30",
-					"min-temp": 12,
+					"latest-date": "0000-05-15",
+					"min-temp": 9.1,
 					"days-in-temp-window": 7,
 					"min-%-asw": 0,
 					"max-%-asw": 100,
@@ -988,7 +988,7 @@
 					"avg-soil-temp": {
 						"depth": 0.1,
 						"days": 5,
-						"Tavg": 10
+						"Tavg": 7.1
 					}
 				},
 				{
@@ -1008,8 +1008,8 @@
 					"type": "AutomaticSowing", 
 					"crop": ["ref", "maize", "SM"],
 					"earliest-date": "0000-03-15",
-					"latest-date": "0000-05-30",
-					"min-temp": 12,
+					"latest-date": "0000-05-15",
+					"min-temp": 9.1,
 					"days-in-temp-window": 7,
 					"min-%-asw": 0,
 					"max-%-asw": 100,
@@ -1020,7 +1020,7 @@
 					"avg-soil-temp": {
 						"depth": 0.1,
 						"days": 5,
-						"Tavg": 10
+						"Tavg": 7.1
 					}
 				},
 				{
