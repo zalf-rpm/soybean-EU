@@ -227,7 +227,7 @@ def run_producer(config):
 
         custom_site = get_custom_site(row, col)
 
-        site["Latitude"] = custom_site["latitude"]
+        site["SiteParameters"]["Latitude"] = custom_site["latitude"]
         site["SiteParameters"]["SoilProfileParameters"] = custom_site["soil-profile"]
 
         for crop_id in crop["soybean"].keys():
