@@ -13,6 +13,8 @@ import sys
 import os
 import math
 import statistics 
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
