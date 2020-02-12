@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
+import errno
 
 PATHS = {
     "local": {
