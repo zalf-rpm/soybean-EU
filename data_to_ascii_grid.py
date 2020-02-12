@@ -66,6 +66,8 @@ USER = "local"
 CROPNAME = "soybean"
 NONEVALUE = -9999
 
+NO_PROGRESS_BAR = False
+
 def calculateGrid() :
     "main"
 
@@ -75,6 +77,8 @@ def calculateGrid() :
             k, v = arg.split("=")
             if k == "path":
                 pathId = v
+            if k == "noprogess" :
+                NO_PROGRESS_BAR = True
 
     inputFolder = PATHS[pathId]["sim-result-path"]
     climateFolder = PATHS[pathId]["climate-data"]
@@ -302,7 +306,9 @@ def calculateGrid() :
                     maxVal=sumMaxOccurrence,
                     pdfList=pdfList, 
                     progressBar="Cool weather            " )
-    coolWeatherWeightLabels = ['0', '< 15°C', '< 10°C', '< 8°C']
+    coolWeatherWeightLabels = ['0', '< 15°C', '< 10°C', '< 8°C' ]
+    ticklist = [0, 3, 7, 11]
+
     drawDateMaps(   coolWeatherImpactWeightGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER_WEIGHT, 
                     extCol, extRow, 
@@ -315,6 +321,7 @@ def calculateGrid() :
                     maxVal=12,
                     pdfList=pdfList, 
                     cbarLabel=coolWeatherWeightLabels,
+                    ticklist=ticklist,
                     progressBar="Cool weather            " )
     drawDateMaps(   coolWeatherDeathGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER_DEATH, 
@@ -482,17 +489,20 @@ def calculateGrid() :
 
     currentInput = 0
     numInput = len(matGroupGrids)
-    sidebarLabel = ["none"] * len(matGroupIdGrids)
+    sidebarLabel = [""] * (len(matGroupIdGrids)+1)
     cMap = ListedColormap(['cyan', 'lightgreen', 'magenta','crimson', 'blue','gold', 'navy'])
     for id in matGroupIdGrids :
         sidebarLabel[matGroupIdGrids[id]] = id
+    ticklist = [0] * (len(sidebarLabel))
+    for tick in range(len(ticklist)) :
+        ticklist[tick] = tick + 0.5
     for simKey in matGroupGrids :
         # ASCII_OUT_FILENAME_MAX_YIELD_MAT = "maxyield_matgroup_trno{1}.asc" # treatmentnumber 
         gridFileName = ASCII_OUT_FILENAME_MAX_YIELD_MAT.format(simKey[0])
         gridFileName = gridFileName.replace("/", "-") #remove directory seperator from filename
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
-        file = writeAGridHeader(gridFilePath, extCol, extRow)
+        file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
         for row in range(extRow-1, -1, -1) :
             seperator = ' '
             file.write(seperator.join(map(str, matGroupGrids[simKey][row])) + "\n")
@@ -500,7 +510,7 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups for max average yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, pdf=pdfList[simKey[1]])
+        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
@@ -511,7 +521,7 @@ def calculateGrid() :
         gridFileName = gridFileName.replace("/", "-") #remove directory seperator from filename
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
-        file = writeAGridHeader(gridFilePath, extCol, extRow)
+        file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
         for row in range(extRow-1, -1, -1) :
             seperator = ' '
             file.write(seperator.join(map(str, matGroupDeviationGrids[simKey][row])) + "\n")
@@ -519,7 +529,7 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups - max avg yield minus deviation  - Scn: {0} {1}".format(simKey[1], simKey[2])
-        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, pdf=pdfList[simKey[1]])
+        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
@@ -772,7 +782,7 @@ def loadClimateLine(line, header) :
     return (date, tmin)
 
 
-def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, colormap='viridis', cbarLabel=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
+def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
     currentInput = 0
     numInput = len(grids)
     for simKey in grids :
@@ -791,20 +801,21 @@ def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolde
         pdfFile = None
         if pdfList :
             pdfFile = pdfList[simKey[1]]
-        createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, factor=factor, label=labelText, pdf=pdfFile)
+        createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, label=labelText, pdf=pdfFile)
         currentInput += 1 
         progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
 
 def progress(count, total, status=''):
     # draw a progress bar in cmd line
-    bar_len = 60
-    filled_len = int(round(bar_len * count / float(total)))
+    if not NO_PROGRESS_BAR :
+        bar_len = 60
+        filled_len = int(round(bar_len * count / float(total)))
 
-    percents = round(100.0 * count / float(total), 1)
-    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+        percents = round(100.0 * count / float(total), 1)
+        bar = '=' * filled_len + '-' * (bar_len - filled_len)
 
-    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
-    sys.stdout.flush()
+        sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
+        sys.stdout.flush()
 
 def WriteError(filename, errorMsg) :
     # debug write to text file
@@ -812,7 +823,7 @@ def WriteError(filename, errorMsg) :
     f.write("Error: " + errorMsg + "\r\n")
     f.close()
 
-def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis', factor=0.001, cbarLabel=None, pdf=None) :
+def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis', factor=0.001, cbarLabel=None, ticklist=None, pdf=None) :
     # Read in ascii header data
     with open(ascii_path, 'r') as source:
         ascii_header = source.readlines()[:6]
@@ -846,14 +857,9 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
     # Get the img object in order to pass it to the colorbar function
     img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent)
 
-    if cbarLabel :
-        tick = 0.5 - len(cbarLabel) / 100 
-        tickslist = [tick] * len(cbarLabel)
-        for i in range(len(cbarLabel)) :
-            tickslist[i] += i * 2 * tick
-
+    if ticklist :
         # Place a colorbar next to the map
-        cbar = plt.colorbar(img_plot, ticks=tickslist, orientation='vertical', shrink=0.5, aspect=14)
+        cbar = plt.colorbar(img_plot, ticks=ticklist, orientation='vertical', shrink=0.5, aspect=14)
     else :
         # Place a colorbar next to the map
         cbar = plt.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14)
