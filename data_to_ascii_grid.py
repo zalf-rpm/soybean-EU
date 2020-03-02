@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
+import collections
 import errno
 
 PATHS = {
@@ -61,8 +62,11 @@ ASCII_OUT_FILENAME_MAT_DOY = "doy_mat_{0}_trno{1}.asc" # mGroup_treatmentnumber
 ASCII_OUT_FILENAME_COOL_WEATHER = "coolweather_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 ASCII_OUT_FILENAME_COOL_WEATHER_DEATH = "coolweather_severity_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 ASCII_OUT_FILENAME_COOL_WEATHER_WEIGHT = "coolweather_weights_{0}_trno{1}.asc" # mGroup_treatmentnumber 
+ASCII_OUT_FILENAME_WET_HARVEST      = "harvest_wet_{0}_trno{1}.asc" # mGroup_treatmentnumber 
+ASCII_OUT_FILENAME_LATE_HARVEST     = "harvest_late_{0}_trno{1}.asc" # mGroup_treatmentnumber 
+ASCII_OUT_FILENAME_MAT_IS_HARVEST   = "harvest_before_maturity_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 
-USER = "local" 
+USER = "test" 
 CROPNAME = "soybean"
 NONEVALUE = -9999
 
@@ -103,12 +107,19 @@ def calculateGrid() :
     StdDevAvgGrids = dict()
     matureGrid = dict()
     flowerGrid = dict()
+    harvestGrid = dict()
+    matIsHavestGrid = dict()
+    lateHarvestGrid = dict()
     climateFilePeriod = dict()
     coolWeatherImpactGrid = dict()
     coolWeatherDeathGrid = dict()
     coolWeatherImpactWeightGrid = dict()
+    wetHarvestGrid = dict()
     sumMaxOccurrence = 0
     sumMaxDeathOccurrence = 0
+    maxLateHarvest = 0
+    maxWetHarvest = 0
+    maxMatHarvest = 0
     sumLowOccurrence = 0
     sumMediumOccurrence = 0
     sumHighOccurrence = 0
@@ -123,6 +134,9 @@ def calculateGrid() :
                     simulations = dict()
                     simDoyFlower = dict()
                     simDoyMature = dict()
+                    simDoyHarvest = dict()
+                    simMatIsHarvest = dict()
+                    simLastHarvestDate = dict()
                     dateYearOrder = dict()
                     firstLine = True
                     header = list()
@@ -149,12 +163,18 @@ def calculateGrid() :
                                     simulations[lineKey] = list() 
                                     simDoyFlower[lineKey] = list()
                                     simDoyMature[lineKey] = list() 
+                                    simDoyHarvest[lineKey] = list() 
+                                    simMatIsHarvest[lineKey] = list() 
+                                    simLastHarvestDate[lineKey] = list() 
                                     dateYearOrder[lineKey] = list()
                                 if not lineKey[1] in climateFilePeriod :
                                     climateFilePeriod[lineKey[1]] = period
                                 simulations[lineKey].append(yieldValue)
                                 simDoyFlower[lineKey].append(flowerValue)
                                 simDoyMature[lineKey].append(matureValue if matureValue > 0 else harvestValue)
+                                simDoyHarvest[lineKey].append(harvestValue)
+                                simMatIsHarvest[lineKey].append(matureValue <= 0 and harvestValue > 0)
+                                simLastHarvestDate[lineKey].append(datetime.fromisoformat(str(yearValue)+"-10-31").timetuple().tm_yday == harvestValue)
                                 dateYearOrder[lineKey].append(yearValue)
 
                     if not outputGridsGenerated :
@@ -164,9 +184,13 @@ def calculateGrid() :
                             StdDevAvgGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
                             matureGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
                             flowerGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                            harvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                            matIsHavestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                            lateHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
                             coolWeatherImpactGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
                             coolWeatherDeathGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
                             coolWeatherImpactWeightGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                            wetHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
 
                     for simKey in simulations :
                         pixelValue = CalculatePixel(simulations[simKey])
@@ -176,11 +200,18 @@ def calculateGrid() :
                         stdDeviation = statistics.stdev(simulations[simKey])
                         if stdDeviation > maxSdtDeviation :
                             maxSdtDeviation = stdDeviation
+
                         matureGrid[simKey][currRow-1][currCol-1] = int(average(simDoyMature[simKey]))
                         flowerGrid[simKey][currRow-1][currCol-1] = int(average(simDoyFlower[simKey]))
-
+                        harvestGrid[simKey][currRow-1][currCol-1] = int(average(simDoyHarvest[simKey]))
+                        matIsHavestGrid[simKey][currRow-1][currCol-1] = int(sum(simMatIsHarvest[simKey]))
+                        lateHarvestGrid[simKey][currRow-1][currCol-1] = int(sum(simLastHarvestDate[simKey]))
                         allGrids[simKey][currRow-1][currCol-1] = int(pixelValue)
                         StdDevAvgGrids[simKey][currRow-1][currCol-1] = int(stdDeviation)
+                        if maxLateHarvest < lateHarvestGrid[simKey][currRow-1][currCol-1] :
+                            maxLateHarvest = lateHarvestGrid[simKey][currRow-1][currCol-1]
+                        if maxMatHarvest < matIsHavestGrid[simKey][currRow-1][currCol-1] :
+                            maxMatHarvest = matIsHavestGrid[simKey][currRow-1][currCol-1]     
 
                     #coolWeatherImpactGrid
                     for scenario in climateFilePeriod :
@@ -191,8 +222,10 @@ def calculateGrid() :
                                 numOccurrenceHigh = dict()
                                 numOccurrenceMedium = dict()
                                 numOccurrenceLow = dict()
+                                numWetHarvest = dict()
                                 minValue = 10.0
                                 header = list()
+                                precipPrevDays = collections.deque(maxlen=5)
                                 for line in climatefile:
                                     if firstLines < 2 :
                                         # read header
@@ -204,14 +237,18 @@ def calculateGrid() :
                                         lineContent = loadClimateLine(line, header)
                                         date = lineContent[0]
                                         tmin = lineContent[1]
+                                        precip = lineContent[2]
+                                        precipPrevDays.append(precip)
                                         dateYear = GetYear(date)
                                         if tmin < 15 :
                                             for simKey in dateYearOrder :
                                                 if simKey[1] == scenario :
                                                     try :
+                                                        # get index of current year
                                                         yearIndex = dateYearOrder[simKey].index(dateYear)
                                                     except ValueError:
                                                         break
+                                                    # get DOY for maturity and anthesis
                                                     startDOY = simDoyFlower[simKey][yearIndex]
                                                     endDOY = simDoyMature[simKey][yearIndex]
                                                     if IsDateInGrowSeason(startDOY, endDOY, date):
@@ -225,9 +262,18 @@ def calculateGrid() :
                                                             numOccurrenceMedium[simKey] += 1
                                                         else :
                                                             numOccurrenceLow[simKey] += 1
+                                                    # check if this date is harvest
+                                                    harvestDOY = simDoyHarvest[simKey][yearIndex]
+                                                    if harvestDOY > 0 and IsDateInGrowSeason(harvestDOY, harvestDOY, date):
+                                                        wasWetHarvest = all(x > 0 for x in precipPrevDays)
+                                                        if not simKey in numWetHarvest:
+                                                            numWetHarvest[simKey] = 0
+                                                        if wasWetHarvest :
+                                                            numWetHarvest[simKey] += 1
  
                                 for simKey in simulations :
                                     if allGrids[simKey][currRow-1][currCol-1] > 0 :
+                                        # cool weather occurrence
                                         if simKey in numOccurrenceMedium :
                                             sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
                                             sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
@@ -276,10 +322,18 @@ def calculateGrid() :
                                         else :
                                             coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
                                             coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
+                                        # wet harvest occurence
+                                        if simKey in numWetHarvest :
+                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
+                                            if maxWetHarvest < numWetHarvest[simKey] :
+                                                maxWetHarvest = numWetHarvest[simKey]
+                                        else :
+                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
                                     else :
                                         coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
                                         coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
                                         coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
+                                        wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
 
                     currentInput += 1 
                     progress(currentInput, numInput, str(currentInput) + " of " + str(numInput))
@@ -294,6 +348,46 @@ def calculateGrid() :
             makeDir(pdfpath)
             pdfList[simKey[1]] = PdfPages(pdfpath)
 
+
+    drawDateMaps(   matIsHavestGrid, 
+                    ASCII_OUT_FILENAME_MAT_IS_HARVEST, 
+                    extCol, extRow, 
+                    asciiOutFolder, 
+                    pngFolder, 
+                    "Harvest before maturity - Scn: {0} {1} {2}", 
+                    "counted occurrences in 30 years", 
+                    colormap='inferno',
+                    factor=1,
+                    maxVal=maxMatHarvest,
+                    pdfList=pdfList, 
+                    progressBar="Harvest before maturity            " )
+
+    drawDateMaps(   lateHarvestGrid, 
+                    ASCII_OUT_FILENAME_LATE_HARVEST, 
+                    extCol, extRow, 
+                    asciiOutFolder, 
+                    pngFolder, 
+                    "Auto Harvest 31. October - Scn: {0} {1} {2}", 
+                    "counted occurrences in 30 years", 
+                    colormap='viridis',
+                    factor=1,
+                    maxVal=maxLateHarvest,
+                    pdfList=pdfList, 
+                    progressBar="Harvest 31. October           " )
+
+    drawDateMaps(   wetHarvestGrid, 
+                    ASCII_OUT_FILENAME_WET_HARVEST, 
+                    extCol, extRow, 
+                    asciiOutFolder, 
+                    pngFolder, 
+                    "Rain during/before harvest - Scn: {0} {1} {2}", 
+                    "counted occurrences in 30 years", 
+                    colormap='nipy_spectral',
+                    factor=1,
+                    maxVal=maxWetHarvest,
+                    pdfList=pdfList, 
+                    progressBar="wet harvest           " )
+
     drawDateMaps(   coolWeatherImpactGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER, 
                     extCol, extRow, 
@@ -306,9 +400,9 @@ def calculateGrid() :
                     maxVal=sumMaxOccurrence,
                     pdfList=pdfList, 
                     progressBar="Cool weather            " )
+
     coolWeatherWeightLabels = ['0', '< 15°C', '< 10°C', '< 8°C' ]
     ticklist = [0, 3, 7, 11]
-
     drawDateMaps(   coolWeatherImpactWeightGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER_WEIGHT, 
                     extCol, extRow, 
@@ -771,15 +865,18 @@ def ReadClimateHeader(line) :
             dateIdx = i
         if token == "tmin":
             tminIdx = i
+        if token == "precip":
+            precipIdx = i
 
-    return (dateIdx, tminIdx)
+    return (dateIdx, tminIdx, precipIdx)
 
 
 def loadClimateLine(line, header) :
     tokens = line.split(",")
     date = tokens[header[0]] 
     tmin = float(tokens[header[1]]) 
-    return (date, tmin)
+    precip = float(tokens[header[2]]) 
+    return (date, tmin, precip)
 
 
 def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
@@ -858,6 +955,13 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
     img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent)
 
     if ticklist :
+        # tick = 0.5 - len(cbarLabel) / 100 
+        # tickslist = [tick] * len(cbarLabel)
+        # for i in range(len(cbarLabel)) :
+        #     tickslist[i] += i * 2 * tick
+        # tickslist = [0] * (len(cbarLabel) * 2)
+        # for i in range(len(cbarLabel)) :
+        #      tickslist[i] += i 
         # Place a colorbar next to the map
         cbar = plt.colorbar(img_plot, ticks=ticklist, orientation='vertical', shrink=0.5, aspect=14)
     else :
