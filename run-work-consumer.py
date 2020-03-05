@@ -235,10 +235,10 @@ HEADER = "Model,row_col,first_crop,Crop,period," \
 
 
 #overwrite_list = set()
-def write_data(row, col, data):
+def write_data(row, col, data, usermode):
     "write data"
 
-    if USER_MODE=="remoteConsumer-remoteMonica":
+    if usermode=="remoteConsumer-remoteMonica":
         #path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
         path_to_file = "/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
     else:
@@ -300,7 +300,7 @@ def main():
         except:
             for row, col in data.keys():
                 if len(data[(row, col)]) > 0:
-                    write_data(row, col, data)
+                    write_data(row, col, data, config["mode"])
             continue
 
 
@@ -327,7 +327,7 @@ def main():
             data[(row, col)].extend(res)
 
             if len(data[(row, col)]) >= start_writing_lines_threshold:
-                write_data(row, col, data)
+                write_data(row, col, data, config["mode"])
 
             i = i + 1
 
