@@ -240,7 +240,7 @@ def write_data(row, col, data):
 
     if USER_MODE=="remoteConsumer-remoteMonica":
         #path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
-        path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        path_to_file = "/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
     else:
         path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
 
