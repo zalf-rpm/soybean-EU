@@ -20,7 +20,7 @@ import sys
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Release")
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\src\\python")
 #sys.path.insert(0, "C:\\Program Files (x86)\\MONICA")
-print(sys.path)
+#print(sys.path)
 
 import gc
 import csv
@@ -48,9 +48,11 @@ server = {
 CONFIGURATION = {
         "mode": "localConsumer-localMonica",
         "server": None,
-        "port": "7779",
+        "port": "7777",
         "write_normal_output_files": "false",
-        "start_writing_lines_threshold": 1000#5880
+        "start_writing_lines_threshold": 1000 , 
+        "timeout": 600000 # 10 minutes
+
     }
 
 def create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
@@ -276,33 +278,38 @@ def main():
     context = zmq.Context()
     socket = context.socket(zmq.PULL)
     socket.connect("tcp://" + config["server"] + ":" + config["port"])
-    socket.RCVTIMEO = 1000
+    socket.RCVTIMEO = config["timeout"]
     leave = False
-    write_normal_output_files = CONFIGURATION["write_normal_output_files"] == "true"
-    start_writing_lines_threshold = CONFIGURATION["start_writing_lines_threshold"]
+    write_normal_output_files = config["write_normal_output_files"] == "true"
+    start_writing_lines_threshold = config["start_writing_lines_threshold"]
     while not leave:
 
         try:
             #result = socket.recv_json()
             result = socket.recv_json(encoding="latin-1")
+
             #result = socket.recv_string(encoding="latin-1")
             #result = socket.recv_string()
             #print(result)
             #with open("out/out-latin1.csv", "w") as _:
             #    _.write(result)
             #continue
+        except zmq.error.Again as _e:
+            print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
+            return
         except:
             for row, col in data.keys():
                 if len(data[(row, col)]) > 0:
                     write_data(row, col, data)
             continue
 
+
         if result["type"] == "finish":
             print("received finish message")
             leave = True
 
         elif not write_normal_output_files:
-            print("received work result ", i, " customId: ", list(result.get("customId", "").values()))
+            #print("received work result ", i, " customId: ", list(result.get("customId", "").values()))
 
             custom_id = result["customId"]
             row = custom_id["row"]

@@ -57,7 +57,7 @@ PATHS = {
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
-        "monica-parameters-path": "/beegfs/common/GitHub/zalf-rpm/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "/project/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
     }
 }
@@ -71,7 +71,7 @@ server = {
 CONFIGURATION = {
     "mode": "localProducer-localMonica",
     "server": None,
-    "server-port": "6668",
+    "server-port": "6666",
     "start-row": 1, 
     "end-row": 8157,
     "run-periods": "[0,2]"
@@ -316,7 +316,7 @@ def run_producer(config):
                             "first_cp": first_cp
                         }
 
-                        socket.send_json(env)                    
+                        socket.send_json(env)                         
                         print("sent env ", i, " customId: ", list(env["customId"].values()))
                         i += 1
         #exit()
@@ -327,6 +327,15 @@ def run_producer(config):
     print("ran from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     return
 
+def WriteEnv(filename, env) :
+    if not os.path.exists(os.path.dirname(filename)):
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    with open(filename, 'w') as outfile:
+        json.dump(env, outfile)
 
 if __name__ == "__main__":
 
