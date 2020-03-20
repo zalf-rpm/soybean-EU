@@ -58,7 +58,7 @@ PATHS = {
     },
     "remoteProducer-remoteMonica": {
         "monica-parameters-path": "/project/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
     }
 }
 
@@ -269,7 +269,7 @@ def run_producer(config):
                 elif USER_MODE == "localProducer-remoteMonica":
                     climatefile_version = "v2"
                 elif USER_MODE == "remoteProducer-remoteMonica":
-                    climatefile_version = "v2"
+                    climatefile_version = "v3test"
                 climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
                 #if not os.path.exists(path_to_climate_file):
                 #    continue
