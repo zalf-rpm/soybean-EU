@@ -242,7 +242,7 @@ def write_data(row, col, data, usermode):
         #path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
         path_to_file = "/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
     else:
-        path_to_file = "out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        path_to_file = "./out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
 
     if not os.path.isfile(path_to_file):# or (row, col) not in overwrite_list:
         with open(path_to_file, "w") as _:
@@ -309,7 +309,9 @@ def main():
             leave = True
 
         elif not write_normal_output_files:
-            #print("received work result ", i, " customId: ", list(result.get("customId", "").values()))
+            if len(result["errors"]) > 0 :
+                for err in range(result["errors"]) :
+                    print(err)
 
             custom_id = result["customId"]
             row = custom_id["row"]
@@ -333,6 +335,9 @@ def main():
 
         elif write_normal_output_files:
             print("received work result ", i, " customId: ", result.get("customId", ""))
+            if result.get("type", "") in ["jobs-per-cell", "no-data", "setup_data"]:
+                #print "ignoring", result.get("type", "")
+                return
 
             with open("out/out-" + str(i) + ".csv", 'w') as _:
                 writer = csv.writer(_, delimiter=",")

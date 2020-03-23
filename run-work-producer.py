@@ -52,9 +52,9 @@ PATHS = {
         "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/", # mounted path to archive accessable by monica executable
     },
     "localProducer-remoteMonica": {
-        "monica-parameters-path": "C:/Users/berg.ZALF-AD/GitHub/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "D:/zalfrpm/monica-parameters/", # path to monica-parameters
         #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v2/transformed/", # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
         "monica-parameters-path": "/project/monica-parameters/", # path to monica-parameters
@@ -267,7 +267,7 @@ def run_producer(config):
                 if USER_MODE == "localProducer-localMonica":
                     climatefile_version = "v1"
                 elif USER_MODE == "localProducer-remoteMonica":
-                    climatefile_version = "v2"
+                    climatefile_version = "v3test"
                 elif USER_MODE == "remoteProducer-remoteMonica":
                     climatefile_version = "v3test"
                 climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
@@ -298,7 +298,7 @@ def run_producer(config):
                             env["cropRotation"][1]["worksteps"] = [env["cropRotation"][1]["worksteps"][0], env["cropRotation"][1]["worksteps"][1]]
                     
 
-                    for j in range(len(env["cropRotation"])):
+                    for _ in range(len(env["cropRotation"])):
                         rotate(env["cropRotation"])
                         try:
                             first_cp = env["cropRotation"][0]["worksteps"][0]["crop"]["cropParams"]["species"]["="]["SpeciesName"]
