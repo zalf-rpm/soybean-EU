@@ -210,12 +210,12 @@ def run_producer(config):
     print("# of rowsCols = ", len(row_cols))
 
     i = 0
-    start_store = time.clock()
+    start_store = time.process_time()
     start = config["start-row"] - 1
     end = config["end-row"] - 1
     row_cols_ = row_cols[start:end+1]
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
-    #row_cols_ = [(66,117)]
+    row_cols_ = [(35,125)]
     print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     run_periods = list(map(str, json.loads(config["run-periods"])))
 
@@ -316,12 +316,15 @@ def run_producer(config):
                             "first_cp": first_cp
                         }
 
-                        socket.send_json(env)                         
+                         
                         print("sent env ", i, " customId: ", list(env["customId"].values()))
+                        #filename = "./V" + str(i) + "_" + str(env["customId"]["row"]) +"_"+ str(env["customId"]["col"]) +"_"+ env["customId"]["trt_no"] +"_"+ env["customId"]["gcm"] +"_"+ env["customId"]["crop_id"] +".json"
+                        #WriteEnv(filename, env) 
+                        socket.send_json(env)                        
                         i += 1
         #exit()
 
-    stop_store = time.clock()
+    stop_store = time.process_time()
 
     print("sending ", i, " envs took ", (stop_store - start_store), " seconds")
     print("ran from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
