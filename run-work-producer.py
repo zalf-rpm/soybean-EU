@@ -24,6 +24,7 @@ from copy import deepcopy
 from datetime import date, timedelta
 #import types
 import sys
+import errno
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Release")
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Debug")
 #sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\src\\python")
@@ -215,7 +216,7 @@ def run_producer(config):
     end = config["end-row"] - 1
     row_cols_ = row_cols[start:end+1]
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
-    row_cols_ = [(35,125)]
+    #row_cols_ = [(35,125)]
     print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     run_periods = list(map(str, json.loads(config["run-periods"])))
 

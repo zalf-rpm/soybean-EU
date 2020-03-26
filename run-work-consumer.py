@@ -296,6 +296,9 @@ def main():
             #continue
         except zmq.error.Again as _e:
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
+            for row, col in data.keys():
+                if len(data[(row, col)]) > 0:
+                    write_data(row, col, data, config["mode"])
             return
         except:
             for row, col in data.keys():
@@ -314,6 +317,7 @@ def main():
                     print(err)
 
             custom_id = result["customId"]
+            #sendID = custom_id["sendID"]
             row = custom_id["row"]
             col = custom_id["col"]
             period = custom_id["period"]
@@ -325,6 +329,8 @@ def main():
             crop_id = custom_id["crop_id"]
             first_cp = custom_id["first_cp"]
             
+            #print("recv env ", sendID, "customId: ", list(custom_id.values()))
+           # print(custom_id)
             res = create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
             data[(row, col)].extend(res)
 
