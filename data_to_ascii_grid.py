@@ -25,25 +25,28 @@ import errno
 
 PATHS = {
     "local": {
-        "sim-result-path": "./out/", # path to simulation results
-        "climate-data" : "./climate-data/transformed/" , # path to climate data
-        "ascii-out" : "./asciigrids/" , # path to ascii grids
-        "png-out" : "./png/" , # path to png images
-        "pdf-out" : "./pdf-out/" , # path to pdf package
+        "sourcepath" : "./out/",
+        "outputpath" : ".",
+        "climate-data" : "climate-data/transformed/" , # path to climate data
+        "ascii-out" : "asciigrids/" , # path to ascii grids
+        "png-out" : "png/" , # path to png images
+        "pdf-out" : "pdf-out/" , # path to pdf package
     },
     "test": {
-        "sim-result-path": "./out2/", # path to simulation results
+        "sourcepath" : "./source/",
+        "outputpath" : "./testout/",
         "climate-data" : "./climate-data/transformed/" , # path to climate data
-        "ascii-out" : "./asciigrids2/" , # path to ascii grids
-        "png-out" : "./png2/" , # path to png images
-        "pdf-out" : "./pdf-out2/" , # path to pdf package
+        "ascii-out" : "asciigrids2/" , # path to ascii grids
+        "png-out" : "png2/" , # path to png images
+        "pdf-out" : "pdf-out2/" , # path to pdf package
     },
     "cluster": {
-        "sim-result-path": "./out/", # path to simulation results
-        "climate-data" : "/beegfs/common/data/climate/macsur_european_climate_scenarios_v2/transformed/" , # path to climate data
-        "ascii-out" : "./asciigrid/" , # path to ascii grids
-        "png-out" : "./png/" , # path to png images
-        "pdf-out" : "./pdf-out/" , # path to pdf package
+        "sourcepath" : "/source/",
+        "outputpath" : "/out/",
+        "climate-data" : "/climate-data/" , # path to climate data
+        "ascii-out" : "asciigrid/" , # path to ascii grids
+        "png-out" : "png/" , # path to png images
+        "pdf-out" : "pdf-out/" , # path to pdf package
     }
 }
 
@@ -70,28 +73,38 @@ USER = "test"
 CROPNAME = "soybean"
 NONEVALUE = -9999
 
-NO_PROGRESS_BAR = False
+SHOW_PROGRESS_BAR = True
 
 def calculateGrid() :
     "main"
 
     pathId = USER
+    showBar = SHOW_PROGRESS_BAR
+    sourceFolder = ""
+    outputFolder = ""
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
             k, v = arg.split("=")
             if k == "path":
                 pathId = v
+            if k == "source" :
+                sourceFolder = v
+            if k == "out" :
+                outputFolder = v
             if k == "noprogess" :
-                NO_PROGRESS_BAR = True
+                showBar = False
+    if not sourceFolder :
+        sourceFolder = PATHS[pathId]["sourcepath"]
+    if not outputFolder :
+        outputFolder = PATHS[pathId]["outputpath"]
 
-    inputFolder = PATHS[pathId]["sim-result-path"]
     climateFolder = PATHS[pathId]["climate-data"]
-    asciiOutFolder = PATHS[pathId]["ascii-out"]
-    pngFolder = PATHS[pathId]["png-out"]
-    pdfFolder = PATHS[pathId]["pdf-out"]
-    errorFile = os.path.join(asciiOutFolder, "error.txt") # debug output
+    asciiOutFolder = os.path.join(outputFolder, PATHS[pathId]["ascii-out"])
+    pngFolder = os.path.join(outputFolder, PATHS[pathId]["png-out"])
+    pdfFolder = os.path.join(outputFolder,PATHS[pathId]["pdf-out"])
+    #errorFile = os.path.join(asciiOutFolder, "error.txt") # debug output
 
-    filelist = os.listdir(inputFolder)
+    filelist = os.listdir(sourceFolder)
 
     # get grid extension
     res = fileByGrid(filelist, (3,4))
@@ -130,7 +143,7 @@ def calculateGrid() :
             gridIndex = (currRow, currCol)
             if gridIndex in idxFileDic :
                 # open grid cell file
-                with open(os.path.join(inputFolder, idxFileDic[gridIndex])) as sourcefile:
+                with open(os.path.join(sourceFolder, idxFileDic[gridIndex])) as sourcefile:
                     simulations = dict()
                     simDoyFlower = dict()
                     simDoyMature = dict()
@@ -154,8 +167,8 @@ def calculateGrid() :
                                 yieldValue = lineContent[-1]
                                 period = lineContent[-8]
                                 yearValue = lineContent[-7]
-                                sowValue = lineContent[-6]
-                                emergeValue = lineContent[-5]
+                                #sowValue = lineContent[-6]
+                                #emergeValue = lineContent[-5]
                                 flowerValue = lineContent[-4]
                                 matureValue = lineContent[-3]
                                 harvestValue = lineContent[-2]
@@ -223,7 +236,6 @@ def calculateGrid() :
                                 numOccurrenceMedium = dict()
                                 numOccurrenceLow = dict()
                                 numWetHarvest = dict()
-                                minValue = 10.0
                                 header = list()
                                 precipPrevDays = collections.deque(maxlen=5)
                                 for line in climatefile:
@@ -336,7 +348,7 @@ def calculateGrid() :
                                         wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
 
                     currentInput += 1 
-                    progress(currentInput, numInput, str(currentInput) + " of " + str(numInput))
+                    progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput))
 
             else :
                 continue
@@ -356,6 +368,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Harvest before maturity - Scn: {0} {1} {2}", 
                     "counted occurrences in 30 years", 
+                    showBar,
                     colormap='inferno',
                     factor=1,
                     maxVal=maxMatHarvest,
@@ -369,6 +382,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Auto Harvest 31. October - Scn: {0} {1} {2}", 
                     "counted occurrences in 30 years", 
+                    showBar,
                     colormap='viridis',
                     factor=1,
                     maxVal=maxLateHarvest,
@@ -382,6 +396,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Rain during/before harvest - Scn: {0} {1} {2}", 
                     "counted occurrences in 30 years", 
+                    showBar,
                     colormap='nipy_spectral',
                     factor=1,
                     maxVal=maxWetHarvest,
@@ -395,6 +410,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Cool weather occurrence - Scn: {0} {1} {2}", 
                     "counted occurrences in 30 years", 
+                    showBar,
                     colormap='nipy_spectral',
                     factor=1,
                     maxVal=sumMaxOccurrence,
@@ -410,6 +426,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Cool weather weight - Scn: {0} {1} {2}", 
                     "weights for occurrences in 30 years", 
+                    showBar,
                     colormap='gnuplot',
                     factor=1,
                     maxVal=12,
@@ -424,6 +441,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Cool weather severity - Scn: {0} {1} {2}", 
                     "counted occurrences with severity factor", 
+                    showBar,
                     colormap='nipy_spectral',
                     factor=0.0001,
                     maxVal=sumMaxDeathOccurrence,
@@ -437,6 +455,7 @@ def calculateGrid() :
                     pngFolder, 
                     "Anthesis DOY - Scn: {0} {1} {2}", 
                     "DOY", 
+                    showBar,
                     colormap='viridis',
                     factor=1,
                     pdfList=pdfList, 
@@ -450,7 +469,8 @@ def calculateGrid() :
                     asciiOutFolder, 
                     pngFolder, 
                     "Maturity DOY - Scn: {0} {1} {2}",    
-                    "DOY",                                      
+                    "DOY",               
+                    showBar,                       
                     colormap='viridis',
                     factor=1,
                     minVal=-1,
@@ -466,7 +486,8 @@ def calculateGrid() :
                     asciiOutFolder, 
                     pngFolder, 
                     "Average Yield - Scn: {0} {1} {2}",    
-                    'Yield in t',                                      
+                    'Yield in t',          
+                    showBar,                            
                     colormap='viridis',
                     maxVal=maxAllAvgYield,
                     pdfList=pdfList, 
@@ -478,7 +499,8 @@ def calculateGrid() :
                     asciiOutFolder, 
                     pngFolder, 
                     "Std Deviation - Scn: {0} {1} {2}",    
-                    "standart deviation",                                      
+                    "standart deviation",    
+                    showBar,                                  
                     colormap='cool',
                     factor=1,
                     minVal=0,
@@ -557,9 +579,12 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Max avg yield minus std deviation - Scn: {0} {1}".format(simKey[1], simKey[2])
-        createImg(gridFilePath, pngFilePath, title, label='Yield in t', colormap='jet', pdf=pdfList[simKey[1]])
+        labelText = 'Yield in t'
+        colormap = 'jet'
+        writeMetaFile(gridFilePath, title, labelText, colormap, maxValue = maxAllAvgYield)
+        createImg(gridFilePath, pngFilePath, title, label=labelText, colormap=colormap, pdf=pdfList[simKey[1]])
         currentInput += 1 
-        progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
+        progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
 
     currentInput = 0
     numInput = len(maxYieldGrids)
@@ -577,9 +602,12 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Max average yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-        createImg(gridFilePath, pngFilePath, title, label='Yield in t', colormap='jet', pdf=pdfList[simKey[1]])
+        label='Yield in t'
+        colormap='jet'
+        writeMetaFile(gridFilePath, title, labelText, colormap, maxValue = maxAllAvgYield)
+        createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
         currentInput += 1 
-        progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
+        progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
 
     currentInput = 0
     numInput = len(matGroupGrids)
@@ -604,9 +632,10 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups for max average yield - Scn: {0} {1}".format(simKey[1], simKey[2])
+        writeMetaFile(gridFilePath, title, 'Maturity Group', cMap, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
         createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
-        progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
+        progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
     currentInput = 0
     numInput = len(matGroupDeviationGrids)
@@ -623,9 +652,10 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups - max avg yield minus deviation  - Scn: {0} {1}".format(simKey[1], simKey[2])
+        writeMetaFile(gridFilePath, title, 'Maturity Group', cMap, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
         createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
-        progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
+        progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
     #### END calculate max yield layer and maturity layer grid 
 
@@ -651,9 +681,12 @@ def calculateGrid() :
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
             title = "Water stress effect on potential yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-            createImg(gridFilePath, pngFilePath, title, label='Difference yield in t', colormap='Wistia', pdf=pdfList[simKey[1]])
+            label='Difference yield in t'
+            colormap='Wistia'
+            writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
+            createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
             currentInput += 1 
-            progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids         ")
+            progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids         ")
 
     currentInput = 0
     numInput = len(maxYieldGrids)
@@ -674,9 +707,12 @@ def calculateGrid() :
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
             title = "Water stress effect on potential max yield - Scn: {0}".format(simKey[1])
-            createImg(gridFilePath, pngFilePath, title, label='Difference yield in t', colormap='Wistia', pdf=pdfList[simKey[1]])
+            label='Difference yield in t'
+            colormap='Wistia'
+            writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
+            createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
             currentInput += 1 
-            progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids max      ")
+            progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids max      ")
 
     for simKey in pdfList :
         pdfList[simKey].close()
@@ -819,10 +855,10 @@ def writeAGridHeader(name, nCol, nRow, cornerX=0.0, cornery=0.0, novalue=-9999, 
     file.write("cellsize      {0}\n".format(cellsize))
     file.write("NODATA_value  {0}\n".format(novalue))
 
-    file.write("{0} {1}".format(maxValue, minValue))
-    for i in range(2,nCol) :
-        file.write(" {0}".format(novalue))
-    file.write("\n".format(novalue))
+    # file.write("{0} {1}".format(maxValue, minValue))
+    # for _ in range(2,nCol) :
+    #     file.write(" {0}".format(novalue))
+    # file.write("\n")
     return file
 
 def average(list) :
@@ -879,7 +915,7 @@ def loadClimateLine(line, header) :
     return (date, tmin, precip)
 
 
-def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
+def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, showBar, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
     currentInput = 0
     numInput = len(grids)
     for simKey in grids :
@@ -895,16 +931,38 @@ def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolde
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = titleFormat.format(simKey[1], simKey[2], simKey[3])
+        writeMetaFile(gridFilePath, title, labelText, colormap, cbarLabel, ticklist, factor, maxVal, minVal)
+
         pdfFile = None
         if pdfList :
             pdfFile = pdfList[simKey[1]]
         createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, label=labelText, pdf=pdfFile)
         currentInput += 1 
-        progress(currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
+        progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
 
-def progress(count, total, status=''):
+def writeMetaFile(gridFilePath, title, labeltext, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001,  maxValue=-9999, minValue=-9999):
+    metaFilePath = gridFilePath+".meta"
+    makeDir(metaFilePath)
+    file=open(metaFilePath,"w")
+    file.write("title: {0}\n".format(title))
+    file.write("labeltext: {0}\n".format(labeltext))
+    file.write("colormap: {0}\n".format(colormap))
+    if cbarLabel :
+        file.write("cbarLabel: \n")        
+        for cbarItem in cbarLabel :
+            file.write(" - {0}\n".format(cbarItem))
+    if cbarLabel :
+        file.write("ticklist: \n")        
+        for tick in ticklist :
+            file.write(" - {0}\n".format(tick))
+    file.write("factor: {0}\n".format(factor))
+    file.write("maxValue: {0}\n".format(maxValue))
+    file.write("minValue: {0}\n".format(minValue))
+    file.close()
+
+def progress(showBar, count, total, status=''):
     # draw a progress bar in cmd line
-    if not NO_PROGRESS_BAR :
+    if showBar :
         bar_len = 60
         filled_len = int(round(bar_len * count / float(total)))
 
