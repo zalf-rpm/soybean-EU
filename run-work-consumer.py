@@ -276,7 +276,7 @@ def main():
 
     i = 1
     context = zmq.Context()
-    socket = context.socket(zmq.PULL)
+    socket = context.socket(zmq.PULL) # pylint: disable=no-member
     socket.connect("tcp://" + config["server"] + ":" + config["port"])
     socket.RCVTIMEO = config["timeout"]
     leave = False

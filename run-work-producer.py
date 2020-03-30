@@ -96,7 +96,7 @@ def run_producer(config):
     print("config:", config)
 
     context = zmq.Context()
-    socket = context.socket(zmq.PUSH)
+    socket = context.socket(zmq.PUSH) # pylint: disable=no-member
     
     # select paths 
     paths = PATHS[config["mode"]]
