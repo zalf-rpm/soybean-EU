@@ -22,7 +22,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 import collections
 import errno
-import yaml
+from ruamel_yaml import YAML
 
 PATHS = {
     "local": {
@@ -1068,7 +1068,9 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     minValue = None
 
     with open(meta_path, 'rt') as meta:
-        documents = yaml.load(meta, Loader=yaml.FullLoader)
+       # documents = yaml.load(meta, Loader=yaml.FullLoader)
+        yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
+        documents = yaml.load(meta)
         #documents = yaml.full_load(meta)
 
         for item, doc in documents.items():
