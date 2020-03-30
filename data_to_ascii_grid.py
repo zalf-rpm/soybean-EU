@@ -22,6 +22,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 import collections
 import errno
+import yaml
 
 PATHS = {
     "local": {
@@ -69,6 +70,7 @@ ASCII_OUT_FILENAME_WET_HARVEST      = "harvest_wet_{0}_trno{1}.asc" # mGroup_tre
 ASCII_OUT_FILENAME_LATE_HARVEST     = "harvest_late_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 ASCII_OUT_FILENAME_MAT_IS_HARVEST   = "harvest_before_maturity_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 
+CLIMATE_FILE_PATTERN="{0}_{1:03d}_v3test.csv"
 USER = "test" 
 CROPNAME = "soybean"
 NONEVALUE = -9999
@@ -228,7 +230,7 @@ def calculateGrid() :
 
                     #coolWeatherImpactGrid
                     for scenario in climateFilePeriod :
-                        climatePath = os.path.join(climateFolder, climateFilePeriod[scenario], scenario, "{0}_{1:03d}_v2.csv".format(currRow, currCol))
+                        climatePath = os.path.join(climateFolder, climateFilePeriod[scenario], scenario, CLIMATE_FILE_PATTERN.format(currRow, currCol))
                         if os.path.exists(climatePath) :
                             with open(climatePath) as climatefile:
                                 firstLines = 0
@@ -373,7 +375,7 @@ def calculateGrid() :
                     factor=1,
                     maxVal=maxMatHarvest,
                     pdfList=pdfList, 
-                    progressBar="Harvest before maturity            " )
+                    progressBar="Harvest before maturity  " )
 
     drawDateMaps(   lateHarvestGrid, 
                     ASCII_OUT_FILENAME_LATE_HARVEST, 
@@ -582,7 +584,8 @@ def calculateGrid() :
         labelText = 'Yield in t'
         colormap = 'jet'
         writeMetaFile(gridFilePath, title, labelText, colormap, maxValue = maxAllAvgYield)
-        createImg(gridFilePath, pngFilePath, title, label=labelText, colormap=colormap, pdf=pdfList[simKey[1]])
+        createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+        #createImg(gridFilePath, pngFilePath, title, label=labelText, colormap=colormap, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
 
@@ -605,14 +608,16 @@ def calculateGrid() :
         label='Yield in t'
         colormap='jet'
         writeMetaFile(gridFilePath, title, labelText, colormap, maxValue = maxAllAvgYield)
-        createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
+        createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+        #createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " max yields grids      ")
 
     currentInput = 0
     numInput = len(matGroupGrids)
     sidebarLabel = [""] * (len(matGroupIdGrids)+1)
-    cMap = ListedColormap(['cyan', 'lightgreen', 'magenta','crimson', 'blue','gold', 'navy'])
+    colorList = ['cyan', 'lightgreen', 'magenta','crimson', 'blue','gold', 'navy']
+    cMap = ListedColormap(colorList)
     for id in matGroupIdGrids :
         sidebarLabel[matGroupIdGrids[id]] = id
     ticklist = [0] * (len(sidebarLabel))
@@ -632,8 +637,9 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups for max average yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-        writeMetaFile(gridFilePath, title, 'Maturity Group', cMap, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
-        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
+        writeMetaFile(gridFilePath, title, 'Maturity Group', colorlist=colorList, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
+        createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+        #createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
@@ -652,8 +658,9 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Maturity groups - max avg yield minus deviation  - Scn: {0} {1}".format(simKey[1], simKey[2])
-        writeMetaFile(gridFilePath, title, 'Maturity Group', cMap, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
-        createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
+        writeMetaFile(gridFilePath, title, 'Maturity Group', colorlist=colorList, cbarLabel=sidebarLabel, ticklist=ticklist, factor=1, minValue=0, maxValue=len(sidebarLabel)-1)
+        createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+        #createImg(gridFilePath, pngFilePath, title, label='Maturity Group', colormap=cMap, factor=1, cbarLabel=sidebarLabel, ticklist=ticklist, pdf=pdfList[simKey[1]])
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " mat groups grids          ")
 
@@ -684,7 +691,8 @@ def calculateGrid() :
             label='Difference yield in t'
             colormap='Wistia'
             writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
-            createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
+            createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+            #createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
             currentInput += 1 
             progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids         ")
 
@@ -710,7 +718,8 @@ def calculateGrid() :
             label='Difference yield in t'
             colormap='Wistia'
             writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
-            createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
+            createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
+            #createImg(gridFilePath, pngFilePath, title, label, colormap, pdf=pdfList[simKey[1]])
             currentInput += 1 
             progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " water diff grids max      ")
 
@@ -931,33 +940,41 @@ def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolde
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = titleFormat.format(simKey[1], simKey[2], simKey[3])
-        writeMetaFile(gridFilePath, title, labelText, colormap, cbarLabel, ticklist, factor, maxVal, minVal)
+        writeMetaFile(gridFilePath, title, labelText, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, maxValue=maxVal, minValue=minVal)
 
         pdfFile = None
         if pdfList :
             pdfFile = pdfList[simKey[1]]
-        createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, label=labelText, pdf=pdfFile)
+        createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfFile) 
+        #createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, label=labelText, pdf=pdfFile)
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
 
-def writeMetaFile(gridFilePath, title, labeltext, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001,  maxValue=-9999, minValue=-9999):
+def writeMetaFile(gridFilePath, title, labeltext, colormap='', colorlist=None, cbarLabel=None, ticklist=None, factor=0.001,  maxValue=-9999, minValue=-9999):
     metaFilePath = gridFilePath+".meta"
     makeDir(metaFilePath)
     file=open(metaFilePath,"w")
-    file.write("title: {0}\n".format(title))
-    file.write("labeltext: {0}\n".format(labeltext))
-    file.write("colormap: {0}\n".format(colormap))
+    file.write("title: '{0}'\n".format(title))
+    file.write("labeltext: '{0}'\n".format(labeltext))
+    if colormap :
+        file.write("colormap: '{0}'\n".format(colormap))
+    if colorlist :
+        file.write("colorlist: \n")        
+        for item in colorlist :
+            file.write(" - '{0}'\n".format(item))
     if cbarLabel :
         file.write("cbarLabel: \n")        
         for cbarItem in cbarLabel :
-            file.write(" - {0}\n".format(cbarItem))
+            file.write(" - '{0}'\n".format(cbarItem))
     if cbarLabel :
         file.write("ticklist: \n")        
         for tick in ticklist :
             file.write(" - {0}\n".format(tick))
     file.write("factor: {0}\n".format(factor))
-    file.write("maxValue: {0}\n".format(maxValue))
-    file.write("minValue: {0}\n".format(minValue))
+    if not maxValue == NONEVALUE :
+        file.write("maxValue: {0}\n".format(maxValue))
+    if not minValue == NONEVALUE :
+        file.write("minValue: {0}\n".format(minValue))
     file.close()
 
 def progress(showBar, count, total, status=''):
@@ -1037,6 +1054,108 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
     plt.savefig(out_path, dpi=150)
     plt.close(fig)
     
+
+def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
+
+    title="" 
+    label=""
+    colormap = 'viridis'
+    cMap = None
+    cbarLabel = None
+    factor = 0.001
+    ticklist = None
+    maxValue = None
+    minValue = None
+
+    with open(meta_path, 'rt') as meta:
+        documents = yaml.load(meta, Loader=yaml.FullLoader)
+        #documents = yaml.full_load(meta)
+
+        for item, doc in documents.items():
+            print(item, ":", doc)
+            if item == "title" :
+                title = doc
+            elif item == "labeltext" :
+                label = doc
+            elif item == "factor" :
+                factor = float(doc)
+            elif item == "maxValue" :
+                maxValue = int(doc)
+            elif item == "minValue" :
+                minValue = int(doc)
+            elif item == "colormap" :
+                colormap = doc
+            elif item == "colorlist" :
+                cMap = ListedColormap(doc)
+            elif item == "cbarLabel" :
+                cbarLabel = doc
+            elif item == "ticklist" :
+                ticklist = list()
+                for i in doc :
+                    ticklist.append(float(i))
+
+    # Read in ascii header data
+    with open(ascii_path, 'r') as source:
+        ascii_header = source.readlines()[:6]
+
+    # Read the ASCII raster header
+    ascii_header = [item.strip().split()[-1] for item in ascii_header]
+    ascci_cols = int(ascii_header[0])
+    ascii_rows = int(ascii_header[1])
+    ascii_xll = float(ascii_header[2])
+    ascii_yll = float(ascii_header[3])
+    ascii_cs = float(ascii_header[4])
+    ascii_nodata = float(ascii_header[5])
+    
+    # Read in the ascii data array
+    ascii_data_array = np.loadtxt(ascii_path, dtype=np.float, skiprows=6)
+    
+    # Set the nodata values to nan
+    ascii_data_array[ascii_data_array == ascii_nodata] = np.nan
+    
+    # data is stored as an integer but scaled by a factor
+    ascii_data_array *= factor
+
+    image_extent = [
+        ascii_xll, ascii_xll + ascci_cols * ascii_cs,
+        ascii_yll, ascii_yll + ascii_rows * ascii_cs]
+    
+    # Plot data array
+    fig, ax = plt.subplots()
+    ax.set_title(title)
+    
+    # Get the img object in order to pass it to the colorbar function
+    if cMap :
+        img_plot = ax.imshow(ascii_data_array, cmap=cMap, extent=image_extent, vmin=minValue, vmax=maxValue)
+    else :
+        img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, vmin=minValue, vmax=maxValue)
+
+    if ticklist :
+        # tick = 0.5 - len(cbarLabel) / 100 
+        # tickslist = [tick] * len(cbarLabel)
+        # for i in range(len(cbarLabel)) :
+        #     tickslist[i] += i * 2 * tick
+        # tickslist = [0] * (len(cbarLabel) * 2)
+        # for i in range(len(cbarLabel)) :
+        #      tickslist[i] += i 
+        # Place a colorbar next to the map
+        cbar = plt.colorbar(img_plot, ticks=ticklist, orientation='vertical', shrink=0.5, aspect=14)
+    else :
+        # Place a colorbar next to the map
+        cbar = plt.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14)
+    cbar.set_label(label)
+    if cbarLabel :
+        cbar.ax.set_yticklabels(cbarLabel) 
+
+    ax.grid(True, alpha=0.5)
+    # save image and pdf 
+    makeDir(out_path)
+    if pdf :
+        pdf.savefig()
+    plt.savefig(out_path, dpi=150)
+    plt.close(fig)
+  
+
 def makeDir(out_path) :
     if not os.path.exists(os.path.dirname(out_path)):
         try:
