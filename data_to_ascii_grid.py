@@ -26,12 +26,12 @@ from ruamel_yaml import YAML
 
 PATHS = {
     "local": {
-        "sourcepath" : "./out/",
+        "sourcepath" : "./source/",
         "outputpath" : ".",
-        "climate-data" : "climate-data/transformed/" , # path to climate data
-        "ascii-out" : "asciigrids/" , # path to ascii grids
-        "png-out" : "png/" , # path to png images
-        "pdf-out" : "pdf-out/" , # path to pdf package
+        "climate-data" : "climate/transformed/" , # path to climate data
+        "ascii-out" : "asciigrids_debug/" , # path to ascii grids
+        "png-out" : "png_debug/" , # path to png images
+        "pdf-out" : "pdf-out_debug/" , # path to pdf package
     },
     "test": {
         "sourcepath" : "./source/",
@@ -71,7 +71,7 @@ ASCII_OUT_FILENAME_LATE_HARVEST     = "harvest_late_{0}_trno{1}.asc" # mGroup_tr
 ASCII_OUT_FILENAME_MAT_IS_HARVEST   = "harvest_before_maturity_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 
 CLIMATE_FILE_PATTERN="{0}_{1:03d}_v3test.csv"
-USER = "test" 
+USER = "local" 
 CROPNAME = "soybean"
 NONEVALUE = -9999
 
@@ -286,68 +286,69 @@ def calculateGrid() :
                                                             numWetHarvest[simKey] += 1
  
                                 for simKey in simulations :
-                                    if allGrids[simKey][currRow-1][currCol-1] > 0 :
-                                        # cool weather occurrence
-                                        if simKey in numOccurrenceMedium :
-                                            sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
-                                            sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
-                                            
-                                            if sumLowOccurrence < numOccurrenceLow[simKey] :
-                                                sumLowOccurrence = numOccurrenceLow[simKey]
-                                            if sumMediumOccurrence < numOccurrenceMedium[simKey] :
-                                                sumMediumOccurrence = numOccurrenceMedium[simKey]
-                                            if sumHighOccurrence < numOccurrenceHigh[simKey] :
-                                                sumHighOccurrence = numOccurrenceHigh[simKey]
+                                    if simKey[1] == scenario :
+                                        if allGrids[simKey][currRow-1][currCol-1] > 0 :
+                                            # cool weather occurrence
+                                            if simKey in numOccurrenceMedium :
+                                                sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
+                                                sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
+                                                
+                                                if sumLowOccurrence < numOccurrenceLow[simKey] :
+                                                    sumLowOccurrence = numOccurrenceLow[simKey]
+                                                if sumMediumOccurrence < numOccurrenceMedium[simKey] :
+                                                    sumMediumOccurrence = numOccurrenceMedium[simKey]
+                                                if sumHighOccurrence < numOccurrenceHigh[simKey] :
+                                                    sumHighOccurrence = numOccurrenceHigh[simKey]
 
-                                            weight = 0
-                                            
-                                            if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 9    
-                                            elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 10    
-                                            elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 11
-                                            elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 12
-                                            elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 5
-                                            elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 6
-                                            elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 7    
-                                            elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 8
-                                            elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 1
-                                            elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 2
-                                            elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 3    
-                                            elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 4
+                                                weight = 0
+                                                
+                                                if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
+                                                    weight = 9    
+                                                elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
+                                                    weight = 10    
+                                                elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
+                                                    weight = 11
+                                                elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
+                                                    weight = 12
+                                                elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
+                                                    weight = 5
+                                                elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
+                                                    weight = 6
+                                                elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
+                                                    weight = 7    
+                                                elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
+                                                    weight = 8
+                                                elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
+                                                    weight = 1
+                                                elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
+                                                    weight = 2
+                                                elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
+                                                    weight = 3    
+                                                elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
+                                                    weight = 4
 
-                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = sumOccurrence
-                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = sumDeathOccurrence
-                                            coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = weight
-                                            if sumMaxOccurrence < sumOccurrence :
-                                                sumMaxOccurrence = sumOccurrence
-                                            if sumMaxDeathOccurrence < sumDeathOccurrence :
-                                                sumMaxDeathOccurrence = sumDeathOccurrence
+                                                coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = sumOccurrence
+                                                coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = sumDeathOccurrence
+                                                coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = weight
+                                                if sumMaxOccurrence < sumOccurrence :
+                                                    sumMaxOccurrence = sumOccurrence
+                                                if sumMaxDeathOccurrence < sumDeathOccurrence :
+                                                    sumMaxDeathOccurrence = sumDeathOccurrence
+                                            else :
+                                                coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
+                                                coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
+                                            # wet harvest occurence
+                                            if simKey in numWetHarvest :
+                                                wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
+                                                if maxWetHarvest < numWetHarvest[simKey] :
+                                                    maxWetHarvest = numWetHarvest[simKey]
+                                            else :
+                                                wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
                                         else :
-                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
-                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
-                                        # wet harvest occurence
-                                        if simKey in numWetHarvest :
-                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
-                                            if maxWetHarvest < numWetHarvest[simKey] :
-                                                maxWetHarvest = numWetHarvest[simKey]
-                                        else :
+                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
+                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
+                                            coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
                                             wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
-                                    else :
-                                        coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
-                                        coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
-                                        coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
-                                        wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
 
                     currentInput += 1 
                     progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput))
@@ -491,6 +492,7 @@ def calculateGrid() :
                     'Yield in t',          
                     showBar,                            
                     colormap='viridis',
+                    factor=1,
                     maxVal=maxAllAvgYield,
                     pdfList=pdfList, 
                     progressBar="average yield grids     " )
@@ -605,7 +607,7 @@ def calculateGrid() :
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Max average yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-        label='Yield in t'
+        labelText='Yield in t'
         colormap='jet'
         writeMetaFile(gridFilePath, title, labelText, colormap, maxValue = maxAllAvgYield)
         createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
@@ -617,7 +619,7 @@ def calculateGrid() :
     numInput = len(matGroupGrids)
     sidebarLabel = [""] * (len(matGroupIdGrids)+1)
     colorList = ['cyan', 'lightgreen', 'magenta','crimson', 'blue','gold', 'navy']
-    cMap = ListedColormap(colorList)
+    #cMap = ListedColormap(colorList)
     for id in matGroupIdGrids :
         sidebarLabel[matGroupIdGrids[id]] = id
     ticklist = [0] * (len(sidebarLabel))
@@ -1030,13 +1032,6 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
     img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent)
 
     if ticklist :
-        # tick = 0.5 - len(cbarLabel) / 100 
-        # tickslist = [tick] * len(cbarLabel)
-        # for i in range(len(cbarLabel)) :
-        #     tickslist[i] += i * 2 * tick
-        # tickslist = [0] * (len(cbarLabel) * 2)
-        # for i in range(len(cbarLabel)) :
-        #      tickslist[i] += i 
         # Place a colorbar next to the map
         cbar = plt.colorbar(img_plot, ticks=ticklist, orientation='vertical', shrink=0.5, aspect=14)
     else :
@@ -1057,6 +1052,19 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
 
 def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
 
+    # Read in ascii header data
+    with open(ascii_path, 'r') as source:
+        ascii_header = source.readlines()[:6]
+
+    # Read the ASCII raster header
+    ascii_header = [item.strip().split()[-1] for item in ascii_header]
+    ascci_cols = int(ascii_header[0])
+    ascii_rows = int(ascii_header[1])
+    ascii_xll = float(ascii_header[2])
+    ascii_yll = float(ascii_header[3])
+    ascii_cs = float(ascii_header[4])
+    ascii_nodata = float(ascii_header[5])
+    
     title="" 
     label=""
     colormap = 'viridis'
@@ -1064,8 +1072,10 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     cbarLabel = None
     factor = 0.001
     ticklist = None
-    maxValue = None
-    minValue = None
+    maxValue = ascii_nodata
+    maxLoaded = False
+    minValue = ascii_nodata
+    minLoaded = False
 
     with open(meta_path, 'rt') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -1082,13 +1092,15 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
             elif item == "factor" :
                 factor = float(doc)
             elif item == "maxValue" :
-                maxValue = int(doc)
+                maxValue = float(doc)
+                maxLoaded = True
             elif item == "minValue" :
-                minValue = int(doc)
+                minValue = float(doc)
+                minLoaded = True
             elif item == "colormap" :
                 colormap = doc
             elif item == "colorlist" :
-                cMap = ListedColormap(doc)
+                cMap = doc
             elif item == "cbarLabel" :
                 cbarLabel = doc
             elif item == "ticklist" :
@@ -1096,27 +1108,17 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
                 for i in doc :
                     ticklist.append(float(i))
 
-    # Read in ascii header data
-    with open(ascii_path, 'r') as source:
-        ascii_header = source.readlines()[:6]
 
-    # Read the ASCII raster header
-    ascii_header = [item.strip().split()[-1] for item in ascii_header]
-    ascci_cols = int(ascii_header[0])
-    ascii_rows = int(ascii_header[1])
-    ascii_xll = float(ascii_header[2])
-    ascii_yll = float(ascii_header[3])
-    ascii_cs = float(ascii_header[4])
-    ascii_nodata = float(ascii_header[5])
-    
     # Read in the ascii data array
     ascii_data_array = np.loadtxt(ascii_path, dtype=np.float, skiprows=6)
     
     # Set the nodata values to nan
     ascii_data_array[ascii_data_array == ascii_nodata] = np.nan
-    
+
     # data is stored as an integer but scaled by a factor
     ascii_data_array *= factor
+    maxValue *= factor
+    minValue *= factor
 
     image_extent = [
         ascii_xll, ascii_xll + ascci_cols * ascii_cs,
@@ -1128,18 +1130,26 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     
     # Get the img object in order to pass it to the colorbar function
     if cMap :
-        img_plot = ax.imshow(ascii_data_array, cmap=cMap, extent=image_extent, vmin=minValue, vmax=maxValue)
+        colorM = ListedColormap(cMap)
+        if minLoaded and maxLoaded:
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=minValue, vmax=maxValue)
+        elif minLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=minValue)
+        elif maxLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=maxValue)
+        else :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
     else :
-        img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, vmin=minValue, vmax=maxValue)
+        if minLoaded and maxLoaded:
+            img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, interpolation='none', vmin=minValue, vmax=maxValue)
+        elif minLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, interpolation='none', vmax=minValue)
+        elif maxLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, interpolation='none', vmax=maxValue)
+        else :
+            img_plot = ax.imshow(ascii_data_array, cmap=colormap, extent=image_extent, interpolation='none')
 
     if ticklist :
-        # tick = 0.5 - len(cbarLabel) / 100 
-        # tickslist = [tick] * len(cbarLabel)
-        # for i in range(len(cbarLabel)) :
-        #     tickslist[i] += i * 2 * tick
-        # tickslist = [0] * (len(cbarLabel) * 2)
-        # for i in range(len(cbarLabel)) :
-        #      tickslist[i] += i 
         # Place a colorbar next to the map
         cbar = plt.colorbar(img_plot, ticks=ticklist, orientation='vertical', shrink=0.5, aspect=14)
     else :
@@ -1155,8 +1165,7 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     if pdf :
         pdf.savefig()
     plt.savefig(out_path, dpi=150)
-    plt.close(fig)
-  
+    plt.close(fig)  
 
 def makeDir(out_path) :
     if not os.path.exists(os.path.dirname(out_path)):
