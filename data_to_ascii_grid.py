@@ -690,7 +690,7 @@ def calculateGrid() :
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
             title = "Water stress effect on potential yield - Scn: {0} {1}".format(simKey[1], simKey[2])
-            label='Difference yield in t'
+            labelText='Difference yield in t'
             colormap='Wistia'
             writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
             createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
@@ -717,7 +717,7 @@ def calculateGrid() :
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
             title = "Water stress effect on potential max yield - Scn: {0}".format(simKey[1])
-            label='Difference yield in t'
+            labelText='Difference yield in t'
             colormap='Wistia'
             writeMetaFile(gridFilePath, title, labelText, colormap, maxValue=maxAllAvgYield)
             createImgFromMeta(gridFilePath, gridFilePath+".meta", pngFilePath, pdf=pdfList[simKey[1]])
