@@ -59,7 +59,7 @@ PATHS = {
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
-        "monica-parameters-path": "../monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
         "monica-project-data": "/project/soybeanEU/"
     }
@@ -109,9 +109,7 @@ def run_producer(config):
     template_folder = script_path + "/json_templates/"
     with open(template_folder + "sim.json") as _:
         sim = json.load(_)
-        print(os.getcwd())
-        parameterPath = os.path.abspath(paths["monica-parameters-path"])
-        sim["include-file-base-path"] = parameterPath
+        sim["include-file-base-path"] = paths["monica-parameters-path"]
         if USER_MODE == "localProducer-localMonica":
             sim["climate.csv-options"]["no-of-climate-file-header-lines"] = 1
         elif USER_MODE == "localProducer-remoteMonica":
