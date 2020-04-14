@@ -53,13 +53,15 @@ PATHS = {
         "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/", # mounted path to archive accessable by monica executable
     },
     "localProducer-remoteMonica": {
+        "monica-project-data": ".",
         "monica-parameters-path": "D:/zalfrpm/monica-parameters/", # path to monica-parameters
         #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
-        "monica-parameters-path": "/project/monica-parameters/", # path to monica-parameters
+        "monica-parameters-path": "../monica-parameters/", # path to monica-parameters
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
+        "monica-project-data": "/project/soybeanEU/"
     }
 }
 
@@ -143,65 +145,91 @@ def run_producer(config):
 
     soil = {}
     row_cols = []
-    with open("JRC_soil_macsur_v3.csv") as _:
+    # with open("JRC_soil_macsur_v3.csv") as _:
+    #     reader = csv.reader(_)
+    #     next(reader)
+    #     for row in reader:
+    #         row_col = (int(row[1]), int(row[0]))
+    #         row_cols.append(row_col)
+    #         soil[row_col] = {
+    #             "elevation": float(row[4]),
+    #             "latitude": float(row[5]),
+    #             "depth": float(row[6]),
+    #             "pwp": float(row[7]),
+    #             "fc": float(row[8]),
+    #             "sat": float(row[9]),
+    #             "sw-init": float(row[10]),
+    #             "oc-topsoil": float(row[11]),
+    #             "oc-subsoil": float(row[12]),
+    #             "bd-topsoil": float(row[13]),
+    #             "bd-subsoil": float(row[14]),
+    #             "sand-topsoil": float(row[15]),
+    #             "sand-subsoil": float(row[18]),
+    #             "clay-topsoil": float(row[16]),
+    #             "clay-subsoil": float(row[19]),
+    #         }
+    with open(os.path.join(paths["monica-project-data"], "stu_eu_layer_climate.csv")) as _:
         reader = csv.reader(_)
         next(reader)
         for row in reader:
+            #Column_,Row,Grid_Code,Location,CLocation,elevation,latitude,longitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil
+
             row_col = (int(row[1]), int(row[0]))
             row_cols.append(row_col)
             soil[row_col] = {
-                "elevation": float(row[4]),
-                "latitude": float(row[5]),
-                "depth": float(row[6]),
-                "pwp": float(row[7]),
-                "fc": float(row[8]),
-                "sat": float(row[9]),
-                "sw-init": float(row[10]),
-                "oc-topsoil": float(row[11]),
-                "oc-subsoil": float(row[12]),
-                "bd-topsoil": float(row[13]),
-                "bd-subsoil": float(row[14]),
-                "sand-topsoil": float(row[15]),
-                "sand-subsoil": float(row[18]),
-                "clay-topsoil": float(row[16]),
-                "clay-subsoil": float(row[19]),
+                "climate_location": row[4],
+                "elevation": float(row[5]),
+                "latitude": float(row[6]),
+                "longitude": float(row[7]), #obsolete
+                "depth": float(row[8]),
+                "oc-topsoil": float(row[9]),
+                "oc-subsoil": float(row[10]),
+                "bd-topsoil": float(row[11]),
+                "bd-subsoil": float(row[12]),
+                "sand-topsoil": float(row[13]),
+                "clay-topsoil": float(row[14]),
+                "silt-topsoil": float(row[15]),
+                "sand-subsoil": float(row[16]),
+                "clay-subsoil": float(row[17]),
+                "silt-subsoil": float(row[18]),
             }
-    
     def get_custom_site(row, col):
         "update function"
         cell_soil = soil[(row, col)]
         
-        pwp = cell_soil["pwp"]
-        fc_ = cell_soil["fc"]
-        sm_percent_fc = cell_soil["sw-init"] / fc_ * 100.0
+        # pwp = cell_soil["pwp"]
+        # fc_ = cell_soil["fc"]
+        # sm_percent_fc = cell_soil["sw-init"] / fc_ * 100.0
         
         top = {
             "Thickness": [0.3, "m"],
             "SoilOrganicCarbon": [cell_soil["oc-topsoil"], "%"],
-            "SoilBulkDensity": [cell_soil["bd-topsoil"] * 1000, "kg m-3"],
-            "FieldCapacity": [fc_, "m3 m-3"],
-            "PermanentWiltingPoint": [pwp, "m3 m-3"],
-            "PoreVolume": [cell_soil["sat"], "m3 m-3"],
-            "SoilMoisturePercentFC": [sm_percent_fc, "% [0-100]"],
+            "SoilBulkDensity": [cell_soil["bd-topsoil"] , "kg m-3"],
+            #"FieldCapacity": [fc_, "m3 m-3"],
+            #"PermanentWiltingPoint": [pwp, "m3 m-3"],
+            #"PoreVolume": [cell_soil["sat"], "m3 m-3"],
+            #"SoilMoisturePercentFC": [sm_percent_fc, "% [0-100]"],
             "Sand": cell_soil["sand-topsoil"] / 100.0,
-            "Clay": cell_soil["clay-topsoil"] / 100.0
+            "Clay": cell_soil["clay-topsoil"] / 100.0,
+            "Silt": cell_soil["silt-topsoil"] / 100.0
             }
         sub = {
             "Thickness": [1.7, "m"],
             "SoilOrganicCarbon": [cell_soil["oc-subsoil"], "%"],
-            "SoilBulkDensity": [cell_soil["bd-subsoil"] * 1000, "kg m-3"],
-            "FieldCapacity": [fc_, "m3 m-3"],
-            "PermanentWiltingPoint": [pwp, "m3 m-3"],
-            "PoreVolume": [cell_soil["sat"], "m3 m-3"],
-            "SoilMoisturePercentFC": [sm_percent_fc, "% [0-100]"],
+            "SoilBulkDensity": [cell_soil["bd-subsoil"] , "kg m-3"],
+            #"FieldCapacity": [fc_, "m3 m-3"],
+            #"PermanentWiltingPoint": [pwp, "m3 m-3"],
+            #"PoreVolume": [cell_soil["sat"], "m3 m-3"],
+            #"SoilMoisturePercentFC": [sm_percent_fc, "% [0-100]"],
             "Sand": cell_soil["sand-subsoil"] / 100.0,
-            "Clay": cell_soil["clay-subsoil"] / 100.0
+            "Clay": cell_soil["clay-subsoil"] / 100.0,
+            "Silt": cell_soil["silt-subsoil"] / 100.0
         }
 
         custom_site = {
             "soil-profile": [top, sub],
             "latitude": cell_soil["latitude"],
-            "sw-init": cell_soil["sw-init"],
+            #"sw-init": cell_soil["sw-init"],
         }
         
         return custom_site
@@ -217,6 +245,7 @@ def run_producer(config):
     row_cols_ = row_cols[start:end+1]
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
     #row_cols_ = [(35,125)]
+    #row_cols_ = [(3015,2836)] # 2836,3015
     print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     run_periods = list(map(str, json.loads(config["run-periods"])))
 
@@ -271,7 +300,9 @@ def run_producer(config):
                     climatefile_version = "v3test"
                 elif USER_MODE == "remoteProducer-remoteMonica":
                     climatefile_version = "v3test"
-                climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
+                climateLocation = soil[(row, col)]["climate_location"]
+                climate_filename = "{}_{}.csv".format(climateLocation, climatefile_version)
+                #climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
                 #if not os.path.exists(path_to_climate_file):
                 #    continue
 
