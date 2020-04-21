@@ -54,8 +54,10 @@ CONFIGURATION = {
         "timeout": 600000 # 10 minutes
 
     }
+# local testing: python .\run-work-consumer.py port=6007 mode=localConsumer-remoteMonica timeout=100000 > out_consumer.txt
 
-def create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
+
+def create_output(soil_ref, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result):
     "create crop output lines"
 
     out = []
@@ -166,7 +168,7 @@ def create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, t
 
                 out.append([
                     "MO",
-                    str(row) + "_" + str(col),
+                    soil_ref,
                     first_cp,
                     current_crop[0],
                     #"soy_" + crop_id,
@@ -213,7 +215,7 @@ def create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, t
     return out
 
 #+"Stage,HeatRed,RelDev,"\
-HEADER_long = "Model,row_col,Crop,period," \
+HEADER_long = "Model,soil_ref,Crop,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield,AntDOY,MatDOY,Biom-an,Biom-ma," \
@@ -221,7 +223,7 @@ HEADER_long = "Model,row_col,Crop,period," \
          + "GrainN,ET0,SowDOY,EmergDOY,reldev,tradef,frostred,frost-risk-days,cycle-length,STsow,ATsow" \
          + "\n"
 
-HEADER = "Model,row_col,first_crop,Crop,period," \
+HEADER = "Model,soil_ref,first_crop,Crop,period," \
          + "sce,CO2,TrtNo,ProductionCase," \
          + "Year," \
          + "Yield," \
@@ -235,14 +237,14 @@ HEADER = "Model,row_col,first_crop,Crop,period," \
 
 
 #overwrite_list = set()
-def write_data(row, col, data, usermode):
+def write_data(soil_ref, data, usermode):
     "write data"
 
     if usermode=="remoteConsumer-remoteMonica":
         #path_to_file = "/beegfs/stella/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
-        path_to_file = "/out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        path_to_file = "/out/EU_SOY_MO_" + soil_ref + ".csv"
     else:
-        path_to_file = "./out/EU_SOY_MO_" + str(row) + "_" + str(col) + ".csv"
+        path_to_file = "./out/EU_SOY_MO_" + soil_ref + ".csv"
 
     if not os.path.isfile(path_to_file):# or (row, col) not in overwrite_list:
         with open(path_to_file, "w") as _:
@@ -251,9 +253,9 @@ def write_data(row, col, data, usermode):
 
     with open(path_to_file, 'a', newline="") as _:
         writer = csv.writer(_, delimiter=",")
-        for row_ in data[(row, col)]:
+        for row_ in data[soil_ref]:
             writer.writerow(row_)
-        data[(row, col)] = []
+        data[soil_ref] = []
 
 
 def main():
@@ -265,7 +267,10 @@ def main():
         for arg in sys.argv[1:]:
             k,v = arg.split("=")
             if k in config:
-                config[k] = v
+                if k == "timeout" or k == "start_writing_lines_threshold":
+                    config[k] = int(v)
+                else :
+                    config[k] = v
 
     if not config["server"]:
         config["server"] = server[config["mode"]]
@@ -296,14 +301,14 @@ def main():
             #continue
         except zmq.error.Again as _e:
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
-            for row, col in data.keys():
-                if len(data[(row, col)]) > 0:
-                    write_data(row, col, data, config["mode"])
+            for soil_ref in data.keys():
+                if len(data[soil_ref]) > 0:
+                    write_data(soil_ref, data, config["mode"])
             return
         except:
-            for row, col in data.keys():
-                if len(data[(row, col)]) > 0:
-                    write_data(row, col, data, config["mode"])
+            for soil_ref in data.keys():
+                if len(data[soil_ref]) > 0:
+                    write_data(soil_ref, data, config["mode"])
             continue
 
 
@@ -318,8 +323,9 @@ def main():
 
             custom_id = result["customId"]
             #sendID = custom_id["sendID"]
-            row = custom_id["row"]
-            col = custom_id["col"]
+            soil_ref = custom_id["soil_ref"]
+            #row = custom_id["row"]
+            #col = custom_id["col"]
             period = custom_id["period"]
             gcm = custom_id["gcm"]
             co2_id = custom_id["co2_id"]
@@ -331,11 +337,11 @@ def main():
             
             #print("recv env ", sendID, "customId: ", list(custom_id.values()))
            # print(custom_id)
-            res = create_output(row, col, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
-            data[(row, col)].extend(res)
+            res = create_output(soil_ref, crop_id, first_cp, co2_id, co2_value, period, gcm, trt_no, prod_case, result)
+            data[soil_ref].extend(res)
 
-            if len(data[(row, col)]) >= start_writing_lines_threshold:
-                write_data(row, col, data, config["mode"])
+            if len(data[soil_ref]) >= start_writing_lines_threshold:
+                write_data(soil_ref, data, config["mode"])
 
             i = i + 1
 

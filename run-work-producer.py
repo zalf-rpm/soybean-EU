@@ -22,24 +22,10 @@ import json
 import csv
 from copy import deepcopy
 from datetime import date, timedelta
-#import types
 import sys
 import errno
-#sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Release")
-#sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\project-files\\Win32\\Debug")
-#sys.path.insert(0, "C:\\Users\\berg.ZALF-AD\\GitHub\\monica\\src\\python")
-#sys.path.insert(0, "C:\\Program Files (x86)\\MONICA")
-#print(sys.path)
-#sys.path.append('C:/Users/berg.ZALF-AD/GitHub/util/soil')
-#from soil_conversion import *
-#import monica_python
 import zmq
 import monica_io3
-#print("path to monica_io: ", monica_io.__file__)
-
-#print("pyzmq version: ", zmq.pyzmq_version())
-#print("sys.path: ", sys.path)
-#print("sys.version: ", sys.version)
 
 #USER_MODE = "localProducer-localMonica"
 #USER_MODE = "remoteProducer-remoteMonica"
@@ -59,11 +45,12 @@ PATHS = {
         "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
+        "monica-project-data": "/project/soybeanEU/",
         "monica-parameters-path": "/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/", # mounted path to archive accessable by monica executable
-        "monica-project-data": "/project/soybeanEU/"
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/transformed/" # mounted path to archive accessable by monica executable
     }
 }
+# local testing: python .\run-work-producer.py server-port=6004 mode=localProducer-remoteMonica > out_producer.txt
 
 server = {
     "localProducer-localMonica": "localhost",
@@ -76,14 +63,11 @@ CONFIGURATION = {
     "server": None,
     "server-port": "6666",
     "start-row": 1, 
-    "end-row": 8157,
+    "end-row": -1,
     "run-periods": "[0,2]"
 }
 
 script_path = os.path.dirname(os.path.abspath(__file__))
-
-#PATH_TO_CLIMATE_DATA_SERVER = "/archiv-daten/md/projects/macsur-eu-heat-stress-assessment/climate-data/transformed/"
-#INCLUDE_FILE_BASE_PATH = "C:/Users/berg.ZALF-AD.000/MONICA"
 
 def run_producer(config):
     "main"
@@ -145,57 +129,34 @@ def run_producer(config):
 
     soil = {}
     row_cols = []
-    # with open("JRC_soil_macsur_v3.csv") as _:
-    #     reader = csv.reader(_)
-    #     next(reader)
-    #     for row in reader:
-    #         row_col = (int(row[1]), int(row[0]))
-    #         row_cols.append(row_col)
-    #         soil[row_col] = {
-    #             "elevation": float(row[4]),
-    #             "latitude": float(row[5]),
-    #             "depth": float(row[6]),
-    #             "pwp": float(row[7]),
-    #             "fc": float(row[8]),
-    #             "sat": float(row[9]),
-    #             "sw-init": float(row[10]),
-    #             "oc-topsoil": float(row[11]),
-    #             "oc-subsoil": float(row[12]),
-    #             "bd-topsoil": float(row[13]),
-    #             "bd-subsoil": float(row[14]),
-    #             "sand-topsoil": float(row[15]),
-    #             "sand-subsoil": float(row[18]),
-    #             "clay-topsoil": float(row[16]),
-    #             "clay-subsoil": float(row[19]),
-    #         }
-    with open(os.path.join(paths["monica-project-data"], "stu_eu_layer_climate.csv")) as _:
+    with open(os.path.join(paths["monica-project-data"], "stu_eu_layer_ref.csv")) as _:
         reader = csv.reader(_)
         next(reader)
         for row in reader:
             #Column_,Row,Grid_Code,Location,CLocation,elevation,latitude,longitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil
+            #soil_ref,CLocation,latitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil
 
-            row_col = (int(row[1]), int(row[0]))
-            row_cols.append(row_col)
-            soil[row_col] = {
-                "climate_location": row[4],
-                "elevation": float(row[5]),
-                "latitude": float(row[6]),
-                "longitude": float(row[7]), #obsolete
-                "depth": float(row[8]),
-                "oc-topsoil": float(row[9]),
-                "oc-subsoil": float(row[10]),
-                "bd-topsoil": float(row[11]),
-                "bd-subsoil": float(row[12]),
-                "sand-topsoil": float(row[13]),
-                "clay-topsoil": float(row[14]),
-                "silt-topsoil": float(row[15]),
-                "sand-subsoil": float(row[16]),
-                "clay-subsoil": float(row[17]),
-                "silt-subsoil": float(row[18]),
+            soil_ref = row[0]
+            #row_col = (int(row[1]), int(row[0]))
+            row_cols.append(soil_ref)
+            soil[soil_ref] = {
+                "climate_location": row[1],
+                "latitude": float(row[2]),
+                "depth": float(row[3]),
+                "oc-topsoil": float(row[4]),
+                "oc-subsoil": float(row[5]),
+                "bd-topsoil": float(row[6]),
+                "bd-subsoil": float(row[7]),
+                "sand-topsoil": float(row[8]),
+                "clay-topsoil": float(row[9]),
+                "silt-topsoil": float(row[10]),
+                "sand-subsoil": float(row[11]),
+                "clay-subsoil": float(row[12]),
+                "silt-subsoil": float(row[13]),
             }
-    def get_custom_site(row, col):
+    def get_custom_site(soil_ref):
         "update function"
-        cell_soil = soil[(row, col)]
+        cell_soil = soil[soil_ref]
         
         # pwp = cell_soil["pwp"]
         # fc_ = cell_soil["fc"]
@@ -242,20 +203,19 @@ def run_producer(config):
     start_store = time.process_time()
     start = config["start-row"] - 1
     end = config["end-row"] - 1
-    row_cols_ = row_cols[start:end+1]
+    if end < 0 :
+        row_cols_ = row_cols[start:]
+    else :
+        row_cols_ = row_cols[start:end+1]
     #row_cols_ = [(108,106), (89,82), (71,89), (58,57), (77,109), (66,117), (46,151), (101,139), (116,78), (144,123)]
-    #row_cols_ = [(35,125)]
+    #row_cols_ = ["64500"]
     #row_cols_ = [(3015,2836)] # 2836,3015
     print("running from ", start, "/", row_cols[start], " to ", end, "/", row_cols[end])
     run_periods = list(map(str, json.loads(config["run-periods"])))
 
-    for row, col in row_cols_:
-        #if row != 119 or col != 57:
-        #    continue
-        #if row < 170:
-        #    continue
+    for soil_ref in row_cols_:
 
-        custom_site = get_custom_site(row, col)
+        custom_site = get_custom_site(soil_ref)
 
         site["SiteParameters"]["Latitude"] = custom_site["latitude"]
         site["SiteParameters"]["SoilProfileParameters"] = custom_site["soil-profile"]
@@ -300,9 +260,8 @@ def run_producer(config):
                     climatefile_version = "v3test"
                 elif USER_MODE == "remoteProducer-remoteMonica":
                     climatefile_version = "v3test"
-                climateLocation = soil[(row, col)]["climate_location"]
+                climateLocation = soil[soil_ref]["climate_location"]
                 climate_filename = "{}_{}.csv".format(climateLocation, climatefile_version)
-                #climate_filename = "{}_{:03d}_{}.csv".format(row, col, climatefile_version)
                 #if not os.path.exists(path_to_climate_file):
                 #    continue
 
@@ -338,7 +297,8 @@ def run_producer(config):
                             first_cp = env["cropRotation"][0]["worksteps"][0]["crop"]["cropParams"]["species"]["SpeciesName"]
                         
                         env["customId"] = {
-                            "row": row, "col": col,
+                            #"row": row, "col": col,
+                            "soil_ref": soil_ref,
                             "period": period,
                             "gcm": gcm,
                             "co2_id": co2_id, "co2_value": co2_value,
@@ -350,7 +310,7 @@ def run_producer(config):
 
                          
                         print("sent env ", i, " customId: ", list(env["customId"].values()))
-                        #filename = "./V" + str(i) + "_" + str(env["customId"]["row"]) +"_"+ str(env["customId"]["col"]) +"_"+ env["customId"]["trt_no"] +"_"+ env["customId"]["gcm"] +"_"+ env["customId"]["crop_id"] +".json"
+                        #filename = "./V" + str(i) + "_" + soil_ref +"_"+ env["customId"]["trt_no"] +"_"+ env["customId"]["gcm"] +"_"+ env["customId"]["crop_id"] +".json"
                         #WriteEnv(filename, env) 
                         socket.send_json(env)                        
                         i += 1

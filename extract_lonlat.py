@@ -31,41 +31,68 @@ def extractGridData() :
     transformer = Transformer.from_proj(wgs84, etrs89) 
     climaGridInterpolator = mapSoilMapping(entries, transformer)
 
-    outheader = "Column_,Row,Grid_Code,Location,CLocation,elevation,latitude,longitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil\n"
-    with open("stu_eu_layer_climate.csv", mode="wt", newline="") as outfile :
-        outfile.writelines(outheader)
-        # read soil data
-        with open("stu_eu_layers.csv") as sourcefile:
-            firstLine = True
-            for line in sourcefile:
-                if firstLine :
-                    firstLine = False
-                    soilheader = ReadSoilHeader(line)
-                    continue
-                outLineDist = loadSoilLine(line, soilheader,entries, transformer, climaGridInterpolator)
-                out = outLineDist[0]
-                distance = outLineDist[1]
-                if distance < 25 : # write only line where we found appropriate climate grid cells
-                    outline = [str(out[0][1]), #col 
-                            str(out[0][0]), #row
-                            "{0}{1:02d}".format(out[0][0], out[0][1]),#gridcode
-                            "{0}_{1}".format(out[0][0], out[0][1]), #location
-                            "{0}_{1:02d}".format(out[3][0], out[3][1]), #climate location
-                            str(out[4]), #elevation
-                            str(out[2]), #lat
-                            str(out[1]), #long
-                            out[5+soilheader["depth"]],
-                            out[5+soilheader["OC_topsoil"]],
-                            out[5+soilheader["OC_subsoil"]],
-                            out[5+soilheader["BD_topsoil"]],
-                            out[5+soilheader["BD_subsoil"]],
-                            out[5+soilheader["Sand_topsoil"]],
-                            out[5+soilheader["Clay_topsoil"]],
-                            out[5+soilheader["Silt_topsoil"]],
-                            out[5+soilheader["Sand_subsoil"]],
-                            out[5+soilheader["Clay_subsoil"]],
-                            out[5+soilheader["Silt_subsoil"]]]
-                    outfile.writelines(",".join(outline) + "\n")
+    outGridHeader = "Column_,Row,Grid_Code,Location,elevation,latitude,longitude,soil_ref\n"
+    outSoilHeader = "soil_ref,CLocation,latitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil\n"
+    soildIdNumber = 0
+    soilLookup = dict()
+    with open("stu_eu_layer_grid.csv", mode="wt", newline="") as outGridfile :
+        outGridfile.writelines(outGridHeader)
+        with open("stu_eu_layer_ref.csv", mode="wt", newline="") as outSoilfile :
+            outSoilfile.writelines(outSoilHeader)
+            # read soil data
+            with open("stu_eu_layers.csv") as sourcefile:
+                firstLine = True
+                for line in sourcefile:
+                    if firstLine :
+                        firstLine = False
+                        soilheader = ReadSoilHeader(line)
+                        continue
+                    outLineDist = loadSoilLine(line, soilheader,entries, transformer, climaGridInterpolator)
+                    out = outLineDist[0]
+                    distance = outLineDist[1]
+                    if distance < 25 : # write only line where we found appropriate climate grid cells
+                        soilId = ("{0}_{1:02d}".format(out[3][0], out[3][1]), #climate location
+                        out[5+soilheader["depth"]],
+                        out[5+soilheader["OC_topsoil"]],
+                        out[5+soilheader["OC_subsoil"]],
+                        out[5+soilheader["BD_topsoil"]],
+                        out[5+soilheader["BD_subsoil"]],
+                        out[5+soilheader["Sand_topsoil"]],
+                        out[5+soilheader["Clay_topsoil"]],
+                        out[5+soilheader["Silt_topsoil"]],
+                        out[5+soilheader["Sand_subsoil"]],
+                        out[5+soilheader["Clay_subsoil"]],
+                        out[5+soilheader["Silt_subsoil"]])
+
+                        if not soilId in soilLookup : 
+                            soilLookup[soilId] = soildIdNumber
+                            soildIdNumber += 1
+                            outlineSoil = [str(soildIdNumber),
+                                "{0}_{1:02d}".format(out[3][0], out[3][1]), #climate location
+                                str(out[2]), #lat
+                                out[5+soilheader["depth"]],
+                                out[5+soilheader["OC_topsoil"]],
+                                out[5+soilheader["OC_subsoil"]],
+                                out[5+soilheader["BD_topsoil"]],
+                                out[5+soilheader["BD_subsoil"]],
+                                out[5+soilheader["Sand_topsoil"]],
+                                out[5+soilheader["Clay_topsoil"]],
+                                out[5+soilheader["Silt_topsoil"]],
+                                out[5+soilheader["Sand_subsoil"]],
+                                out[5+soilheader["Clay_subsoil"]],
+                                out[5+soilheader["Silt_subsoil"]]]
+                            outSoilfile.writelines(",".join(outlineSoil) + "\n")
+
+                        outline = [str(out[0][1]), #col 
+                                str(out[0][0]), #row
+                                "{0}{1:02d}".format(out[0][0], out[0][1]),#gridcode
+                                "{0}_{1}".format(out[0][0], out[0][1]), #location
+                                str(out[4]), #elevation
+                                str(out[2]), #lat
+                                str(out[1]), #long
+                                str(soilLookup[soilId]) 
+                                ]
+                        outGridfile.writelines(",".join(outline) + "\n")
 
 def mapSoilMapping(climate_listMapping, transformer) :
     points = []
