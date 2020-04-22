@@ -318,7 +318,7 @@ def main():
 
         elif not write_normal_output_files:
             if len(result["errors"]) > 0 :
-                for err in range(result["errors"]) :
+                for err in result["errors"] :
                     print(err)
 
             custom_id = result["customId"]
