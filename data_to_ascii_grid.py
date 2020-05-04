@@ -22,11 +22,13 @@ from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 import collections
 import errno
-from ruamel_yaml import YAML
+from ruamel.yaml import YAML
+
 
 PATHS = {
     "local": {
-        "sourcepath" : "./source/",
+        "projectdatapath" : "./",
+        "sourcepath" : "D:/soybeaneu22-04",
         "outputpath" : ".",
         "climate-data" : "climate/transformed/" , # path to climate data
         "ascii-out" : "asciigrids_debug/" , # path to ascii grids
@@ -34,6 +36,7 @@ PATHS = {
         "pdf-out" : "pdf-out_debug/" , # path to pdf package
     },
     "test": {
+        "projectdatapath" : "./",
         "sourcepath" : "./source/",
         "outputpath" : "./testout/",
         "climate-data" : "./climate-data/transformed/" , # path to climate data
@@ -42,6 +45,7 @@ PATHS = {
         "pdf-out" : "pdf-out2/" , # path to pdf package
     },
     "cluster": {
+        "projectdatapath" : "/project/",
         "sourcepath" : "/source/",
         "outputpath" : "/out/",
         "climate-data" : "/climate-data/" , # path to climate data
@@ -70,7 +74,7 @@ ASCII_OUT_FILENAME_WET_HARVEST      = "harvest_wet_{0}_trno{1}.asc" # mGroup_tre
 ASCII_OUT_FILENAME_LATE_HARVEST     = "harvest_late_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 ASCII_OUT_FILENAME_MAT_IS_HARVEST   = "harvest_before_maturity_{0}_trno{1}.asc" # mGroup_treatmentnumber 
 
-CLIMATE_FILE_PATTERN="{0}_{1:03d}_v3test.csv"
+CLIMATE_FILE_PATTERN="{0}_v3test.csv"
 USER = "local" 
 CROPNAME = "soybean"
 NONEVALUE = -9999
@@ -104,19 +108,28 @@ def calculateGrid() :
     asciiOutFolder = os.path.join(outputFolder, PATHS[pathId]["ascii-out"])
     pngFolder = os.path.join(outputFolder, PATHS[pathId]["png-out"])
     pdfFolder = os.path.join(outputFolder,PATHS[pathId]["pdf-out"])
+    projectpath = os.path.join(outputFolder,PATHS[pathId]["projectdatapath"])
+    gridSource = os.path.join(projectpath, "stu_eu_layer_grid.csv")
+    refSource = os.path.join(projectpath, "stu_eu_layer_ref.csv")
+
     #errorFile = os.path.join(asciiOutFolder, "error.txt") # debug output
+    res = GetGridLookup(gridSource)
+    extRow = res[0]
+    extCol = res[1]
+    gridSourceLookup = res[0] # dict() [ref] = [(row, col), ...]
+    climateRef = GetClimateReference(refSource)
 
     filelist = os.listdir(sourceFolder)
 
     # get grid extension
-    res = fileByGrid(filelist, (3,4))
-    idxFileDic = res[2]
-    extRow = res[0]
-    extCol = res[1]
+    #res = fileByGrid(filelist, (3,4))
+    #idxFileDic = res[2]
+    #extRow = res[0]
+    #extCol = res[1]
 
     maxAllAvgYield = 0
     maxSdtDeviation = 0
-    numInput = len(idxFileDic)
+    numInput = len(filelist)
     currentInput = 0
     allGrids = dict()
     StdDevAvgGrids = dict()
@@ -140,221 +153,225 @@ def calculateGrid() :
     sumHighOccurrence = 0
     outputGridsGenerated = False
     # iterate over all grid cells 
-    for currRow in range(1, extRow+1) :
-        for currCol in range(1, extCol+1) :
-            gridIndex = (currRow, currCol)
-            if gridIndex in idxFileDic :
-                # open grid cell file
-                with open(os.path.join(sourceFolder, idxFileDic[gridIndex])) as sourcefile:
-                    simulations = dict()
-                    simDoyFlower = dict()
-                    simDoyMature = dict()
-                    simDoyHarvest = dict()
-                    simMatIsHarvest = dict()
-                    simLastHarvestDate = dict()
-                    dateYearOrder = dict()
-                    firstLine = True
-                    header = list()
-                    for line in sourcefile:
-                        if firstLine :
-                            # read header
-                            firstLine = False
-                            header = ReadHeader(line)
-                        else :
-                            # load relevant line content
-                            lineContent = loadLine(line, header)
-                            # check for the lines with a specific crop
-                            if IsCrop(lineContent, CROPNAME) and (lineContent[0] == "T1" or lineContent[0] == "T2") :
-                                lineKey = (lineContent[:-8])
-                                yieldValue = lineContent[-1]
-                                period = lineContent[-8]
-                                yearValue = lineContent[-7]
-                                #sowValue = lineContent[-6]
-                                #emergeValue = lineContent[-5]
-                                flowerValue = lineContent[-4]
-                                matureValue = lineContent[-3]
-                                harvestValue = lineContent[-2]
-                                if not lineKey in simulations :
-                                    simulations[lineKey] = list() 
-                                    simDoyFlower[lineKey] = list()
-                                    simDoyMature[lineKey] = list() 
-                                    simDoyHarvest[lineKey] = list() 
-                                    simMatIsHarvest[lineKey] = list() 
-                                    simLastHarvestDate[lineKey] = list() 
-                                    dateYearOrder[lineKey] = list()
-                                if not lineKey[1] in climateFilePeriod :
-                                    climateFilePeriod[lineKey[1]] = period
-                                simulations[lineKey].append(yieldValue)
-                                simDoyFlower[lineKey].append(flowerValue)
-                                simDoyMature[lineKey].append(matureValue if matureValue > 0 else harvestValue)
-                                simDoyHarvest[lineKey].append(harvestValue)
-                                simMatIsHarvest[lineKey].append(matureValue <= 0 and harvestValue > 0)
-                                simLastHarvestDate[lineKey].append(datetime.fromisoformat(str(yearValue)+"-10-31").timetuple().tm_yday == harvestValue)
-                                dateYearOrder[lineKey].append(yearValue)
+        #for currRow in range(1, extRow+1) :
+            #for currCol in range(1, extCol+1) :
+                #gridIndex = (currRow, currCol)
+                #if gridIndex in idxFileDic :
+    for sourcefileName in filelist:
+        # open grid cell file
+        with open(os.path.join(sourceFolder, sourcefileName)) as sourcefile:
+            #EU_SOY_MO_" + soil_ref + ".csv"
+            refID = int(sourcefileName.split(".")[0].split("_")[3])
+            simulations = dict()
+            simDoyFlower = dict()
+            simDoyMature = dict()
+            simDoyHarvest = dict()
+            simMatIsHarvest = dict()
+            simLastHarvestDate = dict()
+            dateYearOrder = dict()
+            firstLine = True
+            header = list()
+            for line in sourcefile:
+                if firstLine :
+                    # read header
+                    firstLine = False
+                    header = ReadHeader(line)
+                else :
+                    # load relevant line content
+                    lineContent = loadLine(line, header)
+                    # check for the lines with a specific crop
+                    if IsCrop(lineContent, CROPNAME) and (lineContent[0] == "T1" or lineContent[0] == "T2") :
+                        lineKey = (lineContent[:-8])
+                        yieldValue = lineContent[-1]
+                        period = lineContent[-8]
+                        yearValue = lineContent[-7]
+                        #sowValue = lineContent[-6]
+                        #emergeValue = lineContent[-5]
+                        flowerValue = lineContent[-4]
+                        matureValue = lineContent[-3]
+                        harvestValue = lineContent[-2]
+                        if not lineKey in simulations :
+                            simulations[lineKey] = list() 
+                            simDoyFlower[lineKey] = list()
+                            simDoyMature[lineKey] = list() 
+                            simDoyHarvest[lineKey] = list() 
+                            simMatIsHarvest[lineKey] = list() 
+                            simLastHarvestDate[lineKey] = list() 
+                            dateYearOrder[lineKey] = list()
+                        if not lineKey[1] in climateFilePeriod :
+                            climateFilePeriod[lineKey[1]] = period
+                        simulations[lineKey].append(yieldValue)
+                        simDoyFlower[lineKey].append(flowerValue)
+                        simDoyMature[lineKey].append(matureValue if matureValue > 0 else harvestValue)
+                        simDoyHarvest[lineKey].append(harvestValue)
+                        simMatIsHarvest[lineKey].append(matureValue <= 0 and harvestValue > 0)
+                        simLastHarvestDate[lineKey].append(datetime.fromisoformat(str(yearValue)+"-10-31").timetuple().tm_yday == harvestValue)
+                        dateYearOrder[lineKey].append(yearValue)
 
-                    if not outputGridsGenerated :
-                        outputGridsGenerated = True
+            if not outputGridsGenerated :
+                outputGridsGenerated = True
+                for simKey in simulations :
+                    allGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
+                    StdDevAvgGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
+                    matureGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    flowerGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    harvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    matIsHavestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    lateHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    coolWeatherImpactGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    coolWeatherDeathGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    coolWeatherImpactWeightGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    wetHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+
+            for simKey in simulations :
+                pixelValue = CalculatePixel(simulations[simKey])
+                if pixelValue > maxAllAvgYield :
+                    maxAllAvgYield = pixelValue
+
+                stdDeviation = statistics.stdev(simulations[simKey])
+                if stdDeviation > maxSdtDeviation :
+                    maxSdtDeviation = stdDeviation
+
+                for currRow, currCol in gridSourceLookup[refID] : 
+                    matureGrid[simKey][currRow-1][currCol-1] = int(average(simDoyMature[simKey]))
+                    flowerGrid[simKey][currRow-1][currCol-1] = int(average(simDoyFlower[simKey]))
+                    harvestGrid[simKey][currRow-1][currCol-1] = int(average(simDoyHarvest[simKey]))
+                    matIsHavestGrid[simKey][currRow-1][currCol-1] = int(sum(simMatIsHarvest[simKey]))
+                    lateHarvestGrid[simKey][currRow-1][currCol-1] = int(sum(simLastHarvestDate[simKey]))
+                    allGrids[simKey][currRow-1][currCol-1] = int(pixelValue)
+                    StdDevAvgGrids[simKey][currRow-1][currCol-1] = int(stdDeviation)
+                    if maxLateHarvest < lateHarvestGrid[simKey][currRow-1][currCol-1] :
+                        maxLateHarvest = lateHarvestGrid[simKey][currRow-1][currCol-1]
+                    if maxMatHarvest < matIsHavestGrid[simKey][currRow-1][currCol-1] :
+                        maxMatHarvest = matIsHavestGrid[simKey][currRow-1][currCol-1]     
+
+            #coolWeatherImpactGrid
+            for scenario in climateFilePeriod :
+                climate_row_col = climateRef[refID]
+                climatePath = os.path.join(climateFolder, climateFilePeriod[scenario], scenario, CLIMATE_FILE_PATTERN.format(climate_row_col))
+                if os.path.exists(climatePath) :
+                    with open(climatePath) as climatefile:
+                        firstLines = 0
+                        numOccurrenceHigh = dict()
+                        numOccurrenceMedium = dict()
+                        numOccurrenceLow = dict()
+                        numWetHarvest = dict()
+                        header = list()
+                        precipPrevDays = collections.deque(maxlen=5)
+                        for line in climatefile:
+                            if firstLines < 2 :
+                                # read header
+                                if firstLines < 1 :
+                                    header = ReadClimateHeader(line)
+                                firstLines += 1
+                            else :
+                                # load relevant line content
+                                lineContent = loadClimateLine(line, header)
+                                date = lineContent[0]
+                                tmin = lineContent[1]
+                                precip = lineContent[2]
+                                precipPrevDays.append(precip)
+                                dateYear = GetYear(date)
+                                if tmin < 15 :
+                                    for simKey in dateYearOrder :
+                                        if simKey[1] == scenario :
+                                            try :
+                                                # get index of current year
+                                                yearIndex = dateYearOrder[simKey].index(dateYear)
+                                            except ValueError:
+                                                break
+                                            # get DOY for maturity and anthesis
+                                            startDOY = simDoyFlower[simKey][yearIndex]
+                                            endDOY = simDoyMature[simKey][yearIndex]
+                                            if IsDateInGrowSeason(startDOY, endDOY, date):
+                                                if not simKey in numOccurrenceHigh:
+                                                    numOccurrenceHigh[simKey] = 0
+                                                    numOccurrenceMedium[simKey] = 0
+                                                    numOccurrenceLow[simKey] = 0
+                                                if tmin < 8 :
+                                                    numOccurrenceHigh[simKey] += 1
+                                                elif tmin < 10 :
+                                                    numOccurrenceMedium[simKey] += 1
+                                                else :
+                                                    numOccurrenceLow[simKey] += 1
+                                            # check if this date is harvest
+                                            harvestDOY = simDoyHarvest[simKey][yearIndex]
+                                            if harvestDOY > 0 and IsDateInGrowSeason(harvestDOY, harvestDOY, date):
+                                                wasWetHarvest = all(x > 0 for x in precipPrevDays)
+                                                if not simKey in numWetHarvest:
+                                                    numWetHarvest[simKey] = 0
+                                                if wasWetHarvest :
+                                                    numWetHarvest[simKey] += 1
+
                         for simKey in simulations :
-                            allGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
-                            StdDevAvgGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
-                            matureGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            flowerGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            harvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            matIsHavestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            lateHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            coolWeatherImpactGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            coolWeatherDeathGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            coolWeatherImpactWeightGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                            wetHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                            if simKey[1] == scenario :
+                                for currRow, currCol in gridSourceLookup[refID] : 
+                                    if allGrids[simKey][currRow-1][currCol-1] > 0 :
+                                        # cool weather occurrence
+                                        if simKey in numOccurrenceMedium :
+                                            sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
+                                            sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
 
-                    for simKey in simulations :
-                        pixelValue = CalculatePixel(simulations[simKey])
-                        if pixelValue > maxAllAvgYield :
-                            maxAllAvgYield = pixelValue
+                                            if sumLowOccurrence < numOccurrenceLow[simKey] :
+                                                sumLowOccurrence = numOccurrenceLow[simKey]
+                                            if sumMediumOccurrence < numOccurrenceMedium[simKey] :
+                                                sumMediumOccurrence = numOccurrenceMedium[simKey]
+                                            if sumHighOccurrence < numOccurrenceHigh[simKey] :
+                                                sumHighOccurrence = numOccurrenceHigh[simKey]
 
-                        stdDeviation = statistics.stdev(simulations[simKey])
-                        if stdDeviation > maxSdtDeviation :
-                            maxSdtDeviation = stdDeviation
+                                            weight = 0
 
-                        matureGrid[simKey][currRow-1][currCol-1] = int(average(simDoyMature[simKey]))
-                        flowerGrid[simKey][currRow-1][currCol-1] = int(average(simDoyFlower[simKey]))
-                        harvestGrid[simKey][currRow-1][currCol-1] = int(average(simDoyHarvest[simKey]))
-                        matIsHavestGrid[simKey][currRow-1][currCol-1] = int(sum(simMatIsHarvest[simKey]))
-                        lateHarvestGrid[simKey][currRow-1][currCol-1] = int(sum(simLastHarvestDate[simKey]))
-                        allGrids[simKey][currRow-1][currCol-1] = int(pixelValue)
-                        StdDevAvgGrids[simKey][currRow-1][currCol-1] = int(stdDeviation)
-                        if maxLateHarvest < lateHarvestGrid[simKey][currRow-1][currCol-1] :
-                            maxLateHarvest = lateHarvestGrid[simKey][currRow-1][currCol-1]
-                        if maxMatHarvest < matIsHavestGrid[simKey][currRow-1][currCol-1] :
-                            maxMatHarvest = matIsHavestGrid[simKey][currRow-1][currCol-1]     
+                                            if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
+                                                weight = 9    
+                                            elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
+                                                weight = 10    
+                                            elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
+                                                weight = 11
+                                            elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
+                                                weight = 12
+                                            elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
+                                                weight = 5
+                                            elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
+                                                weight = 6
+                                            elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
+                                                weight = 7    
+                                            elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
+                                                weight = 8
+                                            elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
+                                                weight = 1
+                                            elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
+                                                weight = 2
+                                            elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
+                                                weight = 3    
+                                            elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
+                                                weight = 4
 
-                    #coolWeatherImpactGrid
-                    for scenario in climateFilePeriod :
-                        climatePath = os.path.join(climateFolder, climateFilePeriod[scenario], scenario, CLIMATE_FILE_PATTERN.format(currRow, currCol))
-                        if os.path.exists(climatePath) :
-                            with open(climatePath) as climatefile:
-                                firstLines = 0
-                                numOccurrenceHigh = dict()
-                                numOccurrenceMedium = dict()
-                                numOccurrenceLow = dict()
-                                numWetHarvest = dict()
-                                header = list()
-                                precipPrevDays = collections.deque(maxlen=5)
-                                for line in climatefile:
-                                    if firstLines < 2 :
-                                        # read header
-                                        if firstLines < 1 :
-                                            header = ReadClimateHeader(line)
-                                        firstLines += 1
-                                    else :
-                                        # load relevant line content
-                                        lineContent = loadClimateLine(line, header)
-                                        date = lineContent[0]
-                                        tmin = lineContent[1]
-                                        precip = lineContent[2]
-                                        precipPrevDays.append(precip)
-                                        dateYear = GetYear(date)
-                                        if tmin < 15 :
-                                            for simKey in dateYearOrder :
-                                                if simKey[1] == scenario :
-                                                    try :
-                                                        # get index of current year
-                                                        yearIndex = dateYearOrder[simKey].index(dateYear)
-                                                    except ValueError:
-                                                        break
-                                                    # get DOY for maturity and anthesis
-                                                    startDOY = simDoyFlower[simKey][yearIndex]
-                                                    endDOY = simDoyMature[simKey][yearIndex]
-                                                    if IsDateInGrowSeason(startDOY, endDOY, date):
-                                                        if not simKey in numOccurrenceHigh:
-                                                            numOccurrenceHigh[simKey] = 0
-                                                            numOccurrenceMedium[simKey] = 0
-                                                            numOccurrenceLow[simKey] = 0
-                                                        if tmin < 8 :
-                                                            numOccurrenceHigh[simKey] += 1
-                                                        elif tmin < 10 :
-                                                            numOccurrenceMedium[simKey] += 1
-                                                        else :
-                                                            numOccurrenceLow[simKey] += 1
-                                                    # check if this date is harvest
-                                                    harvestDOY = simDoyHarvest[simKey][yearIndex]
-                                                    if harvestDOY > 0 and IsDateInGrowSeason(harvestDOY, harvestDOY, date):
-                                                        wasWetHarvest = all(x > 0 for x in precipPrevDays)
-                                                        if not simKey in numWetHarvest:
-                                                            numWetHarvest[simKey] = 0
-                                                        if wasWetHarvest :
-                                                            numWetHarvest[simKey] += 1
- 
-                                for simKey in simulations :
-                                    if simKey[1] == scenario :
-                                        if allGrids[simKey][currRow-1][currCol-1] > 0 :
-                                            # cool weather occurrence
-                                            if simKey in numOccurrenceMedium :
-                                                sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
-                                                sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
-                                                
-                                                if sumLowOccurrence < numOccurrenceLow[simKey] :
-                                                    sumLowOccurrence = numOccurrenceLow[simKey]
-                                                if sumMediumOccurrence < numOccurrenceMedium[simKey] :
-                                                    sumMediumOccurrence = numOccurrenceMedium[simKey]
-                                                if sumHighOccurrence < numOccurrenceHigh[simKey] :
-                                                    sumHighOccurrence = numOccurrenceHigh[simKey]
-
-                                                weight = 0
-                                                
-                                                if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
-                                                    weight = 9    
-                                                elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
-                                                    weight = 10    
-                                                elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                    weight = 11
-                                                elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                    weight = 12
-                                                elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
-                                                    weight = 5
-                                                elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
-                                                    weight = 6
-                                                elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
-                                                    weight = 7    
-                                                elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
-                                                    weight = 8
-                                                elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
-                                                    weight = 1
-                                                elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
-                                                    weight = 2
-                                                elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
-                                                    weight = 3    
-                                                elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
-                                                    weight = 4
-
-                                                coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = sumOccurrence
-                                                coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = sumDeathOccurrence
-                                                coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = weight
-                                                if sumMaxOccurrence < sumOccurrence :
-                                                    sumMaxOccurrence = sumOccurrence
-                                                if sumMaxDeathOccurrence < sumDeathOccurrence :
-                                                    sumMaxDeathOccurrence = sumDeathOccurrence
-                                            else :
-                                                coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
-                                                coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
-                                            # wet harvest occurence
-                                            if simKey in numWetHarvest :
-                                                wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
-                                                if maxWetHarvest < numWetHarvest[simKey] :
-                                                    maxWetHarvest = numWetHarvest[simKey]
-                                            else :
-                                                wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
+                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = sumOccurrence
+                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = sumDeathOccurrence
+                                            coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = weight
+                                            if sumMaxOccurrence < sumOccurrence :
+                                                sumMaxOccurrence = sumOccurrence
+                                            if sumMaxDeathOccurrence < sumDeathOccurrence :
+                                                sumMaxDeathOccurrence = sumDeathOccurrence
                                         else :
-                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
-                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
-                                            coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
+                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
+                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
+                                        # wet harvest occurence
+                                        if simKey in numWetHarvest :
+                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
+                                            if maxWetHarvest < numWetHarvest[simKey] :
+                                                maxWetHarvest = numWetHarvest[simKey]
+                                        else :
                                             wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
+                                    else :
+                                        coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
+                                        coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
+                                        coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
+                                        wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
 
-                    currentInput += 1 
-                    progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput))
+            currentInput += 1 
+            progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput))
 
-            else :
-                continue
     
     pdfList = dict()
     for simKey in allGrids :
@@ -901,6 +918,64 @@ def fileByGrid(filelist, tokenPositions) :
         #indexed file list by grid, remove all none csv        
         idxFileDic[grid] = filename
     return (extRow, extCol, idxFileDic)
+
+def GetGridLookup(gridsource) :
+    colExt = 0
+    rowExt = 0
+    lookup = dict()
+    with open(gridsource) as sourcefile:
+        firstLine = True
+        colID = -1
+        rowID = -1
+        refID = -1
+        for line in sourcefile:
+            tokens = line.strip().split(",")          
+            if firstLine :
+                # read header
+                firstLine = False
+                for index in range(len(tokens)) :
+                    token = tokens[index]
+                    if token == "Column_":
+                        colID = index
+                    if token == "Row":
+                        rowID= index
+                    if token == "soil_ref" :
+                        refID = index
+            else :
+                col = int(tokens[colID])
+                row = int(tokens[rowID])
+                ref = int(tokens[refID])
+                if int(tokens[colID]) > colExt :
+                    colExt = int(tokens[colID])
+                if int(tokens[rowID]) > rowExt :
+                    rowExt = int(tokens[rowID])
+                if  not ref in lookup :
+                    lookup[ref] = list()
+                lookup[ref].append((row, col))
+    return (rowExt, colExt, lookup)
+
+def GetClimateReference(refSource) :
+    lookup = dict()
+    with open(refSource) as sourcefile:
+        firstLine = True
+        refID = -1
+        climateID = -1
+        for line in sourcefile:
+            tokens = line.strip().split(",")            
+            if firstLine :
+                # read header
+                firstLine = False
+                for index in range(len(tokens)) :
+                    token = tokens[index]
+                    if token == "CLocation":
+                        climateID= index
+                    if token == "soil_ref" :
+                        refID = index
+            else :
+                climate = tokens[climateID]
+                ref = int(tokens[refID])
+                lookup[refID] = ref
+    return lookup
 
 def ReadClimateHeader(line) : 
     #read header
