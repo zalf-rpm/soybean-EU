@@ -51,7 +51,7 @@ def extractGridData() :
                     out = outLineDist[0]
                     distance = outLineDist[1]
                     if distance < 25 : # write only line where we found appropriate climate grid cells
-                        soilId = ("{0}_{1:02d}".format(out[3][0], out[3][1]), #climate location
+                        soilId = ("{0}_{1:03d}".format(out[3][0], out[3][1]), #climate location
                         out[5+soilheader["depth"]],
                         out[5+soilheader["OC_topsoil"]],
                         out[5+soilheader["OC_subsoil"]],
@@ -68,7 +68,7 @@ def extractGridData() :
                             soilLookup[soilId] = soildIdNumber
                             soildIdNumber += 1
                             outlineSoil = [str(soildIdNumber),
-                                "{0}_{1:02d}".format(out[3][0], out[3][1]), #climate location
+                                "{0}_{1:03d}".format(out[3][0], out[3][1]), #climate location
                                 str(out[2]), #lat
                                 out[5+soilheader["depth"]],
                                 out[5+soilheader["OC_topsoil"]],
