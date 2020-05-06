@@ -22,13 +22,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 import collections
 import errno
-from ruamel.yaml import YAML
-
+from ruamel_yaml import YAML
 
 PATHS = {
     "local": {
         "projectdatapath" : "./",
-        "sourcepath" : "D:/soybeaneu22-04",
+        "sourcepath" : "./source/",
         "outputpath" : ".",
         "climate-data" : "climate/transformed/" , # path to climate data
         "ascii-out" : "asciigrids_debug/" , # path to ascii grids
@@ -116,10 +115,12 @@ def calculateGrid() :
     res = GetGridLookup(gridSource)
     extRow = res[0]
     extCol = res[1]
-    gridSourceLookup = res[0] # dict() [ref] = [(row, col), ...]
-    climateRef = GetClimateReference(refSource)
+    gridSourceLookup = res[2] # dict() [ref] = [(row, col), ...]
 
+    climateRef = GetClimateReference(refSource)
+    
     filelist = os.listdir(sourceFolder)
+    maxRef = len(filelist) + 1
 
     # get grid extension
     #res = fileByGrid(filelist, (3,4))
@@ -152,11 +153,7 @@ def calculateGrid() :
     sumMediumOccurrence = 0
     sumHighOccurrence = 0
     outputGridsGenerated = False
-    # iterate over all grid cells 
-        #for currRow in range(1, extRow+1) :
-            #for currCol in range(1, extCol+1) :
-                #gridIndex = (currRow, currCol)
-                #if gridIndex in idxFileDic :
+    # iterate over all model run results
     for sourcefileName in filelist:
         # open grid cell file
         with open(os.path.join(sourceFolder, sourcefileName)) as sourcefile:
@@ -207,21 +204,20 @@ def calculateGrid() :
                         simMatIsHarvest[lineKey].append(matureValue <= 0 and harvestValue > 0)
                         simLastHarvestDate[lineKey].append(datetime.fromisoformat(str(yearValue)+"-10-31").timetuple().tm_yday == harvestValue)
                         dateYearOrder[lineKey].append(yearValue)
-
             if not outputGridsGenerated :
                 outputGridsGenerated = True
                 for simKey in simulations :
-                    allGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
-                    StdDevAvgGrids[simKey] =  newGrid(extRow, extCol, NONEVALUE)
-                    matureGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    flowerGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    harvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    matIsHavestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    lateHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    coolWeatherImpactGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    coolWeatherDeathGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    coolWeatherImpactWeightGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
-                    wetHarvestGrid[simKey] = newGrid(extRow, extCol, NONEVALUE)
+                    allGrids[simKey] =  newGridLookup(maxRef, NONEVALUE)
+                    StdDevAvgGrids[simKey] =  newGridLookup(maxRef, NONEVALUE)
+                    matureGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    flowerGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    harvestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    matIsHavestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    lateHarvestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    coolWeatherImpactGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    coolWeatherDeathGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    coolWeatherImpactWeightGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    wetHarvestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
 
             for simKey in simulations :
                 pixelValue = CalculatePixel(simulations[simKey])
@@ -232,18 +228,18 @@ def calculateGrid() :
                 if stdDeviation > maxSdtDeviation :
                     maxSdtDeviation = stdDeviation
 
-                for currRow, currCol in gridSourceLookup[refID] : 
-                    matureGrid[simKey][currRow-1][currCol-1] = int(average(simDoyMature[simKey]))
-                    flowerGrid[simKey][currRow-1][currCol-1] = int(average(simDoyFlower[simKey]))
-                    harvestGrid[simKey][currRow-1][currCol-1] = int(average(simDoyHarvest[simKey]))
-                    matIsHavestGrid[simKey][currRow-1][currCol-1] = int(sum(simMatIsHarvest[simKey]))
-                    lateHarvestGrid[simKey][currRow-1][currCol-1] = int(sum(simLastHarvestDate[simKey]))
-                    allGrids[simKey][currRow-1][currCol-1] = int(pixelValue)
-                    StdDevAvgGrids[simKey][currRow-1][currCol-1] = int(stdDeviation)
-                    if maxLateHarvest < lateHarvestGrid[simKey][currRow-1][currCol-1] :
-                        maxLateHarvest = lateHarvestGrid[simKey][currRow-1][currCol-1]
-                    if maxMatHarvest < matIsHavestGrid[simKey][currRow-1][currCol-1] :
-                        maxMatHarvest = matIsHavestGrid[simKey][currRow-1][currCol-1]     
+                
+                matureGrid[simKey][refID] = int(average(simDoyMature[simKey]))
+                flowerGrid[simKey][refID] = int(average(simDoyFlower[simKey]))
+                harvestGrid[simKey][refID] = int(average(simDoyHarvest[simKey]))
+                matIsHavestGrid[simKey][refID] = int(sum(simMatIsHarvest[simKey]))
+                lateHarvestGrid[simKey][refID] = int(sum(simLastHarvestDate[simKey]))
+                allGrids[simKey][refID] = int(pixelValue)
+                StdDevAvgGrids[simKey][refID] = int(stdDeviation)
+                if maxLateHarvest < lateHarvestGrid[simKey][refID] :
+                    maxLateHarvest = lateHarvestGrid[simKey][refID]
+                if maxMatHarvest < matIsHavestGrid[simKey][refID] :
+                    maxMatHarvest = matIsHavestGrid[simKey][refID]     
 
             #coolWeatherImpactGrid
             for scenario in climateFilePeriod :
@@ -305,74 +301,73 @@ def calculateGrid() :
 
                         for simKey in simulations :
                             if simKey[1] == scenario :
-                                for currRow, currCol in gridSourceLookup[refID] : 
-                                    if allGrids[simKey][currRow-1][currCol-1] > 0 :
-                                        # cool weather occurrence
-                                        if simKey in numOccurrenceMedium :
-                                            sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
-                                            sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
+                                if allGrids[simKey][refID] > 0 :
+                                    # cool weather occurrence
+                                    if simKey in numOccurrenceMedium :
+                                        sumOccurrence = numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
+                                        sumDeathOccurrence = numOccurrenceMedium[simKey] * 10 + numOccurrenceHigh[simKey] * 100 + numOccurrenceLow[simKey]
 
-                                            if sumLowOccurrence < numOccurrenceLow[simKey] :
-                                                sumLowOccurrence = numOccurrenceLow[simKey]
-                                            if sumMediumOccurrence < numOccurrenceMedium[simKey] :
-                                                sumMediumOccurrence = numOccurrenceMedium[simKey]
-                                            if sumHighOccurrence < numOccurrenceHigh[simKey] :
-                                                sumHighOccurrence = numOccurrenceHigh[simKey]
+                                        if sumLowOccurrence < numOccurrenceLow[simKey] :
+                                            sumLowOccurrence = numOccurrenceLow[simKey]
+                                        if sumMediumOccurrence < numOccurrenceMedium[simKey] :
+                                            sumMediumOccurrence = numOccurrenceMedium[simKey]
+                                        if sumHighOccurrence < numOccurrenceHigh[simKey] :
+                                            sumHighOccurrence = numOccurrenceHigh[simKey]
 
-                                            weight = 0
+                                        weight = 0
 
-                                            if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 9    
-                                            elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 10    
-                                            elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 11
-                                            elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
-                                                weight = 12
-                                            elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 5
-                                            elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 6
-                                            elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 7    
-                                            elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
-                                                weight = 8
-                                            elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 1
-                                            elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 2
-                                            elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 3    
-                                            elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
-                                                weight = 4
+                                        if numOccurrenceHigh[simKey] <= 125 and numOccurrenceHigh[simKey] > 0: 
+                                            weight = 9    
+                                        elif numOccurrenceHigh[simKey] <= 500 and numOccurrenceHigh[simKey] > 0: 
+                                            weight = 10    
+                                        elif numOccurrenceHigh[simKey] <= 1000 and numOccurrenceHigh[simKey] > 0: 
+                                            weight = 11
+                                        elif numOccurrenceHigh[simKey] > 1000 and numOccurrenceHigh[simKey] > 0: 
+                                            weight = 12
+                                        elif numOccurrenceMedium[simKey] <= 75 and numOccurrenceMedium[simKey] > 0: 
+                                            weight = 5
+                                        elif numOccurrenceMedium[simKey] <= 150 and numOccurrenceMedium[simKey] > 0: 
+                                            weight = 6
+                                        elif numOccurrenceMedium[simKey] <= 300 and numOccurrenceMedium[simKey] > 0: 
+                                            weight = 7    
+                                        elif numOccurrenceMedium[simKey] > 300 and numOccurrenceMedium[simKey] > 0: 
+                                            weight = 8
+                                        elif numOccurrenceLow[simKey] <= 250 and numOccurrenceLow[simKey] > 0: 
+                                            weight = 1
+                                        elif numOccurrenceLow[simKey] <= 500 and numOccurrenceLow[simKey] > 0: 
+                                            weight = 2
+                                        elif numOccurrenceLow[simKey] <= 1000 and numOccurrenceLow[simKey] > 0: 
+                                            weight = 3    
+                                        elif numOccurrenceLow[simKey] > 1000 and numOccurrenceLow[simKey] > 0: 
+                                            weight = 4
 
-                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = sumOccurrence
-                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = sumDeathOccurrence
-                                            coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = weight
-                                            if sumMaxOccurrence < sumOccurrence :
-                                                sumMaxOccurrence = sumOccurrence
-                                            if sumMaxDeathOccurrence < sumDeathOccurrence :
-                                                sumMaxDeathOccurrence = sumDeathOccurrence
-                                        else :
-                                            coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = 0
-                                            coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = 0
-                                        # wet harvest occurence
-                                        if simKey in numWetHarvest :
-                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = numWetHarvest[simKey]
-                                            if maxWetHarvest < numWetHarvest[simKey] :
-                                                maxWetHarvest = numWetHarvest[simKey]
-                                        else :
-                                            wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
+                                        coolWeatherImpactGrid[simKey][refID] = sumOccurrence
+                                        coolWeatherDeathGrid[simKey][refID] = sumDeathOccurrence
+                                        coolWeatherImpactWeightGrid[simKey][refID] = weight
+                                        if sumMaxOccurrence < sumOccurrence :
+                                            sumMaxOccurrence = sumOccurrence
+                                        if sumMaxDeathOccurrence < sumDeathOccurrence :
+                                            sumMaxDeathOccurrence = sumDeathOccurrence
                                     else :
-                                        coolWeatherImpactGrid[simKey][currRow-1][currCol-1] = -100
-                                        coolWeatherDeathGrid[simKey][currRow-1][currCol-1] = -10000
-                                        coolWeatherImpactWeightGrid[simKey][currRow-1][currCol-1] = -1
-                                        wetHarvestGrid[simKey][currRow-1][currCol-1] = -1
+                                        coolWeatherImpactGrid[simKey][refID] = 0
+                                        coolWeatherDeathGrid[simKey][refID]= 0
+                                    # wet harvest occurence
+                                    if simKey in numWetHarvest :
+                                        wetHarvestGrid[simKey][refID] = numWetHarvest[simKey]
+                                        if maxWetHarvest < numWetHarvest[simKey] :
+                                            maxWetHarvest = numWetHarvest[simKey]
+                                    else :
+                                        wetHarvestGrid[simKey][refID] = -1
+                                else :
+                                    coolWeatherImpactGrid[simKey][refID]= -100
+                                    coolWeatherDeathGrid[simKey][refID] = -10000
+                                    coolWeatherImpactWeightGrid[simKey][refID] = -1
+                                    wetHarvestGrid[simKey][refID] = -1
 
             currentInput += 1 
             progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput))
 
-    
+
     pdfList = dict()
     for simKey in allGrids :
         if not simKey[1] in pdfList : 
@@ -380,8 +375,8 @@ def calculateGrid() :
             makeDir(pdfpath)
             pdfList[simKey[1]] = PdfPages(pdfpath)
 
-
-    drawDateMaps(   matIsHavestGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    matIsHavestGrid, 
                     ASCII_OUT_FILENAME_MAT_IS_HARVEST, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -395,7 +390,8 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="Harvest before maturity  " )
 
-    drawDateMaps(   lateHarvestGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    lateHarvestGrid, 
                     ASCII_OUT_FILENAME_LATE_HARVEST, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -409,7 +405,8 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="Harvest 31. October           " )
 
-    drawDateMaps(   wetHarvestGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    wetHarvestGrid, 
                     ASCII_OUT_FILENAME_WET_HARVEST, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -423,7 +420,8 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="wet harvest           " )
 
-    drawDateMaps(   coolWeatherImpactGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    coolWeatherImpactGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -439,7 +437,8 @@ def calculateGrid() :
 
     coolWeatherWeightLabels = ['0', '< 15°C', '< 10°C', '< 8°C' ]
     ticklist = [0, 3, 7, 11]
-    drawDateMaps(   coolWeatherImpactWeightGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    coolWeatherImpactWeightGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER_WEIGHT, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -454,7 +453,8 @@ def calculateGrid() :
                     cbarLabel=coolWeatherWeightLabels,
                     ticklist=ticklist,
                     progressBar="Cool weather            " )
-    drawDateMaps(   coolWeatherDeathGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    coolWeatherDeathGrid, 
                     ASCII_OUT_FILENAME_COOL_WEATHER_DEATH, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -468,7 +468,8 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="Cool weather death          " )
 
-    drawDateMaps(   flowerGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    flowerGrid, 
                     ASCII_OUT_FILENAME_ANTHESIS_DOY, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -483,7 +484,8 @@ def calculateGrid() :
                     maxVal=306,
                     progressBar="Anthesis DOY            " )
 
-    drawDateMaps(   matureGrid, 
+    drawDateMaps(   gridSourceLookup,
+                    matureGrid, 
                     ASCII_OUT_FILENAME_MAT_DOY, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -500,7 +502,8 @@ def calculateGrid() :
 
 
     #write average yield grid 
-    drawDateMaps(   allGrids, 
+    drawDateMaps(   gridSourceLookup,
+                    allGrids, 
                     ASCII_OUT_FILENAME_AVG, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -514,7 +517,8 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="average yield grids     " )
 
-    drawDateMaps(   StdDevAvgGrids, 
+    drawDateMaps(   gridSourceLookup,
+                    StdDevAvgGrids, 
                     ASCII_OUT_FILENAME_DEVI_AVG, 
                     extCol, extRow, 
                     asciiOutFolder, 
@@ -549,23 +553,22 @@ def calculateGrid() :
         #treatmentNoIdx, climateSenarioCIdx, mGroupCIdx, yieldsCIdx
         scenarioKey = (simKey[0], simKey[1], simKey[3])
         if not scenarioKey in maxYieldGrids :
-            maxYieldGrids[scenarioKey] = newGrid(extRow, extCol, NONEVALUE)
-            matGroupGrids[scenarioKey] = newGrid(extRow, extCol, NONEVALUE)
-            maxYieldDeviationGrids[scenarioKey] = newGrid(extRow, extCol, NONEVALUE)
-            matGroupDeviationGrids[scenarioKey] = newGrid(extRow, extCol, NONEVALUE)
+            maxYieldGrids[scenarioKey] = newGridLookup(maxRef, NONEVALUE)
+            matGroupGrids[scenarioKey] = newGridLookup(maxRef, NONEVALUE)
+            maxYieldDeviationGrids[scenarioKey] = newGridLookup(maxRef, NONEVALUE)
+            matGroupDeviationGrids[scenarioKey] = newGridLookup(maxRef, NONEVALUE)
         currGrid = allGrids[simKey]
 
-        for row in range(extRow) :
-            for col in range(extCol) :
-                if currGrid[row][col] > maxYieldGrids[scenarioKey][row][col] :
-                    maxYieldGrids[scenarioKey][row][col] = currGrid[row][col]
-                    maxYieldDeviationGrids[scenarioKey][row][col] = currGrid[row][col]
-                    if currGrid[row][col] == 0 :
-                        matGroupGrids[scenarioKey][row][col] = matGroupIdGrids["none"]
-                        matGroupDeviationGrids[scenarioKey][row][col] = matGroupIdGrids["none"]
-                    else :
-                        matGroupGrids[scenarioKey][row][col] = matGroupIdGrids[simKey[2]]
-                        matGroupDeviationGrids[scenarioKey][row][col] = matGroupIdGrids[simKey[2]]
+        for ref in range(maxRef) :
+            if currGrid[ref] > maxYieldGrids[scenarioKey][ref] :
+                maxYieldGrids[scenarioKey][ref] = currGrid[ref]
+                maxYieldDeviationGrids[scenarioKey][ref] = currGrid[ref]
+                if currGrid[ref] == 0 :
+                    matGroupGrids[scenarioKey][ref] = matGroupIdGrids["none"]
+                    matGroupDeviationGrids[scenarioKey][ref] = matGroupIdGrids["none"]
+                else :
+                    matGroupGrids[scenarioKey][ref] = matGroupIdGrids[simKey[2]]
+                    matGroupDeviationGrids[scenarioKey][ref] = matGroupIdGrids[simKey[2]]
 
     invMatGroupIdGrids = {v: k for k, v in matGroupIdGrids.items()}
 
@@ -575,14 +578,13 @@ def calculateGrid() :
 
         currGridYield = allGrids[simKey]
         currGridDeviation = StdDevAvgGrids[simKey]
-        for row in range(extRow) :
-            for col in range(extCol) :
-                if matGroupDeviationGrids[scenarioKey][row][col] != NONEVALUE :
-                    matGroup = invMatGroupIdGrids[matGroupDeviationGrids[scenarioKey][row][col]]
-                    matGroupKey = (simKey[0], simKey[1], matGroup, simKey[3])
-                    if currGridYield[row][col] > maxYieldGrids[scenarioKey][row][col] * 0.9 and currGridDeviation[row][col] < StdDevAvgGrids[matGroupKey][row][col] :
-                        maxYieldDeviationGrids[scenarioKey][row][col] = currGridYield[row][col]
-                        matGroupDeviationGrids[scenarioKey][row][col] = matGroupIdGrids[simKey[2]]
+        for ref in range(maxRef) :
+            if matGroupDeviationGrids[scenarioKey][ref] != NONEVALUE :
+                matGroup = invMatGroupIdGrids[matGroupDeviationGrids[scenarioKey][ref]]
+                matGroupKey = (simKey[0], simKey[1], matGroup, simKey[3])
+                if currGridYield[ref] > maxYieldGrids[scenarioKey][ref] * 0.9 and currGridDeviation[ref] < StdDevAvgGrids[matGroupKey][ref] :
+                    maxYieldDeviationGrids[scenarioKey][ref] = currGridYield[ref]
+                    matGroupDeviationGrids[scenarioKey][ref] = matGroupIdGrids[simKey[2]]
 
     currentInput = 0
     numInput = len(maxYieldDeviationGrids)
@@ -593,10 +595,9 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue = maxAllAvgYield)
-        for row in range(extRow-1, -1, -1) :
-            seperator = ' '
-            file.write(seperator.join(map(str, maxYieldDeviationGrids[simKey][row])) + "\n")
+        WriteRows(file, extRow, extCol, maxYieldDeviationGrids, simKey, gridSourceLookup)
         file.close()
+
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
         title = "Max avg yield minus std deviation - Scn: {0} {1}".format(simKey[1], simKey[2])
@@ -617,9 +618,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue = maxAllAvgYield)
-        for row in range(extRow-1, -1, -1) :
-            seperator = ' '
-            file.write(seperator.join(map(str, maxYieldGrids[simKey][row])) + "\n")
+        WriteRows(file, extRow, extCol, maxYieldGrids, simKey, gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -649,9 +648,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
-        for row in range(extRow-1, -1, -1) :
-            seperator = ' '
-            file.write(seperator.join(map(str, matGroupGrids[simKey][row])) + "\n")
+        WriteRows(file, extRow, extCol, matGroupGrids, simKey, gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -670,9 +667,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
-        for row in range(extRow-1, -1, -1) :
-            seperator = ' '
-            file.write(seperator.join(map(str, matGroupDeviationGrids[simKey][row])) + "\n")
+        WriteRows(file, extRow, extCol, matGroupDeviationGrids, simKey, gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -693,16 +688,19 @@ def calculateGrid() :
         # treatment number
         if simKey[0] == "T1" :
             otherKey = ("T2",simKey[1], simKey[2], "Unlimited water")
-            newDiffGrid = GridDifference(allGrids[otherKey], allGrids[simKey], extRow, extCol)
+            newDiffGrid = GridDifference(allGrids[otherKey], allGrids[simKey], maxRef)
             
             gridFileName = ASCII_OUT_FILENAME_WATER_DIFF.format(simKey[2])
             gridFileName = gridFileName.replace("/", "-") #remove directory seperator from filename
             gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
+            
             for row in range(extRow-1, -1, -1) :
-                seperator = ' '
-                file.write(seperator.join(map(str, newDiffGrid[row])) + "\n")
+                line = ""
+                for col in range(extCol-1, -1, -1) :
+                    line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
+                file.write(line + "\n")
             file.close()
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -721,15 +719,17 @@ def calculateGrid() :
         # treatment number
         if simKey[0] == "T1" :
             otherKey = ("T2",simKey[1], "Unlimited water")
-            newDiffGrid = GridDifference(maxYieldGrids[otherKey], maxYieldGrids[simKey], extRow, extCol)
+            newDiffGrid = GridDifference(maxYieldGrids[otherKey], maxYieldGrids[simKey], maxRef)
             
             gridFileName = ASCII_OUT_FILENAME_WATER_DIFF_MAX
             gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
             for row in range(extRow-1, -1, -1) :
-                seperator = ' '
-                file.write(seperator.join(map(str, newDiffGrid[row])) + "\n")
+                line = ""
+                for col in range(extCol-1, -1, -1) :
+                    line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
+                file.write(line + "\n")
             file.close()
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -755,6 +755,10 @@ def newGrid(extRow, extCol, defaultVal) :
     grid = [defaultVal] * extRow
     for i in range(extRow) :
         grid[i] = [defaultVal] * extCol
+    return grid
+
+def newGridLookup(maxRef, defaultVal) :
+    grid = [defaultVal] * maxRef
     return grid
 
 def CalculatePixel(yieldList) :
@@ -839,15 +843,14 @@ def loadLine(line, header) :
     yields = float(tokens[header[11]])
     return (treatNo, climateSenario, mGroup, comment, period, year, sowDOY, emergDOY, antDOY, matDOY, harDOY, yields)
 
-def GridDifference(grid1, grid2, extRow, extCol) :
+def GridDifference(grid1, grid2, maxRef) :
     # calculate the difference between 2 grids, save it to new grid
-    newGridDiff = newGrid(extRow, extCol, NONEVALUE) 
-    for row in range(extRow) :
-        for col in range(extCol) :
-            if  grid1[row][col] != NONEVALUE and grid2[row][col] != NONEVALUE: 
-                newGridDiff[row][col] = grid1[row][col] - grid2[row][col]
-            else :
-                newGridDiff[row][col] = NONEVALUE
+    newGridDiff = newGridLookup(maxRef, NONEVALUE) 
+    for ref in range(maxRef) :
+        if  grid1[ref] != NONEVALUE and grid2[ref] != NONEVALUE: 
+            newGridDiff[ref] = grid1[ref] - grid2[ref]
+        else :
+            newGridDiff[ref] = NONEVALUE
     return newGridDiff
 
 def validDOY(s):
@@ -952,7 +955,13 @@ def GetGridLookup(gridsource) :
                 if  not ref in lookup :
                     lookup[ref] = list()
                 lookup[ref].append((row, col))
-    return (rowExt, colExt, lookup)
+
+    lookupGrid = newGrid(rowExt, colExt, NONEVALUE)
+    for ref in lookup :
+        for row, col in lookup[ref] :
+            lookupGrid[row-1][col-1] = ref
+
+    return (rowExt, colExt, lookupGrid)
 
 def GetClimateReference(refSource) :
     lookup = dict()
@@ -974,7 +983,7 @@ def GetClimateReference(refSource) :
             else :
                 climate = tokens[climateID]
                 ref = int(tokens[refID])
-                lookup[refID] = ref
+                lookup[ref] = climate
     return lookup
 
 def ReadClimateHeader(line) : 
@@ -1001,7 +1010,7 @@ def loadClimateLine(line, header) :
     return (date, tmin, precip)
 
 
-def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, showBar, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
+def drawDateMaps(gridSourceLookup, grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolder, titleFormat, labelText, showBar, colormap='viridis', cbarLabel=None, ticklist=None, factor=0.001, maxVal=-9999, minVal=-9999, pdfList=None, progressBar="           " ) :
     currentInput = 0
     numInput = len(grids)
     for simKey in grids :
@@ -1010,9 +1019,8 @@ def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolde
         gridFileName = gridFileName.replace("/", "-") #remove directory seperator from filename
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxVal, minValue=minVal)
-        for row in range(extRow-1, -1, -1) :
-            seperator = ' '
-            file.write(seperator.join(map(str, grids[simKey][row])) + "\n")
+
+        WriteRows(file, extRow, extCol, grids, simKey, gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -1026,6 +1034,15 @@ def drawDateMaps(grids, filenameFormat, extCol, extRow, asciiOutFolder, pngFolde
         #createImg(gridFilePath, pngFilePath, title, colormap=colormap, cbarLabel=cbarLabel, ticklist=ticklist, factor=factor, label=labelText, pdf=pdfFile)
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
+
+def WriteRows(file, extRow, extCol, grids, simKey, gridSourceLookup) :
+    for row in range(extRow-1, -1, -1) :
+        line = ""
+        for col in range(extCol-1, -1, -1) :
+            line += str(grids[simKey][gridSourceLookup[row][col] ]) + " "
+        file.write(line + "\n")
+
+
 
 def writeMetaFile(gridFilePath, title, labeltext, colormap='', colorlist=None, cbarLabel=None, ticklist=None, factor=0.001,  maxValue=-9999, minValue=-9999):
     metaFilePath = gridFilePath+".meta"
