@@ -696,9 +696,9 @@ def calculateGrid() :
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
             
-            for row in range(extRow-1, -1, -1) :
+            for row in range(extRow) :
                 line = ""
-                for col in range(extCol-1, -1, -1) :
+                for col in range(extCol) :
                     line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
                 file.write(line + "\n")
             file.close()
@@ -725,9 +725,9 @@ def calculateGrid() :
             gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
-            for row in range(extRow-1, -1, -1) :
+            for row in range(extRow) :
                 line = ""
-                for col in range(extCol-1, -1, -1) :
+                for col in range(extCol) :
                     line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
                 file.write(line + "\n")
             file.close()
@@ -1036,12 +1036,16 @@ def drawDateMaps(gridSourceLookup, grids, filenameFormat, extCol, extRow, asciiO
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
 
 def WriteRows(file, extRow, extCol, grids, simKey, gridSourceLookup) :
-    for row in range(extRow-1, -1, -1) :
+    simGrid = grids[simKey]
+    for row in range(extRow) :
         line = ""
-        for col in range(extCol-1, -1, -1) :
-            line += str(grids[simKey][gridSourceLookup[row][col] ]) + " "
+        for col in range(extCol) :
+            refID = gridSourceLookup[row][col]
+            if refID >= 0 :
+                line += str(simGrid[refID]) + " "
+            else : 
+               line += "-9999 " 
         file.write(line + "\n")
-
 
 
 def writeMetaFile(gridFilePath, title, labeltext, colormap='', colorlist=None, cbarLabel=None, ticklist=None, factor=0.001,  maxValue=-9999, minValue=-9999):
@@ -1137,7 +1141,7 @@ def createImg(ascii_path, out_path, title, label='Yield in t', colormap='viridis
     # save image and pdf 
     makeDir(out_path)
     if pdf :
-        pdf.savefig()
+        pdf.savefig(dpi=150)
     plt.savefig(out_path, dpi=150)
     plt.close(fig)
     
@@ -1255,7 +1259,7 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     # save image and pdf 
     makeDir(out_path)
     if pdf :
-        pdf.savefig()
+        pdf.savefig(dpi=150)
     plt.savefig(out_path, dpi=150)
     plt.close(fig)  
 
