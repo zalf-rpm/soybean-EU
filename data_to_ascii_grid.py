@@ -595,7 +595,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue = maxAllAvgYield)
-        WriteRows(file, extRow, extCol, maxYieldDeviationGrids, simKey, gridSourceLookup)
+        WriteRows(file, extRow, extCol, maxYieldDeviationGrids[simKey], gridSourceLookup)
         file.close()
 
         # create png
@@ -618,7 +618,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue = maxAllAvgYield)
-        WriteRows(file, extRow, extCol, maxYieldGrids, simKey, gridSourceLookup)
+        WriteRows(file, extRow, extCol, maxYieldGrids[simKey], gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -648,7 +648,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
-        WriteRows(file, extRow, extCol, matGroupGrids, simKey, gridSourceLookup)
+        WriteRows(file, extRow, extCol, matGroupGrids[simKey], gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -667,7 +667,7 @@ def calculateGrid() :
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         # create ascii file
         file = writeAGridHeader(gridFilePath, extCol, extRow, minValue=0, maxValue=len(sidebarLabel)-1)
-        WriteRows(file, extRow, extCol, matGroupDeviationGrids, simKey, gridSourceLookup)
+        WriteRows(file, extRow, extCol, matGroupDeviationGrids[simKey], gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -695,12 +695,7 @@ def calculateGrid() :
             gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
-            
-            for row in range(extRow) :
-                line = ""
-                for col in range(extCol) :
-                    line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
-                file.write(line + "\n")
+            WriteRows(file, extRow, extCol, newDiffGrid, gridSourceLookup)
             file.close()
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -725,11 +720,7 @@ def calculateGrid() :
             gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
             # create ascii file
             file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxAllAvgYield)
-            for row in range(extRow) :
-                line = ""
-                for col in range(extCol) :
-                    line += str(newDiffGrid[gridSourceLookup[row][col] ]) + " "
-                file.write(line + "\n")
+            WriteRows(file, extRow, extCol, newDiffGrid, gridSourceLookup)
             file.close()
             # create png
             pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -1020,7 +1011,7 @@ def drawDateMaps(gridSourceLookup, grids, filenameFormat, extCol, extRow, asciiO
         gridFilePath = os.path.join(asciiOutFolder, simKey[1], gridFileName)
         file = writeAGridHeader(gridFilePath, extCol, extRow, maxValue=maxVal, minValue=minVal)
 
-        WriteRows(file, extRow, extCol, grids, simKey, gridSourceLookup)
+        WriteRows(file, extRow, extCol, grids[simKey], gridSourceLookup)
         file.close()
         # create png
         pngFilePath = os.path.join(pngFolder, simKey[1], gridFileName[:-3]+"png")
@@ -1035,8 +1026,7 @@ def drawDateMaps(gridSourceLookup, grids, filenameFormat, extCol, extRow, asciiO
         currentInput += 1 
         progress(showBar, currentInput, numInput, str(currentInput) + " of " + str(numInput) + " " + progressBar)
 
-def WriteRows(file, extRow, extCol, grids, simKey, gridSourceLookup) :
-    simGrid = grids[simKey]
+def WriteRows(file, extRow, extCol, simGrid, gridSourceLookup) :
     for row in range(extRow) :
         line = ""
         for col in range(extCol) :
