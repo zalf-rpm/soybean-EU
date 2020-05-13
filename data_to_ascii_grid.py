@@ -134,8 +134,8 @@ def calculateGrid() :
     currentInput = 0
     allGrids = dict()
     StdDevAvgGrids = dict()
-    matureGrid = dict()
-    flowerGrid = dict()
+    #matureGrid = dict()
+    #flowerGrid = dict()
     harvestGrid = dict()
     matIsHavestGrid = dict()
     lateHarvestGrid = dict()
@@ -209,8 +209,8 @@ def calculateGrid() :
                 for simKey in simulations :
                     allGrids[simKey] =  newGridLookup(maxRef, NONEVALUE)
                     StdDevAvgGrids[simKey] =  newGridLookup(maxRef, NONEVALUE)
-                    matureGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
-                    flowerGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    #matureGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
+                    #flowerGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
                     harvestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
                     matIsHavestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
                     lateHarvestGrid[simKey] = newGridLookup(maxRef, NONEVALUE)
@@ -229,8 +229,8 @@ def calculateGrid() :
                     maxSdtDeviation = stdDeviation
 
                 
-                matureGrid[simKey][refID] = int(average(simDoyMature[simKey]))
-                flowerGrid[simKey][refID] = int(average(simDoyFlower[simKey]))
+                #matureGrid[simKey][refID] = int(average(simDoyMature[simKey]))
+                #flowerGrid[simKey][refID] = int(average(simDoyFlower[simKey]))
                 harvestGrid[simKey][refID] = int(average(simDoyHarvest[simKey]))
                 matIsHavestGrid[simKey][refID] = int(sum(simMatIsHarvest[simKey]))
                 lateHarvestGrid[simKey][refID] = int(sum(simLastHarvestDate[simKey]))
@@ -468,37 +468,37 @@ def calculateGrid() :
                     pdfList=pdfList, 
                     progressBar="Cool weather death          " )
 
-    drawDateMaps(   gridSourceLookup,
-                    flowerGrid, 
-                    ASCII_OUT_FILENAME_ANTHESIS_DOY, 
-                    extCol, extRow, 
-                    asciiOutFolder, 
-                    pngFolder, 
-                    "Anthesis DOY - Scn: {0} {1} {2}", 
-                    "DOY", 
-                    showBar,
-                    colormap='viridis',
-                    factor=1,
-                    pdfList=pdfList, 
-                    minVal=-1,
-                    maxVal=306,
-                    progressBar="Anthesis DOY            " )
+    # drawDateMaps(   gridSourceLookup,
+    #                 flowerGrid, 
+    #                 ASCII_OUT_FILENAME_ANTHESIS_DOY, 
+    #                 extCol, extRow, 
+    #                 asciiOutFolder, 
+    #                 pngFolder, 
+    #                 "Anthesis DOY - Scn: {0} {1} {2}", 
+    #                 "DOY", 
+    #                 showBar,
+    #                 colormap='viridis',
+    #                 factor=1,
+    #                 pdfList=pdfList, 
+    #                 minVal=-1,
+    #                 maxVal=306,
+    #                 progressBar="Anthesis DOY            " )
 
-    drawDateMaps(   gridSourceLookup,
-                    matureGrid, 
-                    ASCII_OUT_FILENAME_MAT_DOY, 
-                    extCol, extRow, 
-                    asciiOutFolder, 
-                    pngFolder, 
-                    "Maturity DOY - Scn: {0} {1} {2}",    
-                    "DOY",               
-                    showBar,                       
-                    colormap='viridis',
-                    factor=1,
-                    minVal=-1,
-                    maxVal=306,
-                    pdfList=pdfList, 
-                    progressBar="Maturity DOY            " )
+    # drawDateMaps(   gridSourceLookup,
+    #                 matureGrid, 
+    #                 ASCII_OUT_FILENAME_MAT_DOY, 
+    #                 extCol, extRow, 
+    #                 asciiOutFolder, 
+    #                 pngFolder, 
+    #                 "Maturity DOY - Scn: {0} {1} {2}",    
+    #                 "DOY",               
+    #                 showBar,                       
+    #                 colormap='viridis',
+    #                 factor=1,
+    #                 minVal=-1,
+    #                 maxVal=306,
+    #                 pdfList=pdfList, 
+    #                 progressBar="Maturity DOY            " )
 
 
     #write average yield grid 
