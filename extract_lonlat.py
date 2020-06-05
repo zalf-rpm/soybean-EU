@@ -65,8 +65,8 @@ def extractGridData() :
                         out[5+soilheader["Silt_subsoil"]])
 
                         if not soilId in soilLookup : 
+                            soildIdNumber += 1                           
                             soilLookup[soilId] = soildIdNumber
-                            soildIdNumber += 1
                             outlineSoil = [str(soildIdNumber),
                                 "{0}_{1:03d}".format(out[3][0], out[3][1]), #climate location
                                 str(out[2]), #lat
