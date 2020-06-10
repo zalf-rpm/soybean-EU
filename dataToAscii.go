@@ -85,9 +85,11 @@ func main() {
 
 	// command line flags
 	pathPtr := flag.String("path", USER, "path id")
-	sourcePtr := flag.String("source", "", "path to sourece folder")
+	sourcePtr := flag.String("source", "", "path to source folder")
 	outPtr := flag.String("out", "", "path to out folder")
 	noprogessPtr := flag.Bool("showprogess", SHOWPROGRESSBAR, "show progress bar")
+	projectPtr := flag.String("project", "", "path to project folder")
+	climatePtr := flag.String("climate", "", "path to climate folder")
 
 	flag.Parse()
 
@@ -95,6 +97,8 @@ func main() {
 	showBar := *noprogessPtr
 	sourceFolder := *sourcePtr
 	outputFolder := *outPtr
+	climateFolder := *climatePtr
+	projectpath := *projectPtr
 
 	if len(sourceFolder) == 0 {
 		sourceFolder = PATHS[pathID]["sourcepath"]
@@ -102,12 +106,14 @@ func main() {
 	if len(outputFolder) == 0 {
 		outputFolder = PATHS[pathID]["outputpath"]
 	}
+	if len(climateFolder) == 0 {
+		climateFolder = PATHS[pathID]["climate-data"]
+	}
+	if len(projectpath) == 0 {
+		projectpath = PATHS[pathID]["projectdatapath"]
+	}
 
-	climateFolder := PATHS[pathID]["climate-data"]
 	asciiOutFolder := filepath.Join(outputFolder, PATHS[pathID]["ascii-out"])
-	// pngFolder := filepath.Join(outputFolder, PATHS[pathID]["png-out"])
-	// pdfFolder := filepath.Join(outputFolder, PATHS[pathID]["pdf-out"])
-	projectpath := filepath.Join(outputFolder, PATHS[pathID]["projectdatapath"])
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 
