@@ -14,14 +14,15 @@ from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 import collections
 import errno
+import gzip
 from ruamel_yaml import YAML
 
 PATHS = {
     "local": {
-        "sourcepath" : "./asciigrid/",
+        "sourcepath" : "./asciigrids_debug/",
         "outputpath" : ".",
-        "png-out" : "png/" , # path to png images
-        "pdf-out" : "pdf-out/" , # path to pdf package
+        "png-out" : "png_debug/" , # path to png images
+        "pdf-out" : "pdf-out_debug/" , # path to pdf package
     },
     "test": {
         "sourcepath" : "./asciigrid/",
@@ -75,16 +76,29 @@ def build() :
             for file in files:
                 if not file.endswith(".meta"):
                     print("file", file)
+                    pngfilename = file[:-3]+"png"
+                    metafilename = file+".meta"
+                    isGZ = file.endswith(".gz")
+                    if isGZ :
+                        pngfilename = file[:-6]+"png"
+                        metafilename = file[:-2]+"meta"
+
                     filepath = os.path.join(root, file)
-                    out_path = os.path.join(pngFolder, scenario, file[:-3]+"png")            
-                    createImgFromMeta( filepath, filepath+".meta", out_path, pdf=pdf)
+                    metapath = os.path.join(root, metafilename)
+                    out_path = os.path.join(pngFolder, scenario, pngfilename)            
+                    createImgFromMeta( filepath, metapath, out_path, pdf=pdf)
 
 
 def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
 
-    # Read in ascii header data
-    with open(ascii_path, 'r') as source:
-        ascii_header = source.readlines()[:6]
+    if ascii_path.endswith(".gz") :
+           # Read in ascii header data
+        with gzip.open(ascii_path, 'rt') as source:
+            ascii_header = source.readlines()[:6] 
+    else :
+        # Read in ascii header data
+        with open(ascii_path, 'r') as source:
+            ascii_header = source.readlines()[:6]
 
     # Read the ASCII raster header
     ascii_header = [item.strip().split()[-1] for item in ascii_header]
