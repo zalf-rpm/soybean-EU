@@ -995,8 +995,8 @@
 					"max-3d-precip-sum": 999, 
 					"harvest-time": "maturity", 
 					"max-curr-day-precip": 999, 
-					"min-%-asw": 0, 
-					"max-%-asw": 100, 
+					"min-%-asw": -999, 
+					"max-%-asw": 999, 
 					"latest-date": "0000-10-31", 
 					"type": "AutomaticHarvest"
 				}
