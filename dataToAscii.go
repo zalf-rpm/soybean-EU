@@ -9,8 +9,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cheggaaa/pb"
@@ -21,10 +23,10 @@ const asciiOutFilenameAvg = "avg_%s_trno%s.asc"                             // m
 const asciiOutFilenameDeviAvg = "devi_avg_%s_trno%s.asc"                    // mGroup_treatmentnumber
 const asciiOutFilenameMaxYield = "maxyield_trno%s.asc"                      // treatmentnumber
 const asciiOutFilenameMaxYieldMat = "maxyield_matgroup_trno%s.asc"          // treatmentnumber
-const asciiOutFilenameMaxYieldDevi = "maxyield_Devi_trno%s.asc"             // treatmentnumber
-const asciiOutFilenameMaxYieldMatDevi = "maxyield_Devi_matgroup_trno%s.asc" // treatmentnumber
-const asciiOutFilenameWaterDiff = "water_Diff_%s.asc"
-const asciiOutFilenameWaterDiffMax = "water_Diff_max_yield.asc"
+const asciiOutFilenameMaxYieldDevi = "maxyield_devi_trno%s.asc"             // treatmentnumber
+const asciiOutFilenameMaxYieldMatDevi = "maxyield_devi_matgroup_trno%s.asc" // treatmentnumber
+const asciiOutFilenameWaterDiff = "water_diff_%s.asc"
+const asciiOutFilenameWaterDiffMax = "water_diff_max_yield.asc"
 const asciiOutFilenameSowDoy = "doy_sow_%s_trno%s.asc"                        // mGroup_treatmentnumber
 const asciiOutFilenameEmergeDoy = "doy_emg_%s_trno%s.asc"                     // mGroup_treatmentnumber
 const asciiOutFilenameAnthesisDoy = "doy_ant_%s_trno%s.asc"                   // mGroup_treatmentnumber
@@ -62,6 +64,7 @@ func main() {
 			"ascii-out":       "asciigrids_debug/",         // path to ascii grids
 			"png-out":         "png_debug/",                // path to png images
 			"pdf-out":         "pdf-out_debug/",            // path to pdf package
+			"sow-out":         "sow-out_debug/",            // path to sowing dates
 		},
 		"test": {
 			"projectdatapath": "./",
@@ -71,6 +74,7 @@ func main() {
 			"ascii-out":       "asciigrids2/",              // path to ascii grids
 			"png-out":         "png2/",                     // path to png images
 			"pdf-out":         "pdf-out2/",                 // path to pdf package
+			"sow-out":         "sow-out/",                  // path to sowing dates
 		},
 		"Cluster": {
 			"projectdatapath": "/project/",
@@ -80,6 +84,7 @@ func main() {
 			"ascii-out":       "asciigrid/",     // path to ascii grids
 			"png-out":         "png/",           // path to png images
 			"pdf-out":         "pdf-out/",       // path to pdf package
+			"sow-out":         "sow-out_debug/", // path to sowing dates
 		},
 	}
 
@@ -114,6 +119,7 @@ func main() {
 	}
 
 	asciiOutFolder := filepath.Join(outputFolder, PATHS[pathID]["ascii-out"])
+	sowDatesPath := filepath.Join(outputFolder, PATHS[pathID]["sow-out"], "sowing-dates.csv")
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 
@@ -137,424 +143,429 @@ func main() {
 		}
 	}
 
-	maxAllAvgYield := 0.0
-	maxSdtDeviation := 0.0
 	numInput := len(filelist)
-	currentInput := 0
-	allGrids := make(map[SimKeyTuple][]int)
-	StdDevAvgGrids := make(map[SimKeyTuple][]int)
-	// #matureGrid = dict()
-	// #flowerGrid = dict()
-	harvestGrid := make(map[SimKeyTuple][]int)
-	matIsHavestGrid := make(map[SimKeyTuple][]int)
-	lateHarvestGrid := make(map[SimKeyTuple][]int)
-	climateFilePeriod := make(map[string]string)
-	coolWeatherImpactGrid := make(map[SimKeyTuple][]int)
-	coolWeatherDeathGrid := make(map[SimKeyTuple][]int)
-	coolWeatherImpactWeightGrid := make(map[SimKeyTuple][]int)
-	wetHarvestGrid := make(map[SimKeyTuple][]int)
-	sumMaxOccurrence := 0
-	sumMaxDeathOccurrence := 0
-	maxLateHarvest := 0
-	maxWetHarvest := 0
-	maxMatHarvest := 0
-	sumLowOccurrence := 0
-	sumMediumOccurrence := 0
-	sumHighOccurrence := 0
-	outputGridsGenerated := false
-	progessFunc := progress(numInput, "input files")
+	var p ProcessedData
+	p.maxAllAvgYield = 0.0
+	p.maxSdtDeviation = 0.0
+	p.allGrids = make(map[SimKeyTuple][]int)
+	p.StdDevAvgGrids = make(map[SimKeyTuple][]int)
+	p.harvestGrid = make(map[SimKeyTuple][]int)
+	p.matIsHavestGrid = make(map[SimKeyTuple][]int)
+	p.lateHarvestGrid = make(map[SimKeyTuple][]int)
+	p.climateFilePeriod = make(map[string]string)
+	p.coolWeatherImpactGrid = make(map[SimKeyTuple][]int)
+	p.coolWeatherDeathGrid = make(map[SimKeyTuple][]int)
+	p.coolWeatherImpactWeightGrid = make(map[SimKeyTuple][]int)
+	p.wetHarvestGrid = make(map[SimKeyTuple][]int)
+	p.sumMaxOccurrence = 0
+	p.sumMaxDeathOccurrence = 0
+	p.maxLateHarvest = 0
+	p.maxWetHarvest = 0
+	p.maxMatHarvest = 0
+	p.sumLowOccurrence = 0
+	p.sumMediumOccurrence = 0
+	p.sumHighOccurrence = 0
+	p.outputGridsGenerated = false
+	p.currentInput = 0
+	p.progress = progress(numInput, "input files")
 
+	sowDOYC := make(chan map[SimKeyTuple][][]int)
+	outChan := make(chan bool)
+	go writeOutSowData(sowDatesPath, sowDOYC)
+
+	currRuns := 0
+	maxRuns := 60
 	// iterate over all model run results
 	for _, sourcefileInfo := range filelist {
-		sourcefileName := sourcefileInfo.Name()
-		sourcefile, err := os.Open(filepath.Join(sourceFolder, sourcefileName))
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer sourcefile.Close()
-		refIDStr := strings.Split(strings.Split(sourcefileName, ".")[0], "_")[3]
-		refID64, err := strconv.ParseInt(refIDStr, 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		refIDIndex := int(refID64) - 1
-		simulations := make(map[SimKeyTuple][]float64)
-		simDoyFlower := make(map[SimKeyTuple][]int)
-		simDoyMature := make(map[SimKeyTuple][]int)
-		simDoyHarvest := make(map[SimKeyTuple][]int)
-		simMatIsHarvest := make(map[SimKeyTuple][]bool)
-		simLastHarvestDate := make(map[SimKeyTuple][]bool)
-		dateYearOrder := make(map[SimKeyTuple][]int)
-		firstLine := true
-		var header SimDataIndex
-		scanner := bufio.NewScanner(sourcefile)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if firstLine {
-				// read header
-				firstLine = false
-				header = readHeader(line)
-			} else {
-				// load relevant line content
-				lineKey, lineContent := loadLine(line, header)
-				// check for the lines with a specific crop
-				if IsCrop(lineKey, CROPNAME) && (lineKey.treatNo == "T1" || lineKey.treatNo == "T2") {
-					yieldValue := lineContent.yields
-					period := lineContent.period
-					yearValue := lineContent.year
-					// sowValue = lineContent[-5]
-					// emergeValue = lineContent[-4]
-					flowerValue := lineContent.antDOY
-					matureValue := lineContent.matDOY
-					harvestValue := lineContent.harDOY
-					if _, ok := simulations[lineKey]; !ok {
-						simulations[lineKey] = make([]float64, 0, 30)
-						simDoyFlower[lineKey] = make([]int, 0, 30)
-						simDoyMature[lineKey] = make([]int, 0, 30)
-						simDoyHarvest[lineKey] = make([]int, 0, 30)
-						simMatIsHarvest[lineKey] = make([]bool, 0, 30)
-						simLastHarvestDate[lineKey] = make([]bool, 0, 30)
-						dateYearOrder[lineKey] = make([]int, 0, 30)
-					}
-					if _, ok := climateFilePeriod[lineKey.climateSenario]; !ok {
-						climateFilePeriod[lineKey.climateSenario] = period
-					}
-					simulations[lineKey] = append(simulations[lineKey], yieldValue)
-					simDoyFlower[lineKey] = append(simDoyFlower[lineKey], flowerValue)
-					simDoyMature[lineKey] = append(simDoyMature[lineKey], func(matureValue, harvestValue int) int {
-						if matureValue > 0 {
-							return matureValue
+
+		go func(sourcefileName string, outC chan bool) {
+			//sourcefileName := sourcefileInfo.Name()
+			sourcefile, err := os.Open(filepath.Join(sourceFolder, sourcefileName))
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer sourcefile.Close()
+			refIDStr := strings.Split(strings.Split(sourcefileName, ".")[0], "_")[3]
+			refID64, err := strconv.ParseInt(refIDStr, 10, 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+			refIDIndex := int(refID64) - 1
+			simulations := make(map[SimKeyTuple][]float64)
+			simDoySow := make(map[SimKeyTuple][][]int)
+			simDoyFlower := make(map[SimKeyTuple][]int)
+			simDoyMature := make(map[SimKeyTuple][]int)
+			simDoyHarvest := make(map[SimKeyTuple][]int)
+			simMatIsHarvest := make(map[SimKeyTuple][]bool)
+			simLastHarvestDate := make(map[SimKeyTuple][]bool)
+			dateYearOrder := make(map[SimKeyTuple][]int)
+
+			firstLine := true
+			var header SimDataIndex
+			scanner := bufio.NewScanner(sourcefile)
+			for scanner.Scan() {
+				line := scanner.Text()
+				if firstLine {
+					// read header
+					firstLine = false
+					header = readHeader(line)
+				} else {
+					// load relevant line content
+					lineKey, lineContent := loadLine(line, header)
+					// check for the lines with a specific crop
+					if IsCrop(lineKey, CROPNAME) && (lineKey.treatNo == "T1" || lineKey.treatNo == "T2") {
+						yieldValue := lineContent.yields
+						period := lineContent.period
+						yearValue := lineContent.year
+						sowValue := lineContent.sowDOY
+						// emergeValue = lineContent[-4]
+						flowerValue := lineContent.antDOY
+						matureValue := lineContent.matDOY
+						harvestValue := lineContent.harDOY
+						if _, ok := simulations[lineKey]; !ok {
+							simulations[lineKey] = make([]float64, 0, 30)
+							simDoyFlower[lineKey] = make([]int, 0, 30)
+							simDoyMature[lineKey] = make([]int, 0, 30)
+							simDoyHarvest[lineKey] = make([]int, 0, 30)
+							simMatIsHarvest[lineKey] = make([]bool, 0, 30)
+							simLastHarvestDate[lineKey] = make([]bool, 0, 30)
+							simDoySow[lineKey] = make([][]int, 0, 30)
+							dateYearOrder[lineKey] = make([]int, 0, 30)
 						}
-						return harvestValue
-					}(matureValue, harvestValue))
-					simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
-					simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
-					simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() == harvestValue)
-					dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
+						p.setClimateFilePeriod(lineKey.climateSenario, period)
+
+						simulations[lineKey] = append(simulations[lineKey], yieldValue)
+						simDoySow[lineKey] = append(simDoySow[lineKey], []int{sowValue, yearValue, int(refID64)})
+						simDoyFlower[lineKey] = append(simDoyFlower[lineKey], flowerValue)
+						simDoyMature[lineKey] = append(simDoyMature[lineKey], func(matureValue, harvestValue int) int {
+							if matureValue > 0 {
+								return matureValue
+							}
+							return harvestValue
+						}(matureValue, harvestValue))
+						simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
+						simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
+						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() == harvestValue)
+						dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
+					}
 				}
 			}
-		}
-		if !outputGridsGenerated {
-			outputGridsGenerated = true
+			sowDOYC <- simDoySow
+
+			p.setOutputGridsGenerated(simulations, maxRefNo)
+
 			for simKey := range simulations {
-				allGrids[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				StdDevAvgGrids[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				// #matureGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				// #flowerGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				harvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				matIsHavestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				lateHarvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				coolWeatherImpactGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				coolWeatherDeathGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				coolWeatherImpactWeightGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-				wetHarvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
-			}
-		}
-		for simKey := range simulations {
-			pixelValue := CalculatePixel(simulations[simKey])
-			if pixelValue > maxAllAvgYield {
-				maxAllAvgYield = pixelValue
-			}
-			stdDeviation := stat.StdDev(simulations[simKey], nil)
-			if stdDeviation > maxSdtDeviation {
-				maxSdtDeviation = stdDeviation
-			}
-			// matureGrid[simKey][currRow-1][currCol-1] = int(average(simDoyMature[simKey]))
-			// flowerGrid[simKey][currRow-1][currCol-1] = int(average(simDoyFlower[simKey]))
+				pixelValue := CalculatePixel(simulations[simKey])
+				p.setMaxAllAvgYield(pixelValue)
+				stdDeviation := stat.StdDev(simulations[simKey], nil)
+				p.setMaxSdtDeviation(stdDeviation)
 
-			harvestGrid[simKey][refIDIndex] = averageInt(simDoyHarvest[simKey])
-			sum := 0
-			for _, val := range simMatIsHarvest[simKey] {
-				if val {
-					sum++
-				}
-			}
-			matIsHavestGrid[simKey][refIDIndex] = sum
-			sum = 0
-			for _, val := range simLastHarvestDate[simKey] {
-				if val {
-					sum++
-				}
-			}
-			lateHarvestGrid[simKey][refIDIndex] = sum
-			allGrids[simKey][refIDIndex] = int(pixelValue)
-			StdDevAvgGrids[simKey][refIDIndex] = int(stdDeviation)
-
-			if maxLateHarvest < lateHarvestGrid[simKey][refIDIndex] {
-				maxLateHarvest = lateHarvestGrid[simKey][refIDIndex]
-			}
-			if maxMatHarvest < matIsHavestGrid[simKey][refIDIndex] {
-				maxMatHarvest = matIsHavestGrid[simKey][refIDIndex]
-			}
-		}
-		//coolWeatherImpactGrid
-		for scenario := range climateFilePeriod {
-			climateRowCol := climateRef[refIDIndex]
-			climatePath := filepath.Join(climateFolder, climateFilePeriod[scenario], scenario, fmt.Sprintf(climateFilePattern, climateRowCol))
-			if _, err := os.Stat(climatePath); err == nil {
-				climatefile, err := os.Open(climatePath)
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer climatefile.Close()
-				firstLines := 0
-				numOccurrenceHigh := make(map[SimKeyTuple]int)
-				numOccurrenceMedium := make(map[SimKeyTuple]int)
-				numOccurrenceLow := make(map[SimKeyTuple]int)
-				numWetHarvest := make(map[SimKeyTuple]int)
-				var header ClimateHeader
-				precipPrevDays := newDataLastDays(5)
-				scanner := bufio.NewScanner(climatefile)
-				for scanner.Scan() {
-					line := scanner.Text()
-					if firstLines < 2 {
-						// read header
-						if firstLines < 1 {
-							header = ReadClimateHeader(line)
-						}
-						firstLines++
-					} else {
-						// load relevant line content
-						lineContent := loadClimateLine(line, header)
-						date := lineContent.isodate
-						tmin := lineContent.tmin
-						precip := lineContent.precip
-						precipPrevDays.addDay(precip)
-						dateYear := date.Year()
-						if tmin < 15 {
-							for simKey := range dateYearOrder {
-								if simKey.climateSenario == scenario {
-									yearIndex := -1
-									for i, val := range dateYearOrder[simKey] {
-										if val == dateYear {
-											yearIndex = i
-										}
-									}
-									if yearIndex == -1 {
-										break
-									}
-									startDOY := simDoyFlower[simKey][yearIndex]
-									endDOY := simDoyMature[simKey][yearIndex]
-									if IsDateInGrowSeason(startDOY, endDOY, date) {
-										if _, ok := numOccurrenceHigh[simKey]; !ok {
-											numOccurrenceHigh[simKey] = 0
-											numOccurrenceMedium[simKey] = 0
-											numOccurrenceLow[simKey] = 0
-										}
-										if tmin < 8 {
-											numOccurrenceHigh[simKey]++
-										} else if tmin < 10 {
-											numOccurrenceMedium[simKey]++
-										} else {
-											numOccurrenceLow[simKey]++
-										}
-									}
-									// check if this date is harvest
-									harvestDOY := simDoyHarvest[simKey][yearIndex]
-									if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
-										wasWetHarvest := true
-										for _, x := range precipPrevDays.getData() {
-											wasWetHarvest = (x > 0) && wasWetHarvest
-										}
-										if _, ok := numWetHarvest[simKey]; !ok {
-											numWetHarvest[simKey] = 0
-										}
-										if wasWetHarvest {
-											numWetHarvest[simKey]++
-										}
-									}
-								}
-							}
-						}
+				p.harvestGrid[simKey][refIDIndex] = averageInt(simDoyHarvest[simKey])
+				sum := 0
+				for _, val := range simMatIsHarvest[simKey] {
+					if val {
+						sum++
 					}
 				}
-				for simKey := range simulations {
-					if simKey.climateSenario == scenario {
-						if allGrids[simKey][refIDIndex] > 0 {
-							if _, ok := numOccurrenceMedium[simKey]; ok {
-								sumOccurrence := numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
-								sumDeathOccurrence := numOccurrenceMedium[simKey]*10 + numOccurrenceHigh[simKey]*100 + numOccurrenceLow[simKey]
+				p.matIsHavestGrid[simKey][refIDIndex] = sum
+				sum = 0
+				for _, val := range simLastHarvestDate[simKey] {
+					if val {
+						sum++
+					}
+				}
+				p.lateHarvestGrid[simKey][refIDIndex] = sum
+				p.allGrids[simKey][refIDIndex] = int(pixelValue)
+				p.StdDevAvgGrids[simKey][refIDIndex] = int(stdDeviation)
 
-								if sumLowOccurrence < numOccurrenceLow[simKey] {
-									sumLowOccurrence = numOccurrenceLow[simKey]
-								}
-								if sumMediumOccurrence < numOccurrenceMedium[simKey] {
-									sumMediumOccurrence = numOccurrenceMedium[simKey]
-								}
-								if sumHighOccurrence < numOccurrenceHigh[simKey] {
-									sumHighOccurrence = numOccurrenceHigh[simKey]
-								}
-
-								weight := 0
-
-								if numOccurrenceHigh[simKey] <= 125 && numOccurrenceHigh[simKey] > 0 {
-									weight = 9
-								} else if numOccurrenceHigh[simKey] <= 500 && numOccurrenceHigh[simKey] > 0 {
-									weight = 10
-								} else if numOccurrenceHigh[simKey] <= 1000 && numOccurrenceHigh[simKey] > 0 {
-									weight = 11
-								} else if numOccurrenceHigh[simKey] > 1000 && numOccurrenceHigh[simKey] > 0 {
-									weight = 12
-								} else if numOccurrenceMedium[simKey] <= 75 && numOccurrenceMedium[simKey] > 0 {
-									weight = 5
-								} else if numOccurrenceMedium[simKey] <= 150 && numOccurrenceMedium[simKey] > 0 {
-									weight = 6
-								} else if numOccurrenceMedium[simKey] <= 300 && numOccurrenceMedium[simKey] > 0 {
-									weight = 7
-								} else if numOccurrenceMedium[simKey] > 300 && numOccurrenceMedium[simKey] > 0 {
-									weight = 8
-								} else if numOccurrenceLow[simKey] <= 250 && numOccurrenceLow[simKey] > 0 {
-									weight = 1
-								} else if numOccurrenceLow[simKey] <= 500 && numOccurrenceLow[simKey] > 0 {
-									weight = 2
-								} else if numOccurrenceLow[simKey] <= 1000 && numOccurrenceLow[simKey] > 0 {
-									weight = 3
-								} else if numOccurrenceLow[simKey] > 1000 && numOccurrenceLow[simKey] > 0 {
-									weight = 4
-								}
-								coolWeatherImpactGrid[simKey][refIDIndex] = sumOccurrence
-								coolWeatherDeathGrid[simKey][refIDIndex] = sumDeathOccurrence
-								coolWeatherImpactWeightGrid[simKey][refIDIndex] = weight
-								if sumMaxOccurrence < sumOccurrence {
-									sumMaxOccurrence = sumOccurrence
-								}
-								if sumMaxDeathOccurrence < sumDeathOccurrence {
-									sumMaxDeathOccurrence = sumDeathOccurrence
-								}
-							} else {
-								coolWeatherImpactGrid[simKey][refIDIndex] = 0
-								coolWeatherDeathGrid[simKey][refIDIndex] = 0
+				p.setMaxLateHarvest(p.lateHarvestGrid[simKey][refIDIndex])
+				p.setMaxMatHarvest(p.matIsHavestGrid[simKey][refIDIndex])
+			}
+			//coolWeatherImpactGrid
+			for scenario := range p.climateFilePeriod {
+				climateRowCol := climateRef[refIDIndex]
+				climatePath := filepath.Join(climateFolder, p.climateFilePeriod[scenario], scenario, fmt.Sprintf(climateFilePattern, climateRowCol))
+				if _, err := os.Stat(climatePath); err == nil {
+					climatefile, err := os.Open(climatePath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer climatefile.Close()
+					firstLines := 0
+					numOccurrenceHigh := make(map[SimKeyTuple]int)
+					numOccurrenceMedium := make(map[SimKeyTuple]int)
+					numOccurrenceLow := make(map[SimKeyTuple]int)
+					numWetHarvest := make(map[SimKeyTuple]int)
+					var header ClimateHeader
+					precipPrevDays := newDataLastDays(5)
+					scanner := bufio.NewScanner(climatefile)
+					for scanner.Scan() {
+						line := scanner.Text()
+						if firstLines < 2 {
+							// read header
+							if firstLines < 1 {
+								header = ReadClimateHeader(line)
 							}
-							// wet harvest occurence
-							if _, ok := numWetHarvest[simKey]; ok {
-								wetHarvestGrid[simKey][refIDIndex] = numWetHarvest[simKey]
-								if maxWetHarvest < numWetHarvest[simKey] {
-									maxWetHarvest = numWetHarvest[simKey]
-								}
-							} else {
-								wetHarvestGrid[simKey][refIDIndex] = -1
-							}
+							firstLines++
 						} else {
-							coolWeatherImpactGrid[simKey][refIDIndex] = -100
-							coolWeatherDeathGrid[simKey][refIDIndex] = -10000
-							coolWeatherImpactWeightGrid[simKey][refIDIndex] = -1
-							wetHarvestGrid[simKey][refIDIndex] = -1
+							// load relevant line content
+							lineContent := loadClimateLine(line, header)
+							date := lineContent.isodate
+							tmin := lineContent.tmin
+							precip := lineContent.precip
+							precipPrevDays.addDay(precip)
+							dateYear := date.Year()
+							if tmin < 15 {
+								for simKey := range dateYearOrder {
+									if simKey.climateSenario == scenario {
+										yearIndex := -1
+										for i, val := range dateYearOrder[simKey] {
+											if val == dateYear {
+												yearIndex = i
+											}
+										}
+										if yearIndex == -1 {
+											break
+										}
+										startDOY := simDoyFlower[simKey][yearIndex]
+										endDOY := simDoyMature[simKey][yearIndex]
+										if IsDateInGrowSeason(startDOY, endDOY, date) {
+											if _, ok := numOccurrenceHigh[simKey]; !ok {
+												numOccurrenceHigh[simKey] = 0
+												numOccurrenceMedium[simKey] = 0
+												numOccurrenceLow[simKey] = 0
+											}
+											if tmin < 8 {
+												numOccurrenceHigh[simKey]++
+											} else if tmin < 10 {
+												numOccurrenceMedium[simKey]++
+											} else {
+												numOccurrenceLow[simKey]++
+											}
+										}
+										// check if this date is harvest
+										harvestDOY := simDoyHarvest[simKey][yearIndex]
+										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
+											wasWetHarvest := true
+											for _, x := range precipPrevDays.getData() {
+												wasWetHarvest = (x > 0) && wasWetHarvest
+											}
+											if _, ok := numWetHarvest[simKey]; !ok {
+												numWetHarvest[simKey] = 0
+											}
+											if wasWetHarvest {
+												numWetHarvest[simKey]++
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					for simKey := range simulations {
+						if simKey.climateSenario == scenario {
+							if p.allGrids[simKey][refIDIndex] > 0 {
+								if _, ok := numOccurrenceMedium[simKey]; ok {
+									sumOccurrence := numOccurrenceMedium[simKey] + numOccurrenceHigh[simKey] + numOccurrenceLow[simKey]
+									sumDeathOccurrence := numOccurrenceMedium[simKey]*10 + numOccurrenceHigh[simKey]*100 + numOccurrenceLow[simKey]
+
+									p.setSumLowOccurrence(numOccurrenceLow[simKey])
+									p.setSumMediumOccurrence(numOccurrenceMedium[simKey])
+									p.setSumHighOccurrence(numOccurrenceHigh[simKey])
+
+									weight := 0
+
+									if numOccurrenceHigh[simKey] <= 125 && numOccurrenceHigh[simKey] > 0 {
+										weight = 9
+									} else if numOccurrenceHigh[simKey] <= 500 && numOccurrenceHigh[simKey] > 0 {
+										weight = 10
+									} else if numOccurrenceHigh[simKey] <= 1000 && numOccurrenceHigh[simKey] > 0 {
+										weight = 11
+									} else if numOccurrenceHigh[simKey] > 1000 && numOccurrenceHigh[simKey] > 0 {
+										weight = 12
+									} else if numOccurrenceMedium[simKey] <= 75 && numOccurrenceMedium[simKey] > 0 {
+										weight = 5
+									} else if numOccurrenceMedium[simKey] <= 150 && numOccurrenceMedium[simKey] > 0 {
+										weight = 6
+									} else if numOccurrenceMedium[simKey] <= 300 && numOccurrenceMedium[simKey] > 0 {
+										weight = 7
+									} else if numOccurrenceMedium[simKey] > 300 && numOccurrenceMedium[simKey] > 0 {
+										weight = 8
+									} else if numOccurrenceLow[simKey] <= 250 && numOccurrenceLow[simKey] > 0 {
+										weight = 1
+									} else if numOccurrenceLow[simKey] <= 500 && numOccurrenceLow[simKey] > 0 {
+										weight = 2
+									} else if numOccurrenceLow[simKey] <= 1000 && numOccurrenceLow[simKey] > 0 {
+										weight = 3
+									} else if numOccurrenceLow[simKey] > 1000 && numOccurrenceLow[simKey] > 0 {
+										weight = 4
+									}
+									p.coolWeatherImpactGrid[simKey][refIDIndex] = sumOccurrence
+									p.coolWeatherDeathGrid[simKey][refIDIndex] = sumDeathOccurrence
+									p.coolWeatherImpactWeightGrid[simKey][refIDIndex] = weight
+									p.setSumMaxOccurrence(sumOccurrence)
+									p.setSumMaxDeathOccurrence(sumDeathOccurrence)
+								} else {
+									p.coolWeatherImpactGrid[simKey][refIDIndex] = 0
+									p.coolWeatherDeathGrid[simKey][refIDIndex] = 0
+								}
+								// wet harvest occurence
+								if _, ok := numWetHarvest[simKey]; ok {
+									p.wetHarvestGrid[simKey][refIDIndex] = numWetHarvest[simKey]
+									p.setMaxWetHarvest(numWetHarvest[simKey])
+								} else {
+									p.wetHarvestGrid[simKey][refIDIndex] = -1
+								}
+							} else {
+								p.coolWeatherImpactGrid[simKey][refIDIndex] = -100
+								p.coolWeatherDeathGrid[simKey][refIDIndex] = -10000
+								p.coolWeatherImpactWeightGrid[simKey][refIDIndex] = -1
+								p.wetHarvestGrid[simKey][refIDIndex] = -1
+							}
 						}
 					}
 				}
 			}
-		}
-		currentInput++
-		if showBar {
-			progessFunc(currentInput)
+			p.incProgressBar(showBar)
+			outChan <- true
+
+		}(sourcefileInfo.Name(), outChan)
+		currRuns++
+		if currRuns >= maxRuns {
+			for currRuns >= maxRuns {
+				select {
+				case <-outChan:
+					currRuns--
+				}
+			}
 		}
 	}
+	for currRuns > 0 {
+		select {
+		case <-outChan:
+			currRuns--
+		}
+	}
+	close(sowDOYC)
 
-	drawDateMaps(gridSourceLookup,
-		matIsHavestGrid,
+	outC := make(chan string)
+	waitForNum := 1
+	go drawDateMaps(gridSourceLookup,
+		p.matIsHavestGrid,
 		asciiOutFilenameMatIsHarvest,
 		extCol, extRow,
 		asciiOutFolder,
 		"Harvest before maturity - Scn: %v %v %v",
 		"counted occurrences in 30 years",
-		showBar,
+		false,
 		"inferno",
-		nil, nil, 1.0, 0,
-		maxMatHarvest, "Harvest before maturity")
+		nil, nil, 1.0, NONEVALUE,
+		p.maxMatHarvest, "Harvest before maturity", outC)
 
-	drawDateMaps(gridSourceLookup,
-		lateHarvestGrid,
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.lateHarvestGrid,
 		asciiOutFilenameLateHarvest,
 		extCol, extRow,
 		asciiOutFolder,
 		"Auto Harvest 31. October - Scn: %v %v %v",
 		"counted occurrences in 30 years",
-		showBar,
+		false,
 		"viridis",
-		nil, nil, 1.0, 0,
-		maxLateHarvest,
-		"Harvest 31. October")
-
-	drawDateMaps(gridSourceLookup,
-		wetHarvestGrid,
+		nil, nil, 1.0, NONEVALUE,
+		p.maxLateHarvest,
+		"Harvest 31. October", outC)
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.wetHarvestGrid,
 		asciiOutFilenameWetHarvest,
 		extCol, extRow,
 		asciiOutFolder,
 		"Rain during/before harvest - Scn: %v %v %v",
 		"counted occurrences in 30 years",
-		showBar,
+		false,
 		"nipy_spectral",
-		nil, nil, 1.0, 0,
-		maxWetHarvest,
-		"wet harvest")
-
-	drawDateMaps(gridSourceLookup,
-		coolWeatherImpactGrid,
+		nil, nil, 1.0, NONEVALUE,
+		p.maxWetHarvest,
+		"wet harvest", outC)
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.coolWeatherImpactGrid,
 		asciiOutFilenameCoolWeather,
 		extCol, extRow,
 		asciiOutFolder,
 		"Cool weather occurrence - Scn: %v %v %v",
 		"counted occurrences in 30 years",
-		showBar,
+		false,
 		"nipy_spectral",
-		nil, nil, 1.0, 0,
-		sumMaxOccurrence,
-		"Cool weather")
+		nil, nil, 1.0, NONEVALUE,
+		p.sumMaxOccurrence,
+		"Cool weather", outC)
 
-	coolWeatherWeightLabels := []string{"0", "< 15°C", "< 10°C", "< 8°C"}
+	coolWeatherWeightLabels := []string{"0", "< 15\u00B0C", "< 10\u00B0C", "< 8\u00B0C"}
 	ticklist := []float64{0, 3, 7, 11}
-	drawDateMaps(gridSourceLookup,
-		coolWeatherImpactWeightGrid,
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.coolWeatherImpactWeightGrid,
 		asciiOutFilenameCoolWeatherWeight,
 		extCol, extRow,
 		asciiOutFolder,
 		"Cool weather weight - Scn: %v %v %v",
 		"weights for occurrences in 30 years",
-		showBar,
+		false,
 		"gnuplot",
-		coolWeatherWeightLabels, ticklist, 1.0, 0, 12,
-		"Cool weather")
-	drawDateMaps(gridSourceLookup,
-		coolWeatherDeathGrid,
-		asciiOutFilenameCoolWeather,
+		coolWeatherWeightLabels, ticklist, 1.0, NONEVALUE, 12,
+		"Cool weather", outC)
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.coolWeatherDeathGrid,
+		asciiOutFilenameCoolWeatherDeath,
 		extCol, extRow,
 		asciiOutFolder,
 		"Cool weather severity - Scn: %v %v %v",
 		"counted occurrences with severity factor",
-		showBar,
+		false,
 		"nipy_spectral",
-		nil, nil, 0.0001, 0,
-		sumMaxDeathOccurrence,
-		"Cool weather death")
-
-	drawDateMaps(gridSourceLookup,
-		allGrids,
+		nil, nil, 0.0001, NONEVALUE,
+		p.sumMaxDeathOccurrence,
+		"Cool weather death", outC)
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.allGrids,
 		asciiOutFilenameAvg,
 		extCol, extRow,
 		asciiOutFolder,
 		"Average Yield - Scn: %v %v %v",
 		"Yield in t",
-		showBar,
+		false,
 		"viridis",
-		nil, nil, 1.0, 0.0,
-		int(maxAllAvgYield),
-		"average yield grids")
-
-	drawDateMaps(gridSourceLookup,
-		StdDevAvgGrids,
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield),
+		"average yield grids", outC)
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.StdDevAvgGrids,
 		asciiOutFilenameDeviAvg,
 		extCol, extRow,
 		asciiOutFolder,
 		"Std Deviation - Scn: %v %v %v",
 		"standart deviation",
-		showBar,
+		false,
 		"cool",
 		nil, nil, 1.0, 0,
-		int(maxSdtDeviation),
-		"std average yield grids")
+		int(p.maxSdtDeviation),
+		"std average yield grids", outC)
+
+	for waitForNum > 0 {
+		select {
+		case progessStatus := <-outC:
+			waitForNum--
+			fmt.Println(progessStatus)
+		}
+	}
 
 	// Start calculate max yield layer and maturity layer grid
-	numKeys := len(allGrids)
+	numKeys := len(p.allGrids)
 	maxYieldGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	matGroupGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	maxYieldDeviationGrids := make(map[ScenarioKeyTuple][]int, numKeys)
@@ -562,15 +573,25 @@ func main() {
 	matGroupIDGrids := make(map[string]int)
 	matIdcounter := 0
 	matGroupIDGrids["none"] = matIdcounter //# maturity group id for 'no yield'
+	matGroupIDSet := make(map[string]bool)
 	// set ids for each maturity group
-	for simKey := range allGrids {
-		if _, ok := matGroupIDGrids[simKey.mGroup]; !ok {
-			matIdcounter++
-			matGroupIDGrids[simKey.mGroup] = matIdcounter
+	for simKey := range p.allGrids {
+		if _, ok := matGroupIDSet[simKey.mGroup]; !ok {
+			matGroupIDSet[simKey.mGroup] = true
 		}
-
 	}
-	for simKey, currGrid := range allGrids {
+	matList := make([]string, 0, len(matGroupIDSet))
+
+	for key := range matGroupIDSet {
+		matList = append(matList, key)
+	}
+	sort.Strings(matList)
+	for _, val := range matList {
+		matIdcounter++
+		matGroupIDGrids[val] = matIdcounter
+	}
+
+	for simKey, currGrid := range p.allGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 		if _, ok := maxYieldGrids[scenarioKey]; !ok {
@@ -599,16 +620,16 @@ func main() {
 		invMatGroupIDGrids[v] = k
 	}
 
-	for simKey, currGridYield := range allGrids {
+	for simKey, currGridYield := range p.allGrids {
 		//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
-		currGridDeviation := StdDevAvgGrids[simKey]
+		currGridDeviation := p.StdDevAvgGrids[simKey]
 		for ref := 0; ref < maxRefNo; ref++ {
 			if matGroupDeviationGrids[scenarioKey][ref] != NONEVALUE {
 				matGroup := invMatGroupIDGrids[matGroupDeviationGrids[scenarioKey][ref]]
 				matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
 				if float64(currGridYield[ref]) > float64(maxYieldGrids[scenarioKey][ref])*0.9 &&
-					currGridDeviation[ref] < StdDevAvgGrids[matGroupKey][ref] {
+					currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][ref] {
 					maxYieldDeviationGrids[scenarioKey][ref] = currGridYield[ref]
 					matGroupDeviationGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
 				}
@@ -617,6 +638,7 @@ func main() {
 	}
 
 	var progressBar func(int)
+	currentInput := 0
 	if showBar {
 		numInput = len(maxYieldDeviationGrids)
 		progressBar = progress(numInput, "max yields dev grids")
@@ -634,7 +656,7 @@ func main() {
 		title := fmt.Sprintf("Max avg yield minus std deviation - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		labelText := "Yield in t"
 		colormap := "jet"
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(maxAllAvgYield), 0)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -656,7 +678,7 @@ func main() {
 		title := fmt.Sprintf("Max average yield - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		labelText := "Yield in t"
 		colormap := "jet"
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(maxAllAvgYield), 0)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -721,26 +743,26 @@ func main() {
 	// Grid Diff affected by water stress T4(potential) - T1(actual)
 	currentInput = 0
 	if showBar {
-		numInput = len(allGrids)
+		numInput = len(p.allGrids)
 		progressBar = progress(numInput, "water diff grids")
 	}
-	for simKey, simValue := range allGrids {
+	for simKey, simValue := range p.allGrids {
 		//# treatment number
 		if simKey.treatNo == "T1" {
 			otherKey := SimKeyTuple{"T2", simKey.climateSenario, simKey.mGroup, "Unlimited water"}
-			newDiffGrid := gridDifference(allGrids[otherKey], simValue, maxRefNo)
+			newDiffGrid := gridDifference(p.allGrids[otherKey], simValue, maxRefNo)
 
-			gridFileName := fmt.Sprintf(asciiOutFilenameWaterDiff, simKey.treatNo)
+			gridFileName := fmt.Sprintf(asciiOutFilenameWaterDiff, simKey.mGroup)
 			gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
 			gridFilePath := filepath.Join(asciiOutFolder, simKey.climateSenario, gridFileName)
 
 			file := writeAGridHeader(gridFilePath, extCol, extRow)
 			writeRows(file, extRow, extCol, newDiffGrid, gridSourceLookup)
 			file.Close()
-			title := fmt.Sprintf("Water stress effect on potential yield - Scn: %s %s", simKey.climateSenario, simKey.comment)
+			title := fmt.Sprintf("Water stress effect on potential yield - Scn: %s %s", simKey.climateSenario, simKey.mGroup)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(maxAllAvgYield), 0)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
 			currentInput++
 			if showBar {
 				progressBar(currentInput)
@@ -766,7 +788,7 @@ func main() {
 			title := fmt.Sprintf("Water stress effect on potential max yield - Scn: %s", scenarioKey.climateSenario)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(maxAllAvgYield), 0)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
 		}
 		currentInput++
 		if showBar {
@@ -774,9 +796,9 @@ func main() {
 		}
 	}
 	fmt.Println(" ")
-	fmt.Printf("Low: %v", sumLowOccurrence)
-	fmt.Printf("Medium: %v", sumMediumOccurrence)
-	fmt.Printf("High: %v", sumHighOccurrence)
+	fmt.Printf("Low: %v", p.sumLowOccurrence)
+	fmt.Printf("Medium: %v", p.sumMediumOccurrence)
+	fmt.Printf("High: %v", p.sumHighOccurrence)
 }
 
 // SimKeyTuple key to identify each simulatio setup
@@ -826,6 +848,141 @@ type SimDataIndex struct {
 	matDOYIdx         int
 	harvDOYIdx        int
 	yieldsIdx         int
+	sowIdx            int
+}
+
+// ProcessedData combined data from results
+type ProcessedData struct {
+	maxAllAvgYield              float64
+	maxSdtDeviation             float64
+	allGrids                    map[SimKeyTuple][]int
+	StdDevAvgGrids              map[SimKeyTuple][]int
+	harvestGrid                 map[SimKeyTuple][]int
+	matIsHavestGrid             map[SimKeyTuple][]int
+	lateHarvestGrid             map[SimKeyTuple][]int
+	climateFilePeriod           map[string]string
+	coolWeatherImpactGrid       map[SimKeyTuple][]int
+	coolWeatherDeathGrid        map[SimKeyTuple][]int
+	coolWeatherImpactWeightGrid map[SimKeyTuple][]int
+	wetHarvestGrid              map[SimKeyTuple][]int
+	sumMaxOccurrence            int
+	sumMaxDeathOccurrence       int
+	maxLateHarvest              int
+	maxWetHarvest               int
+	maxMatHarvest               int
+	sumLowOccurrence            int
+	sumMediumOccurrence         int
+	sumHighOccurrence           int
+	sowingDates                 map[SimKeyTuple][][]int
+	outputGridsGenerated        bool
+	mux                         sync.Mutex
+	currentInput                int
+	progress                    progressfunc
+}
+
+func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]float64, maxRefNo int) bool {
+
+	p.mux.Lock()
+	out := false
+	if !p.outputGridsGenerated {
+		p.outputGridsGenerated = true
+		out = true
+		for simKey := range simulations {
+			p.allGrids[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.StdDevAvgGrids[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.harvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.matIsHavestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.lateHarvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.coolWeatherImpactGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.coolWeatherDeathGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			p.wetHarvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+		}
+	}
+	p.mux.Unlock()
+	return out
+}
+
+func (p *ProcessedData) setClimateFilePeriod(climateSenario, period string) {
+	p.mux.Lock()
+	if _, ok := p.climateFilePeriod[climateSenario]; !ok {
+		p.climateFilePeriod[climateSenario] = period
+	}
+	p.mux.Unlock()
+}
+
+func (p *ProcessedData) setMaxAllAvgYield(pixelValue float64) {
+	p.mux.Lock()
+	if pixelValue > p.maxAllAvgYield {
+		p.maxAllAvgYield = pixelValue
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setMaxSdtDeviation(stdDeviation float64) {
+	p.mux.Lock()
+	if stdDeviation > p.maxSdtDeviation {
+		p.maxSdtDeviation = stdDeviation
+	}
+	p.mux.Unlock()
+}
+
+func (p *ProcessedData) setMaxLateHarvest(val int) {
+	p.mux.Lock()
+	if p.maxLateHarvest < val {
+		p.maxLateHarvest = val
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setMaxMatHarvest(val int) {
+	p.mux.Lock()
+	if p.maxMatHarvest < val {
+		p.maxMatHarvest = val
+	}
+	p.mux.Unlock()
+}
+
+func (p *ProcessedData) setSumLowOccurrence(val int) {
+	p.mux.Lock()
+	if p.sumLowOccurrence < val {
+		p.sumLowOccurrence = val
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setSumMediumOccurrence(val int) {
+	p.mux.Lock()
+	if p.sumMediumOccurrence < val {
+		p.sumMediumOccurrence = val
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setSumHighOccurrence(val int) {
+	p.mux.Lock()
+	if p.sumHighOccurrence < val {
+		p.sumHighOccurrence = val
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setSumMaxOccurrence(sumOccurrence int) {
+	p.mux.Lock()
+	if p.sumMaxOccurrence < sumOccurrence {
+		p.sumMaxOccurrence = sumOccurrence
+	}
+	p.mux.Unlock()
+}
+func (p *ProcessedData) setSumMaxDeathOccurrence(sumDeathOccurrence int) {
+	p.mux.Lock()
+	if p.sumMaxDeathOccurrence < sumDeathOccurrence {
+		p.sumMaxDeathOccurrence = sumDeathOccurrence
+	}
+	p.mux.Unlock()
+}
+
+func (p *ProcessedData) setMaxWetHarvest(val int) {
+	p.mux.Lock()
+	if p.maxWetHarvest < val {
+		p.maxWetHarvest = val
+	}
+	p.mux.Unlock()
 }
 
 func readHeader(line string) SimDataIndex {
@@ -1158,6 +1315,8 @@ func gridDifference(grid1, grid2 []int, maxRef int) []int {
 	return newGridDiff
 }
 
+type progressfunc func(int)
+
 func progress(total int, status string) func(int) {
 	count := total
 	current := 0
@@ -1182,6 +1341,14 @@ func progress(total int, status string) func(int) {
 			}
 		}
 	}
+}
+func (p *ProcessedData) incProgressBar(showBar bool) {
+	p.mux.Lock()
+	p.currentInput++
+	if showBar {
+		p.progress(p.currentInput)
+	}
+	p.mux.Unlock()
 }
 
 type dataLastDays struct {
@@ -1214,7 +1381,7 @@ func (d *dataLastDays) getData() []float64 {
 	return d.arr[:d.currentLen]
 }
 
-func drawDateMaps(gridSourceLookup [][]int, grids map[SimKeyTuple][]int, filenameFormat string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, showBar bool, colormap string, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, progessStatus string) {
+func drawDateMaps(gridSourceLookup [][]int, grids map[SimKeyTuple][]int, filenameFormat string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, showBar bool, colormap string, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, progessStatus string, outC chan string) {
 
 	var currentInput int
 	var numInput int
@@ -1241,6 +1408,7 @@ func drawDateMaps(gridSourceLookup [][]int, grids map[SimKeyTuple][]int, filenam
 			progressBar(currentInput)
 		}
 	}
+	outC <- progessStatus
 }
 func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 	cornerX := 0.0
@@ -1348,5 +1516,39 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 	if minValue != NONEVALUE {
 		file.WriteString(fmt.Sprintf("minValue: %d\n", minValue))
+	}
+}
+
+func writeOutSowData(filename string, sowDOYC chan map[SimKeyTuple][][]int) {
+
+	makeDir(filename)
+	file, err := os.OpenFile(filename+".gz", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gfile := gzip.NewWriter(file)
+	fwriter := bufio.NewWriter(gfile)
+	fout := Fout{file, gfile, fwriter}
+	fout.Write("refId,cScenario,sowDOY,Date")
+	for {
+		select {
+		case sowingData, ok := <-sowDOYC:
+			if ok {
+				for key, val := range sowingData {
+					for _, entry := range val {
+						sowDOY := entry[0]
+						year := entry[1]
+						ref := entry[2]
+						d := time.Date(year, 0, sowDOY, 0, 0, 0, 0, time.UTC)
+						climateSenario := key.climateSenario
+						fout.Write(fmt.Sprintf("%d,%s,%d,%s", ref, climateSenario, sowDOY, d.Format("2006-01-02")))
+					}
+				}
+			} else {
+				// close and terminate
+				fout.Close()
+				break
+			}
+		}
 	}
 }
