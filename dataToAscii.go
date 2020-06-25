@@ -709,7 +709,7 @@ func main() {
 		progressBar = progress(numInput, "mat groups grids")
 	}
 	sidebarLabel := make([]string, len(matGroupIDGrids)+1)
-	colorList := []string{"cyan", "lightgreen", "magenta", "crimson", "blue", "gold", "navy"}
+	colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
 
 	for id := range matGroupIDGrids {
 		sidebarLabel[matGroupIDGrids[id]] = id
@@ -743,7 +743,7 @@ func main() {
 		numInput = len(matGroupDeviationGrids)
 		progressBar = progress(numInput, "mat groups grids devi")
 	}
-	for scenarioKey, scenarioVal := range matGroupGrids {
+	for scenarioKey, scenarioVal := range matGroupDeviationGrids {
 		gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldMatDevi, scenarioKey.treatNo)
 		gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
 		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
@@ -782,7 +782,7 @@ func main() {
 			title := fmt.Sprintf("Water stress effect on potential yield - Scn: %s %s", simKey.climateSenario, simKey.mGroup)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE)
 			currentInput++
 			if showBar {
 				progressBar(currentInput)
@@ -808,7 +808,7 @@ func main() {
 			title := fmt.Sprintf("Water stress effect on potential max yield - Scn: %s", scenarioKey.climateSenario)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE)
 		}
 		currentInput++
 		if showBar {
@@ -816,9 +816,9 @@ func main() {
 		}
 	}
 	fmt.Println(" ")
-	fmt.Printf("Low: %v", p.sumLowOccurrence)
-	fmt.Printf("Medium: %v", p.sumMediumOccurrence)
-	fmt.Printf("High: %v", p.sumHighOccurrence)
+	fmt.Printf("Low: %v\n", p.sumLowOccurrence)
+	fmt.Printf("Medium: %v\n", p.sumMediumOccurrence)
+	fmt.Printf("High: %v\n", p.sumHighOccurrence)
 }
 
 // SimKeyTuple key to identify each simulatio setup
@@ -1307,7 +1307,7 @@ func HasUnStableYield(yieldList []float64, averageValue float64) bool {
 // IsDateInGrowSeason ...
 func IsDateInGrowSeason(startDOY, endDOY int, date time.Time) bool {
 	doy := date.YearDay()
-	if doy >= startDOY && doy <= endDOY {
+	if doy >= startDOY && startDOY > 0 && doy <= endDOY {
 		return true
 	}
 	return false
