@@ -84,7 +84,7 @@ func main() {
 			"ascii-out":       "asciigrid/",     // path to ascii grids
 			"png-out":         "png/",           // path to png images
 			"pdf-out":         "pdf-out/",       // path to pdf package
-			"sow-out":         "sow-out_debug/", // path to sowing dates
+			"sow-out":         "sow-out/",       // path to sowing dates
 		},
 	}
 
@@ -119,7 +119,7 @@ func main() {
 	}
 
 	asciiOutFolder := filepath.Join(outputFolder, PATHS[pathID]["ascii-out"])
-	sowDatesPath := filepath.Join(outputFolder, PATHS[pathID]["sow-out"], "sowing-dates.csv")
+	sowDatesPath := filepath.Join(outputFolder, PATHS[pathID]["sow-out"])
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 
@@ -169,9 +169,9 @@ func main() {
 	p.currentInput = 0
 	p.progress = progress(numInput, "input files")
 
-	sowDOYC := make(chan map[SimKeyTuple][][]int)
+	sowDOYC := make(chan []sowData)
 	outChan := make(chan bool)
-	go writeOutSowData(sowDatesPath, sowDOYC)
+	go writeOutSowData(sowDatesPath, "sowing-dates.csv", sowDOYC)
 
 	currRuns := 0
 	maxRuns := 60
@@ -192,7 +192,7 @@ func main() {
 			}
 			refIDIndex := int(refID64) - 1
 			simulations := make(map[SimKeyTuple][]float64)
-			simDoySow := make(map[SimKeyTuple][][]int)
+			simDoySow := make(map[SimKeyTuple][]int)
 			simDoyFlower := make(map[SimKeyTuple][]int)
 			simDoyMature := make(map[SimKeyTuple][]int)
 			simDoyHarvest := make(map[SimKeyTuple][]int)
@@ -229,13 +229,13 @@ func main() {
 							simDoyHarvest[lineKey] = make([]int, 0, 30)
 							simMatIsHarvest[lineKey] = make([]bool, 0, 30)
 							simLastHarvestDate[lineKey] = make([]bool, 0, 30)
-							simDoySow[lineKey] = make([][]int, 0, 30)
+							simDoySow[lineKey] = make([]int, 0, 30)
 							dateYearOrder[lineKey] = make([]int, 0, 30)
 						}
 						p.setClimateFilePeriod(lineKey.climateSenario, period)
 
 						simulations[lineKey] = append(simulations[lineKey], yieldValue)
-						simDoySow[lineKey] = append(simDoySow[lineKey], []int{sowValue, yearValue, int(refID64)})
+						simDoySow[lineKey] = append(simDoySow[lineKey], sowValue)
 						simDoyFlower[lineKey] = append(simDoyFlower[lineKey], flowerValue)
 						simDoyMature[lineKey] = append(simDoyMature[lineKey], func(matureValue, harvestValue int) int {
 							if matureValue > 0 {
@@ -250,7 +250,27 @@ func main() {
 					}
 				}
 			}
-			sowDOYC <- simDoySow
+			sowdateslist := make([]sowData, 0, 6)
+			for simKey, simVal := range simDoySow {
+				isInList := func(c string) bool {
+					for _, val := range sowdateslist {
+						if val.climateSenario == c {
+							return true
+						}
+					}
+					return false
+				}
+				if !isInList(simKey.climateSenario) {
+					d := sowData{
+						climateSenario: simKey.climateSenario,
+						year:           dateYearOrder[simKey],
+						sowDOY:         simVal,
+						ref:            int(refID64),
+					}
+					sowdateslist = append(sowdateslist, d)
+				}
+			}
+			sowDOYC <- sowdateslist
 
 			p.setOutputGridsGenerated(simulations, maxRefNo)
 
@@ -1519,34 +1539,48 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 }
 
-func writeOutSowData(filename string, sowDOYC chan map[SimKeyTuple][][]int) {
+type sowData struct {
+	sowDOY         []int
+	year           []int
+	climateSenario string
+	ref            int
+}
 
-	makeDir(filename)
-	file, err := os.OpenFile(filename+".gz", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
-	gfile := gzip.NewWriter(file)
-	fwriter := bufio.NewWriter(gfile)
-	fout := Fout{file, gfile, fwriter}
-	fout.Write("refId,cScenario,sowDOY,Date")
+func writeOutSowData(path, name string, sowDOYC chan []sowData) {
+
+	openFiles := make(map[string]Fout)
 	for {
 		select {
 		case sowingData, ok := <-sowDOYC:
 			if ok {
-				for key, val := range sowingData {
-					for _, entry := range val {
-						sowDOY := entry[0]
-						year := entry[1]
-						ref := entry[2]
-						d := time.Date(year, 0, sowDOY, 0, 0, 0, 0, time.UTC)
-						climateSenario := key.climateSenario
-						fout.Write(fmt.Sprintf("%d,%s,%d,%s", ref, climateSenario, sowDOY, d.Format("2006-01-02")))
+				for _, val := range sowingData {
+					filename := filepath.Join(path, val.climateSenario+"_"+name+".gz")
+					if _, ok := openFiles[filename]; !ok {
+						makeDir(filename)
+						file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+						if err != nil {
+							log.Fatal(err)
+						}
+						gfile := gzip.NewWriter(file)
+						fwriter := bufio.NewWriter(gfile)
+						fout := Fout{file, gfile, fwriter}
+						fout.Write("refId,sowDOY,Date\n")
+						openFiles[filename] = fout
+					}
+
+					ref := val.ref
+					for i, sowDOY := range val.sowDOY {
+						year := val.year[i]
+						d := time.Date(year, 1, sowDOY, 0, 0, 0, 0, time.UTC)
+						openFiles[filename].Write(fmt.Sprintf("%d,%d,%s\n", ref, sowDOY, d.Format("2006-01-02")))
 					}
 				}
 			} else {
 				// close and terminate
-				fout.Close()
+				for _, fout := range openFiles {
+					fout.Close()
+				}
+
 				break
 			}
 		}
