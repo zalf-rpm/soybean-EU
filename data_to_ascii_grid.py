@@ -812,7 +812,7 @@ def GetYear(dateStr) :
 def IsDateInGrowSeason(startDOY, endDOY, dateStr) :
     date = datetime.fromisoformat(dateStr)
     doy = date.timetuple().tm_yday
-    if doy >= startDOY and doy <= endDOY :
+    if startDOY > 0 and doy >= startDOY and doy <= endDOY :
         return True
     return False
 

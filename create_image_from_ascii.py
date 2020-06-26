@@ -72,7 +72,7 @@ def build() :
 
             makeDir(pdfpath)
             pdf = PdfPages(pdfpath)
-            
+            files.sort()
             for file in files:
                 if not file.endswith(".meta"):
                     print("file", file)
@@ -87,6 +87,7 @@ def build() :
                     metapath = os.path.join(root, metafilename)
                     out_path = os.path.join(pngFolder, scenario, pngfilename)            
                     createImgFromMeta( filepath, metapath, out_path, pdf=pdf)
+            pdf.close()
 
 
 def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
