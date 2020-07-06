@@ -119,7 +119,7 @@ func ConvertMonicaToMet(folderIn, folderOut, project, seperator string, co2 int)
 			header := createMetFileHeader(lat, long, annualAverageAmbientTemp, annualAmplitude)
 			// copy folder structure
 			makeDir(fulloutpath)
-
+			fmt.Println(fulloutpath)
 			outFile, err := os.OpenFile(fulloutpath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 			if err != nil {
 				return err

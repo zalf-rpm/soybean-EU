@@ -116,3 +116,5 @@ png_debug/
 asciigrids_debug/
 climate/
 envs/
+fromcluster/
+apsim/met
