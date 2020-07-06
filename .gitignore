@@ -118,3 +118,9 @@ climate/
 envs/
 fromcluster/
 apsim/met
+gridcells_altitude_ZALF-DK94-DK59.csv
+missingregions.csv
+stu_eu_layer_grid.csv
+stu_eu_layer_ref.csv
+stu_eu_layer_soils.csv
+stu_eu_layers.csv
