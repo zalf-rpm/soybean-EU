@@ -1,0 +1,97 @@
+Parameter crop model
+crop: winter wheat
+crop no./ abbreviation   .....................................   1  LUP 
+AMAX: Max. CO2 assimilation rate (kg CO2/ha leave/h)......52..   39
+Type of temperature dependency (C3 = 1/ C4 = 2) ..............   1
+Minimum temperature crop growth    (Grad C) ..................   4     
+maximum effective rooting depth(dm) ...........................  11
+root distribution function no. (only 1 available).............   1
+crop N-content function no. (critical and max. N-contents)....   3
+above ground organs (numbers of compartiments increasing order)  234
+organ no. for yield and fraction of organ.(organ 4 80% =4.80).   4.85
+Start conzentration N in ab. gr. biomass (% i. d.m.) .........   6.0
+Start concentration N in roots (% i. d.m.) ...................   2.0
+Number of crop compartiments..................................   4
+Compartiments.................   root    leave   stem    ears    -----
+initial weight kg d.m./ha ...... 00058..L00058.. 00000.. 00000.. 00000
+Maintainance rates of organs ... 0.010.. 0.030.. 0.015.. 0.010.. 0.000
+initial kc factor for evapotranspiration .....................   0.65
+number of development phases..................................   6
+-------- development phase 1: sowing til emergence  ------------------
+development phase 1 temperatur sum  ..........................   70
+Base temperature in phase 1 ..................................   5
+Vernalisation requirements (days) ............................   0
+day length requirements (hours) ..............................   0
+Base day length in phase 1(hours) ............................   0 
+drought stress below ETA/ETP-quotient of......................   0.8
+critical aircontent in topsoil     ...........................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002        
+N-content root end of 1. phase ...............................   0.02                                  
+Partitioning at emergence        0.400.. 0.600.. 0.000.. 0.000.. 0.000
+death rate at end of phase 1 ....0.000.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 1 ...........   0.65
+-------- development phase 2: emergence til double ridge      --------
+development phase 2 temperatur sum  ..................184.....   180
+Base temperature 2 ...........................................   5
+Vernalisation requirements (days) ............................   00
+day length requirements (hours) ..............................   16
+Base day length in phase 2(hours) ............................   0 
+drought stress below ETA/ETP-quotient of......................   0.8
+critical air content in topsoil ..............................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002        
+N-content root end of 2. phase ...............................   0.01    
+Partitioning at end of phase 2.. 0.400.. 0.400.. 0.200.. 0.000.. 0.000
+death rate at end of phase 2.... 0.000.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 2 ...........   1.10
+-------- development phase 3: double ridge to ear emergence ---------
+development phase 3 temperatur sum  ...................200....   180
+Base temperature 3 ...........................................   1
+Vernalisation requirements (days) ............................   0
+day length requirements (hours) ..............................   16
+Base day length in phase 3(hours) ............................   7 
+drought stress below ETA/ETP-quotient of......................   0.8
+critical air content in topsoil ..............................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002
+N-content root end of 3. phase ...............................   0.02 
+Partitioning at end of phase 3.. 0.400.. 0.250.. 0.350.. 0.000.. 0.000
+death rate at end of phase 3.... 0.020.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 3 ...........   1.10
+-------- development phase 4: ear emergence to flowering ------------
+development phase 4 temperatur sum  ....................400...   100
+Base temperature 4 ...........................................   1
+Vernalisation requirements (days) ............................   0
+day length requirements (hours) ..............................   16
+Base day length in phase 4(hours) ............................   7 
+drought stress below ETA/ETP-quotient of......................   1.0
+critical air content in topsoil ..............................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002
+N-content root end of 4. phase................................   0.020
+Partitioning at end of phase 4.. 0.000.. 0.000.. 0.000.. 1.000.. 0.000
+death rate at end of phase 4 ... 0.020.. 0.040.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 4 ...........   1.10
+-------- development phase 5: grain filling---------------------------
+development phase 5 temperatur sum ....................350.510   580
+Base temperature 5 ...........................................   4
+Vernalisation requirements (days) ............................   0
+day length requirements (hours) ..............................   0
+Base day length in phase 5(hours) ............................   0 
+drought stress below ETA/ETP-quotient of......................   1.0
+critical air content in topsoil ..............................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002
+N-content root end of 5. phase................................   0.020
+Partitioning at end of phase 5.. 0.000.. 0.000.. 0.000.. 1.000.. 0.000
+death rate at end of phase 5 ... 0.020.. 0.050.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 5 ...........   0.80
+-------- development phase 6: senescence------------------------------
+development phase 6 temperatur sum ...........................   25
+Base temperature 6 ...........................................   9
+Vernalisation requirements (days) ............................   0
+day length requirements (hours) ..............................   0
+Base day length in phase 6(hours) ............................   0 
+drought stress below ETA/ETP-quotient of......................   0.8
+critical air content in topsoil ..............................   0.08 
+specific leave area (area per mass) (m2/m2/kg TM) ............   0.002
+N-content root end of 6. phase................................   0.010
+Partitioning at end of phase 6.. 0.000.. 0.000.. 0.000.. 0.000.. 0.000
+death rate at end of phase 6 ... 0.020.. 0.050.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 5 ...........   0.65
