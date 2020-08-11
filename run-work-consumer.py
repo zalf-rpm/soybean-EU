@@ -141,6 +141,7 @@ def create_output(soil_ref, crop_id, first_cp, co2_id, co2_value, period, gcm, t
                     vals.get("cycle-length", "na"),
                     vals.get("STsow", "na"),
                     vals.get("ATsow", "na")
+                    vals.get("sum_Nmin", "na")
                 ])
                 '''
                 current_crop = vals["Crop"],
@@ -209,7 +210,8 @@ def create_output(soil_ref, crop_id, first_cp, co2_id, co2_value, period, gcm, t
 
                     vals.get("tradef", "na"),
                     vals.get("frostred", "na"),
-                    vals.get("cum_irri", "na")
+                    vals.get("cum_irri", "na"),
+                    vals.get("sum_Nmin", "na")
                 ])
 
     return out
@@ -232,7 +234,7 @@ HEADER = "Model,soil_ref,first_crop,Crop,period," \
          + "AWC_30_14Mar,AWC_60_14Mar,AWC_90_14Mar," \
          + "AWC_30_sow,AWC_60_sow,AWC_90_sow," \
          + "AWC_30_harv,AWC_60_harv,AWC_90_harv," \
-         + "tradef,frostred, sum_irri" \
+         + "tradef,frostred,sum_irri,sum_Nmin" \
          + "\n"
 
 

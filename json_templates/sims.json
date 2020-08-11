@@ -22,6 +22,7 @@
 			["Pwp|Pwp_30_60", [4, 6, "AVG"], "FIRST"],
 			["Pwp|Pwp_60_90", [7, 9, "AVG"], "FIRST"],
 			["Irrig|cum_irri", "SUM"],
+			["NetNmin|sum_Nmin", "SUM"],
 
 			["Yield", "LAST"]
 		],
@@ -70,7 +71,7 @@
 				["TraDef|tradef", "AVG"],
 				["FrostRed|frostred", "LAST"],
 				["Count|cycle-length", "SUM"],
-
+				["NetNmin|sum_Nmin", "SUM"],
 				["Yield", "LAST"],
 				["AbBiom|Biom-harv", "LAST"],
 				["AbBiomN|CroN-harv", "LAST"],
