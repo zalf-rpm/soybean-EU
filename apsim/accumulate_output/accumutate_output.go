@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -16,14 +17,19 @@ const na = "na"
 
 func main() {
 
-	inputFolder := "C:/Users/sschulz/Desktop/out_0_0_0"
-	outFolder := "C:/Users/sschulz/Desktop/out_0_0_0_transformed"
-	//inputFolder := "/beegfs/rpm/projects/apsim/projects/soybeanEU/out_0_0_0"
-	//outFolder := "/beegfs/rpm/projects/apsim/projects/soybeanEU/out_0_0_0/transformed"
-	baseCSV := "./base.csv"
-	period := "0"
-	sce := "0_0"
-	CO2 := "360"
+	inputFolderPtr := flag.String("in", "/beegfs/rpm/projects/apsim/projects/soybeanEU/out_0_0_0", "path to input")
+	outFolderPtr := flag.String("out", "/beegfs/rpm/projects/apsim/projects/soybeanEU/out_transformed", "path to output")
+	baseCSVPtr := flag.String("base", "./base.csv", "base csv file")
+	periodPtr := flag.String("period", "0", "periode")
+	scePtr := flag.String("sce", "0_0", "climate scenatrio")
+	CO2Ptr := flag.String("co2", "360", "co2 value")
+
+	inputFolder := *inputFolderPtr
+	outFolder := *outFolderPtr
+	baseCSV := *baseCSVPtr
+	period := *periodPtr
+	sce := *scePtr
+	CO2 := *CO2Ptr
 
 	baseFile, err := os.Open(baseCSV)
 	if err != nil {
@@ -97,329 +103,318 @@ func main() {
 
 		for _, irrSetup := range soilRefVal {
 			id := baseData[irrSetup].id
-			for matGroup, folder := range folderMapping {
-				prefix := [...]string{
-					filepath.Join(folder, id+matGroup+"_ms "),
-					//filepath.Join(folder, id+matGroup+"_sm "),
+			for matGroupCRot, folder := range folderMapping {
+				var firstCrop string
+				var prefix string
+				var matGroup string
+				if strings.HasSuffix(matGroupCRot, "_ms") {
+					firstCrop = "maize"
+					matGroup = strings.TrimSuffix(matGroupCRot, "_ms")
+					prefix = filepath.Join(folder, id+matGroup+"_ms ")
+				} else {
+					matGroup = strings.TrimSuffix(matGroupCRot, "_sm")
+					firstCrop = "soybean"
+					prefix = filepath.Join(folder, id+matGroup+"_sm ")
 				}
-				for idxPrefix, pref := range prefix {
 
-					firstCrop := "soybean"
-					if idxPrefix == 0 {
-						firstCrop = "maize"
+				headerSow, contentSow := readApsimFile(prefix + "sowing.out")
+				// SowDOY     AWC_30_sow     AWC_60_sow     AWC_90_sow           year
+				findIndex := func(name string, arr []string) int {
+					for i, val := range arr {
+						if val == name {
+							return i
+						}
 					}
+					return -1
+				}
+				indexSow := findIndex("SowDOY", headerSow)
+				indexAWC30sow := findIndex("AWC_30_sow", headerSow)
+				indexAWC60sow := findIndex("AWC_60_sow", headerSow)
+				indexAWC90sow := findIndex("AWC_90_sow", headerSow)
+				indexYear := findIndex("year", headerSow)
+				// if SowDOY > 250 ignore line- > bug in Apsim
+				type content struct {
+					year        string
+					SowDOY      string
+					AWC30sow    string
+					AWC60sow    string
+					AWC90sow    string
+					EmergDOY    string
+					AntDOY      string
+					MatDOY      string
+					HarvDOY     string
+					CO2         string
+					Yield       string
+					MaxLAI      string
+					cyclelength string
+					sumET       string
+					AWC3014Mar  string
+					AWC6014Mar  string
+					AWC9014Mar  string
+					AWC30harv   string
+					AWC60harv   string
+					AWC90harv   string
+					frostred    string
+					sumirri     string
+					sumNmin     string
+					Crop        string
+				}
+				datesMapping := make(map[string]*content, 30)
+				for _, line := range contentSow {
+					sowVal, err := strconv.ParseInt(line[indexSow], 10, 64)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if sowVal <= 250 {
+						c := content{
+							year:        line[indexYear],
+							SowDOY:      line[indexSow],
+							AWC30sow:    line[indexAWC30sow],
+							AWC60sow:    line[indexAWC60sow],
+							AWC90sow:    line[indexAWC90sow],
+							EmergDOY:    na,
+							AntDOY:      na,
+							MatDOY:      na,
+							HarvDOY:     na,
+							Yield:       na,
+							MaxLAI:      na,
+							cyclelength: na,
+							sumET:       na,
+							AWC3014Mar:  na,
+							AWC6014Mar:  na,
+							AWC9014Mar:  na,
+							AWC30harv:   na,
+							AWC60harv:   na,
+							AWC90harv:   na,
+							frostred:    na,
+							sumirri:     na,
+							sumNmin:     na,
+							Crop:        "maize/silage maize",
+						}
+						datesMapping[line[indexYear]] = &c
+					}
+				}
+				headerEmerg, contentEmerg := readApsimFile(prefix + "emerg.out")
+				// EmergDOY           year
+				indexEmerg := findIndex("EmergDOY", headerEmerg)
+				indexYear = findIndex("year", headerEmerg)
+				for _, line := range contentEmerg {
+					if _, ok := datesMapping[line[indexYear]]; ok {
+						str := line[indexEmerg]
+						datesMapping[line[indexYear]].EmergDOY = str
+					}
+				}
+				// title         AntDOY           year
+				headerAnt, contentAnt := readApsimFile(prefix + "flowering.out")
+				indexAnt := findIndex("AntDOY", headerAnt)
+				indexYear = findIndex("year", headerAnt)
+				for _, line := range contentAnt {
+					if _, ok := datesMapping[line[indexYear]]; ok {
+						str := line[indexAnt]
+						datesMapping[line[indexYear]].AntDOY = str
+					}
+				}
+				//            year         MatDOY              title
+				headerMat, contentMat := readApsimFile(prefix + "maturity.out")
+				indexMat := findIndex("MatDOY", headerMat)
+				indexYear = findIndex("year", headerMat)
+				for _, line := range contentMat {
+					if _, ok := datesMapping[line[indexYear]]; ok {
+						str := line[indexMat]
+						datesMapping[line[indexYear]].MatDOY = str
+					}
+				}
+				//       model       year       CO2      maize_lai  soybean_lai  maize_biomass soybean_biomass    maize_yield  soybean_yield
+				//       HarvDOY     sum_irri   sum_ep   sum_es     sum_runoff   sum_Nmin paddock.soybean.grain_n paddock.maize.grain_n
+				//       AWC_30_harv    AWC_60_harv    AWC_90_harv              title
+				headerHar, contentHar := readApsimFile(prefix + "harvesting.out")
+				indexYear = findIndex("year", headerHar)
+				indexMaizelai := findIndex("maize_lai", headerHar)
+				indexSoybeanlai := findIndex("soybean_lai", headerHar)
+				indexMaizebiomass := findIndex("maize_biomass", headerHar)
+				indexSoybeanbiomass := findIndex("soybean_biomass", headerHar)
+				indexMaizeyield := findIndex("maize_yield", headerHar)
+				indexSoybeanyield := findIndex("soybean_yield", headerHar)
+				indexHarvDOY := findIndex("HarvDOY", headerHar)
+				indexSumirri := findIndex("sum_irri", headerHar)
+				indexSumep := findIndex("sum_ep", headerHar)
+				indexSumes := findIndex("sum_es", headerHar)
+				indexSumNmin := findIndex("sum_Nmin", headerHar)
+				indexAWC30harv := findIndex("AWC_30_harv", headerHar)
+				indexAWC60harv := findIndex("AWC_60_harv", headerHar)
+				indexAWC90harv := findIndex("AWC_90_harv", headerHar)
 
-					headerSow, contentSow := readApsimFile(pref + "sowing.out")
-					// SowDOY     AWC_30_sow     AWC_60_sow     AWC_90_sow           year
-					findIndex := func(name string, arr []string) int {
-						for i, val := range arr {
-							if val == name {
-								return i
+				expectedCrop := "soybean"
+				if firstCrop == "soybean" {
+					expectedCrop = "maize"
+				}
+				currentYear := ""
+				for _, line := range contentHar {
+					year := line[indexYear]
+					if currentYear != year {
+						if expectedCrop == "maize" {
+							expectedCrop = "soybean"
+						} else {
+							expectedCrop = "maize"
+						}
+						currentYear = year
+					}
+					if _, ok := datesMapping[year]; ok {
+						str := line[indexHarvDOY]
+						if datesMapping[year].HarvDOY == na {
+							datesMapping[year].HarvDOY = str
+						} else {
+							harVal, err := strconv.ParseInt(str, 10, 64)
+							if err != nil {
+								log.Fatal(err)
+							}
+							lastHarVal, err := strconv.ParseInt(datesMapping[year].HarvDOY, 10, 64)
+							if harVal < lastHarVal {
+								datesMapping[year].HarvDOY = str
 							}
 						}
-						return -1
-					}
-					indexSow := findIndex("SowDOY", headerSow)
-					indexAWC30sow := findIndex("AWC_30_sow", headerSow)
-					indexAWC60sow := findIndex("AWC_60_sow", headerSow)
-					indexAWC90sow := findIndex("AWC_90_sow", headerSow)
-					indexYear := findIndex("year", headerSow)
-					// if SowDOY > 250 ignore line- > bug in Apsim
-					type content struct {
-						year        string
-						SowDOY      string
-						AWC30sow    string
-						AWC60sow    string
-						AWC90sow    string
-						EmergDOY    string
-						AntDOY      string
-						MatDOY      string
-						HarvDOY     string
-						CO2         string
-						Yield       string
-						MaxLAI      string
-						cyclelength string
-						sumET       string
-						AWC3014Mar  string
-						AWC6014Mar  string
-						AWC9014Mar  string
-						AWC30harv   string
-						AWC60harv   string
-						AWC90harv   string
-						frostred    string
-						sumirri     string
-						sumNmin     string
-						Crop        string
-					}
-					datesMapping := make(map[string]*content, 30)
-					for _, line := range contentSow {
-						sowVal, err := strconv.ParseInt(line[indexSow], 10, 64)
+
+						soybeanBiomass, err := strconv.ParseFloat(line[indexSoybeanbiomass], 64)
 						if err != nil {
 							log.Fatal(err)
 						}
-						if sowVal <= 250 {
-							c := content{
-								year:        line[indexYear],
-								SowDOY:      line[indexSow],
-								AWC30sow:    line[indexAWC30sow],
-								AWC60sow:    line[indexAWC60sow],
-								AWC90sow:    line[indexAWC90sow],
-								EmergDOY:    na,
-								AntDOY:      na,
-								MatDOY:      na,
-								HarvDOY:     na,
-								Yield:       na,
-								MaxLAI:      na,
-								cyclelength: na,
-								sumET:       na,
-								AWC3014Mar:  na,
-								AWC6014Mar:  na,
-								AWC9014Mar:  na,
-								AWC30harv:   na,
-								AWC60harv:   na,
-								AWC90harv:   na,
-								frostred:    na,
-								sumirri:     na,
-								sumNmin:     na,
-								Crop:        "maize/silage maize",
-							}
-							datesMapping[line[indexYear]] = &c
+						maizeBiomass, err := strconv.ParseFloat(line[indexMaizebiomass], 64)
+						if err != nil {
+							log.Fatal(err)
 						}
-					}
-					headerEmerg, contentEmerg := readApsimFile(pref + "emerg.out")
-					// EmergDOY           year
-					indexEmerg := findIndex("EmergDOY", headerEmerg)
-					indexYear = findIndex("year", headerEmerg)
-					for _, line := range contentEmerg {
-						if _, ok := datesMapping[line[indexYear]]; ok {
-							str := line[indexEmerg]
-							datesMapping[line[indexYear]].EmergDOY = str
-						}
-					}
-					// title         AntDOY           year
-					headerAnt, contentAnt := readApsimFile(pref + "flowering.out")
-					indexAnt := findIndex("AntDOY", headerAnt)
-					indexYear = findIndex("year", headerAnt)
-					for _, line := range contentAnt {
-						if _, ok := datesMapping[line[indexYear]]; ok {
-							str := line[indexAnt]
-							datesMapping[line[indexYear]].AntDOY = str
-						}
-					}
-					//            year         MatDOY              title
-					headerMat, contentMat := readApsimFile(pref + "maturity.out")
-					indexMat := findIndex("MatDOY", headerMat)
-					indexYear = findIndex("year", headerMat)
-					for _, line := range contentMat {
-						if _, ok := datesMapping[line[indexYear]]; ok {
-							str := line[indexMat]
-							datesMapping[line[indexYear]].MatDOY = str
-						}
-					}
-					//       model       year       CO2      maize_lai  soybean_lai  maize_biomass soybean_biomass    maize_yield  soybean_yield
-					//       HarvDOY     sum_irri   sum_ep   sum_es     sum_runoff   sum_Nmin paddock.soybean.grain_n paddock.maize.grain_n
-					//       AWC_30_harv    AWC_60_harv    AWC_90_harv              title
-					headerHar, contentHar := readApsimFile(pref + "harvesting.out")
-					indexYear = findIndex("year", headerHar)
-					indexMaizelai := findIndex("maize_lai", headerHar)
-					indexSoybeanlai := findIndex("soybean_lai", headerHar)
-					indexMaizebiomass := findIndex("maize_biomass", headerHar)
-					indexSoybeanbiomass := findIndex("soybean_biomass", headerHar)
-					indexMaizeyield := findIndex("maize_yield", headerHar)
-					indexSoybeanyield := findIndex("soybean_yield", headerHar)
-					indexHarvDOY := findIndex("HarvDOY", headerHar)
-					indexSumirri := findIndex("sum_irri", headerHar)
-					indexSumep := findIndex("sum_ep", headerHar)
-					indexSumes := findIndex("sum_es", headerHar)
-					indexSumNmin := findIndex("sum_Nmin", headerHar)
-					indexAWC30harv := findIndex("AWC_30_harv", headerHar)
-					indexAWC60harv := findIndex("AWC_60_harv", headerHar)
-					indexAWC90harv := findIndex("AWC_90_harv", headerHar)
 
-					expectedCrop := "soybean"
-					if firstCrop == "soybean" {
-						expectedCrop = "maize"
-					}
-					currentYear := ""
-					for _, line := range contentHar {
-						year := line[indexYear]
-						if currentYear != year {
-							if expectedCrop == "maize" {
-								expectedCrop = "soybean"
-							} else {
-								expectedCrop = "maize"
-							}
-							currentYear = year
+						yield := line[indexSoybeanyield]
+						maxLAI := line[indexSoybeanlai]
+						biomass := soybeanBiomass
+						if soybeanBiomass < maizeBiomass {
+							yield = line[indexMaizeyield]
+							maxLAI = line[indexMaizelai]
+							biomass = maizeBiomass
 						}
-						if _, ok := datesMapping[year]; ok {
-							str := line[indexHarvDOY]
-							if datesMapping[year].HarvDOY == na {
-								datesMapping[year].HarvDOY = str
-							} else {
-								harVal, err := strconv.ParseInt(str, 10, 64)
-								if err != nil {
-									log.Fatal(err)
-								}
-								lastHarVal, err := strconv.ParseInt(datesMapping[year].HarvDOY, 10, 64)
-								if harVal < lastHarVal {
-									datesMapping[year].HarvDOY = str
-								}
-							}
+						datesMapping[year].Yield = yield
+						datesMapping[year].MaxLAI = maxLAI
 
-							// soybeanYield, err := strconv.ParseInt(line[indexSoybeanyield], 10, 64)
-							// if err != nil {
-							// 	log.Fatal(err)
-							// }
-							// maizeYield, err := strconv.ParseInt(line[indexMaizeyield], 10, 64)
-							// if err != nil {
-							// 	log.Fatal(err)
-							// }
-							soybeanBiomass, err := strconv.ParseFloat(line[indexSoybeanbiomass], 64)
-							if err != nil {
-								log.Fatal(err)
+						if soybeanBiomass > maizeBiomass {
+							datesMapping[year].Crop = matGroupMapping[matGroup]
+							if expectedCrop != "soybean" {
+								log.Fatal("mixed up crop rotation")
 							}
-							maizeBiomass, err := strconv.ParseFloat(line[indexMaizebiomass], 64)
-							if err != nil {
-								log.Fatal(err)
+						} else if maizeBiomass > soybeanBiomass && expectedCrop != "maize" {
+							if expectedCrop != "maize" {
+								log.Fatal("mixed up crop rotation")
 							}
-
-							yield := line[indexSoybeanyield]
-							maxLAI := line[indexSoybeanlai]
-							biomass := soybeanBiomass
-							if soybeanBiomass < maizeBiomass {
-								yield = line[indexMaizeyield]
-								maxLAI = line[indexMaizelai]
-								biomass = maizeBiomass
-							}
-							datesMapping[year].Yield = yield
-							datesMapping[year].MaxLAI = maxLAI
-
-							if soybeanBiomass > maizeBiomass {
+						} else if soybeanBiomass == maizeBiomass {
+							if expectedCrop == "soybean" {
 								datesMapping[year].Crop = matGroupMapping[matGroup]
-								if expectedCrop != "soybean" {
-									log.Fatal("mixed up crop rotation")
-								}
-							} else if maizeBiomass > soybeanBiomass && expectedCrop != "maize" {
-								if expectedCrop != "maize" {
-									log.Fatal("mixed up crop rotation")
-								}
-							} else if soybeanBiomass == maizeBiomass {
-								if expectedCrop == "soybean" {
-									datesMapping[year].Crop = matGroupMapping[matGroup]
-								}
 							}
-							sumes, err := strconv.ParseFloat(line[indexSumes], 64)
-							if err != nil {
-								log.Fatal(err)
-							}
-							sumep, err := strconv.ParseFloat(line[indexSumep], 64)
-							if err != nil {
-								log.Fatal(err)
-							}
-							sumET := sumes + sumep
-							datesMapping[year].sumET = fmt.Sprintf("%.1f", sumET)
-
-							if biomass > 0 {
-								datesMapping[year].AWC30harv = line[indexAWC30harv]
-								datesMapping[year].AWC60harv = line[indexAWC60harv]
-								datesMapping[year].AWC90harv = line[indexAWC90harv]
-							}
-							datesMapping[year].sumirri = line[indexSumirri]
-							datesMapping[year].sumNmin = line[indexSumNmin]
 						}
+						sumes, err := strconv.ParseFloat(line[indexSumes], 64)
+						if err != nil {
+							log.Fatal(err)
+						}
+						sumep, err := strconv.ParseFloat(line[indexSumep], 64)
+						if err != nil {
+							log.Fatal(err)
+						}
+						sumET := sumes + sumep
+						datesMapping[year].sumET = fmt.Sprintf("%.1f", sumET)
 
+						if biomass > 0 {
+							datesMapping[year].AWC30harv = line[indexAWC30harv]
+							datesMapping[year].AWC60harv = line[indexAWC60harv]
+							datesMapping[year].AWC90harv = line[indexAWC90harv]
+						}
+						datesMapping[year].sumirri = line[indexSumirri]
+						datesMapping[year].sumNmin = line[indexSumNmin]
 					}
 
-					for _, datemap := range datesMapping {
+				}
 
-						writer.WriteString("AP,")      // write model name shortcut
-						writer.WriteString(soilRefStr) // soil_ref
-						writer.WriteRune(',')
-						// first_crop
-						if idxPrefix == 0 {
-							writer.WriteString("maize,")
-						} else {
-							writer.WriteString("soybean,")
-						}
-						// Crop
-						writer.WriteString(datemap.Crop)
-						writer.WriteRune(',')
-						// period
-						writer.WriteString(period)
-						writer.WriteRune(',')
-						// sce
-						writer.WriteString(sce)
-						writer.WriteRune(',')
-						// CO2
-						writer.WriteString(CO2)
-						writer.WriteRune(',')
-						// TrtNo
-						writer.WriteString(trtNoMapping[baseData[irrSetup].irrigation])
-						writer.WriteRune(',')
-						// ProductionCase
-						writer.WriteString(productionCaseMapping[baseData[irrSetup].irrigation])
-						writer.WriteRune(',')
-						// Year
-						writer.WriteString(datemap.year)
-						writer.WriteRune(',')
-						// Yield
-						writer.WriteString(datemap.Yield)
-						writer.WriteRune(',')
-						// MaxLAI
-						writer.WriteString(datemap.MaxLAI)
-						writer.WriteRune(',')
-						// SowDOY
-						writer.WriteString(datemap.SowDOY)
-						writer.WriteRune(',')
-						// EmergDOY
-						writer.WriteString(datemap.EmergDOY)
-						writer.WriteRune(',')
-						// AntDOY
-						writer.WriteString(datemap.AntDOY)
-						writer.WriteRune(',')
-						// MatDOY
-						writer.WriteString(datemap.MatDOY)
-						writer.WriteRune(',')
-						// HarvDOY
-						writer.WriteString(datemap.HarvDOY)
-						writer.WriteRune(',')
-						// sum_ET
-						writer.WriteString(datemap.sumET)
-						writer.WriteRune(',')
-						// AWC_30_sow
-						writer.WriteString(datemap.AWC30sow)
-						writer.WriteRune(',')
-						// AWC_60_sow
-						writer.WriteString(datemap.AWC60sow)
-						writer.WriteRune(',')
-						// AWC_90_sow
-						writer.WriteString(datemap.AWC90sow)
-						writer.WriteRune(',')
-						// AWC_30_harv
-						writer.WriteString(datemap.AWC30harv)
-						writer.WriteRune(',')
-						// AWC_60_harv
-						writer.WriteString(datemap.AWC60harv)
-						writer.WriteRune(',')
-						// AWC_90_harv
-						writer.WriteString(datemap.AWC90harv)
-						writer.WriteRune(',')
-						// tradef
-						writer.WriteString(na)
-						writer.WriteRune(',')
-						// sum_irri
-						writer.WriteString(datemap.sumirri)
-						writer.WriteRune(',')
-						// sum_Nmin
-						writer.WriteString(datemap.sumNmin)
-						writer.WriteRune(',')
-						writer.WriteString("\r\n")
-					}
+				for _, datemap := range datesMapping {
+
+					writer.WriteString("AP,")      // write model name shortcut
+					writer.WriteString(soilRefStr) // soil_ref
+					writer.WriteRune(',')
+					// first_crop
+					writer.WriteString(firstCrop)
+					writer.WriteRune(',')
+					// Crop
+					writer.WriteString(datemap.Crop)
+					writer.WriteRune(',')
+					// period
+					writer.WriteString(period)
+					writer.WriteRune(',')
+					// sce
+					writer.WriteString(sce)
+					writer.WriteRune(',')
+					// CO2
+					writer.WriteString(CO2)
+					writer.WriteRune(',')
+					// TrtNo
+					writer.WriteString(trtNoMapping[baseData[irrSetup].irrigation])
+					writer.WriteRune(',')
+					// ProductionCase
+					writer.WriteString(productionCaseMapping[baseData[irrSetup].irrigation])
+					writer.WriteRune(',')
+					// Year
+					writer.WriteString(datemap.year)
+					writer.WriteRune(',')
+					// Yield
+					writer.WriteString(datemap.Yield)
+					writer.WriteRune(',')
+					// MaxLAI
+					writer.WriteString(datemap.MaxLAI)
+					writer.WriteRune(',')
+					// SowDOY
+					writer.WriteString(datemap.SowDOY)
+					writer.WriteRune(',')
+					// EmergDOY
+					writer.WriteString(datemap.EmergDOY)
+					writer.WriteRune(',')
+					// AntDOY
+					writer.WriteString(datemap.AntDOY)
+					writer.WriteRune(',')
+					// MatDOY
+					writer.WriteString(datemap.MatDOY)
+					writer.WriteRune(',')
+					// HarvDOY
+					writer.WriteString(datemap.HarvDOY)
+					writer.WriteRune(',')
+					// sum_ET
+					writer.WriteString(datemap.sumET)
+					writer.WriteRune(',')
+					// AWC_30_sow
+					writer.WriteString(datemap.AWC30sow)
+					writer.WriteRune(',')
+					// AWC_60_sow
+					writer.WriteString(datemap.AWC60sow)
+					writer.WriteRune(',')
+					// AWC_90_sow
+					writer.WriteString(datemap.AWC90sow)
+					writer.WriteRune(',')
+					// AWC_30_harv
+					writer.WriteString(datemap.AWC30harv)
+					writer.WriteRune(',')
+					// AWC_60_harv
+					writer.WriteString(datemap.AWC60harv)
+					writer.WriteRune(',')
+					// AWC_90_harv
+					writer.WriteString(datemap.AWC90harv)
+					writer.WriteRune(',')
+					// tradef
+					writer.WriteString(na)
+					writer.WriteRune(',')
+					// sum_irri
+					writer.WriteString(datemap.sumirri)
+					writer.WriteRune(',')
+					// sum_Nmin
+					writer.WriteString(datemap.sumNmin)
+					writer.WriteRune(',')
+					writer.WriteString("\r\n")
 				}
 			}
-			writer.Flush()
 		}
-
+		writer.Flush()
 		outFile.Close()
 	}
 }
@@ -453,13 +448,13 @@ func getFolderMaturityGroupMapping(inputFolder string) map[string]string {
 			for _, filename := range filenames {
 				name := filename.Name()
 				filenameparts := strings.FieldsFunc(name[8:], func(r rune) bool {
-					if r == '_' || r == ' ' {
+					if r == ' ' {
 						return true
 					}
 					return false
 				})
-				maturityGroup := filenameparts[0]
-				out[maturityGroup] = filepath.Join(inputFolder, subfolder.Name())
+				maturityGroupCR := filenameparts[0]
+				out[maturityGroupCR] = filepath.Join(inputFolder, subfolder.Name())
 			}
 		}
 	}
