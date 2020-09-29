@@ -4,7 +4,7 @@
 def extractGridData() :
 
     # PWP,FC,SAT,SWinit,
-    outSoilHeader = "id,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil,Texture_topsoil,Texture_subsoil,PWP,FC\n"
+    outSoilHeader = "id,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil,Texture_topsoil,Texture_subsoil,PWP_topsoil,FC_topsoil,PWP_subsoil,FC_subsoil\n"
     soildIdNumber = 0
     soilLookup = dict()
     with open("stu_eu_layer_soils.csv", mode="wt", newline="") as outGridfile :
@@ -44,10 +44,11 @@ def extractGridData() :
                     textTS = sand_and_clay_to_ka5_texture(sandTS/100.0, clayTS/100.0)
                     claySS = float(out[soilheader["Clay_subsoil"]])
                     sandSS = float(out[soilheader["Sand_subsoil"]])
+                    siltSS = float(out[soilheader["Silt_subsoil"]])
                     textSS = sand_and_clay_to_ka5_texture(sandSS/100.0, claySS/100.0)
 
                     cOrgTS = float(out[soilheader["OC_topsoil"]])
-
+                    cOrgSS = float(out[soilheader["OC_subsoil"]])
 
                     outlineSoil = [str(soildIdNumber),
                         out[soilheader["depth"]],
@@ -64,7 +65,9 @@ def extractGridData() :
                         textTS,
                         textSS,
                         "{:1.3f}".format(calcPWP(cOrgTS, sandTS, siltTS)),
-                        "{:1.3f}".format(calcFK(cOrgTS, sandTS, siltTS )),
+                        "{:1.3f}".format(calcFK(cOrgTS, sandTS, siltTS )),   
+                        "{:1.3f}".format(calcPWP(cOrgSS, sandSS, siltSS)),
+                        "{:1.3f}".format(calcFK(cOrgSS, sandSS, siltSS )),  
                         ]
 
                     outGridfile.writelines(",".join(outlineSoil) + "\n")
@@ -101,6 +104,8 @@ def calcFK(cgehalt, ton, sluf ) :
 def calcPWP(cgehalt, ton, sluf) :
     return 0.09878 + 0.002127* ton - 0.0008366 *sluf - 0.0767 *(1/(cgehalt+1)) + 0.00003853 * sluf * ton + 0.00233 * sluf * (1/(cgehalt+1)) + 0.0009498 * sluf * (1/(cgehalt+1))
 
+def getPoreVolume(bulkDensity) :
+    return 1 - (bulkDensity/1000) / 2.65
 
 def sand_and_clay_to_ka5_texture(sand, clay):
     "get a rough KA5 soil texture class from given sand and soil content"
