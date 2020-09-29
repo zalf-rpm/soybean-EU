@@ -1,120 +1,126 @@
 #!/usr/bin/python
 # -*- coding: UTF-8
 
-pathSoilLayerFile = "../stu_eu_layers.csv"
+pathSoilLayerFile = "../stu_eu_layer_ref.csv"
 pathOutputFile = "./project/soyeu/soil_soyeu.txt"
+pathSoilLookupFile = "./soil_lookup.csv"
 
 def extractGridData() :
 
     outSoilHeader = "SID Corg Te  lb B St C/N C/S Hy Rd NuHo  FC WP PS S% SI% C% lamda DraiT  Drai% GW LBG\n"
-    soildIdNumber = 1
+    lookupRefHeader = "soil_ref,SID\n"
+    soildIdNumber = 0
     soilLookup = dict()
     with open(pathOutputFile, mode="wt", newline="") as outSoilfile :
         outSoilfile.writelines(outSoilHeader)
-        # read soil data
-        with open(pathSoilLayerFile) as sourcefile:
-            firstLine = True
-            soilheader = dict()
-            for line in sourcefile:
-                if firstLine :
-                    firstLine = False
-                    soilheader = ReadSoilHeader(line)
-                    continue
-                out = loadSoilLine(line)
-                soilId = (out[soilheader["depth"]],
-                out[soilheader["OC_topsoil"]],
-                out[soilheader["OC_subsoil"]],
-                out[soilheader["BD_topsoil"]],
-                out[soilheader["BD_subsoil"]],
-                out[soilheader["Sand_topsoil"]],
-                out[soilheader["Clay_topsoil"]],
-                out[soilheader["Silt_topsoil"]],
-                out[soilheader["Sand_subsoil"]],
-                out[soilheader["Clay_subsoil"]],
-                out[soilheader["Silt_subsoil"]])
+        with open(pathSoilLookupFile, mode="wt", newline="") as outLookupFile :
+            outLookupFile.writelines(lookupRefHeader)
+            # read soil data
+            with open(pathSoilLayerFile) as sourcefile:
+                firstLine = True
+                soilheader = dict()
+                for line in sourcefile:
+                    if firstLine :
+                        firstLine = False
+                        soilheader = ReadSoilHeader(line)
+                        continue
+                    out = loadSoilLine(line)
+                    soilId = (out[soilheader["depth"]],
+                    out[soilheader["OC_topsoil"]],
+                    out[soilheader["OC_subsoil"]],
+                    out[soilheader["BD_topsoil"]],
+                    out[soilheader["BD_subsoil"]],
+                    out[soilheader["Sand_topsoil"]],
+                    out[soilheader["Clay_topsoil"]],
+                    out[soilheader["Silt_topsoil"]],
+                    out[soilheader["Sand_subsoil"]],
+                    out[soilheader["Clay_subsoil"]],
+                    out[soilheader["Silt_subsoil"]])
 
-                if not soilId in soilLookup : 
-                    soildIdNumber += 1                           
-                    soilLookup[soilId] = soildIdNumber
-                    claySS = float(out[soilheader["Clay_subsoil"]])
-                    sandSS = float(out[soilheader["Sand_subsoil"]])
-                    siltSS = float(out[soilheader["Silt_subsoil"]])
-                    textSS = sand_and_clay_to_ka5_texture(sandSS/100.0, claySS/100.0)
-                    clayTS = float(out[soilheader["Clay_topsoil"]])
-                    sandTS = float(out[soilheader["Sand_topsoil"]])
-                    siltTS = float(out[soilheader["Silt_topsoil"]])
-                    textTS = sand_and_clay_to_ka5_texture(sandTS/100.0, clayTS/100.0)
-                    cOrgTS = float(out[soilheader["OC_topsoil"]])
-                    cOrgSS = float(out[soilheader["OC_subsoil"]])
-                    cOrgTSstr = "{:1.2f}".format(cOrgTS) if cOrgTS < 10 else "{:1.1f}".format(cOrgTS)
-                    cOrgSSstr = "{:1.2f}".format(cOrgSS) if cOrgSS < 10 else "{:1.1f}".format(cOrgSS)
-
-                    rootDepth = float(out[soilheader["depth"]]) * 10 # in cm
-
-                    hasSecondLayer = claySS + sandSS + siltSS > 0
-                    numberOfHorizons = "02  " if hasSecondLayer else "01  "
-                    bulkDensityTS = float(out[soilheader["BD_topsoil"]])
-                    bulkDensityClassTS = getBulkDensityClass(bulkDensityTS) 
-                    bulkDensitySS = float(out[soilheader["BD_subsoil"]])
-                    bulkDensityClassSS = getBulkDensityClass(bulkDensitySS) 
-
-                    # layer 1
-                    outlineSoil = [
-                        "{:03d}".format(soildIdNumber), # SID
-                        cOrgTSstr,                      #Corg
-                        textTS,                         #Te
-                        "03",                           #lb
-                        str(bulkDensityClassTS),        #B
-                        "00",                           #St
-                        "10",                           #C/N
-                        "    ",                         #C/S
-                        "00",                           #Hy
-                        "{:02.0f}".format(rootDepth),   #Rd
-                        numberOfHorizons,               #NuHo
-                        "{:2.0f}".format(calcFK(cOrgTS, sandTS, siltTS )*100), #FC 
-                        "{:2.0f}".format(calcPWP(cOrgTS, sandTS, siltTS)*100), #WP 
-                        "{:2.0f}".format(getPoreVolume(bulkDensityTS)*100),    #PS 
-                        "{:02d}".format(int(out[soilheader["Sand_topsoil"]])), #S% 
-                        "{:02d}".format(int(out[soilheader["Silt_topsoil"]])), #SI% 
-                        "{:02d}".format(int(out[soilheader["Clay_topsoil"]])), #C%
-                        "00",                           #lamda 
-                        " 20 ",                         #DraiT  
-                        " 00",                          #Drai% 
-                        " 99",                          #GW 
-                        "01",                           #LBG 
-                        ]
-                    outSoilfile.writelines(" ".join(outlineSoil) + "\n")
-
-                    # layer 2
-                    if hasSecondLayer :
-                        # second layer
+                    if not soilId in soilLookup : 
+                        soildIdNumber += 1                           
+                        soilLookup[soilId] = soildIdNumber
+                        claySS = float(out[soilheader["Clay_subsoil"]])
+                        sandSS = float(out[soilheader["Sand_subsoil"]])
+                        siltSS = float(out[soilheader["Silt_subsoil"]])
+                        textSS = sand_and_clay_to_ka5_texture(sandSS/100.0, claySS/100.0)
+                        clayTS = float(out[soilheader["Clay_topsoil"]])
+                        sandTS = float(out[soilheader["Sand_topsoil"]])
+                        siltTS = float(out[soilheader["Silt_topsoil"]])
+                        textTS = sand_and_clay_to_ka5_texture(sandTS/100.0, clayTS/100.0)
+                        cOrgTS = float(out[soilheader["OC_topsoil"]])
+                        cOrgSS = float(out[soilheader["OC_subsoil"]])
+                        cOrgTSstr = "{:1.2f}".format(cOrgTS) if cOrgTS < 10 else "{:1.1f}".format(cOrgTS)
+                        cOrgSSstr = "{:1.2f}".format(cOrgSS) if cOrgSS < 10 else "{:1.1f}".format(cOrgSS)
+    
+                        rootDepth = float(out[soilheader["depth"]]) * 10 # in cm
+    
+                        hasSecondLayer = claySS + sandSS + siltSS > 0
+                        numberOfHorizons = "02  " if hasSecondLayer else "01  "
+                        bulkDensityTS = float(out[soilheader["BD_topsoil"]])
+                        bulkDensityClassTS = getBulkDensityClass(bulkDensityTS) 
+                        bulkDensitySS = float(out[soilheader["BD_subsoil"]])
+                        bulkDensityClassSS = getBulkDensityClass(bulkDensitySS) 
+    
+                        # layer 1
                         outlineSoil = [
                             "{:03d}".format(soildIdNumber), # SID
-                            cOrgSSstr,                      #Corg
-                            textSS,                         #Te
-                            "20",                           #lb
-                            str(bulkDensityClassSS),        #B
+                            cOrgTSstr,                      #Corg
+                            textTS,                         #Te
+                            "03",                           #lb
+                            str(bulkDensityClassTS),        #B
                             "00",                           #St
                             "10",                           #C/N
                             "    ",                         #C/S
                             "00",                           #Hy
-                            "  ",                           #Rd
-                            "    ",                         #NuHo
-                            "{:2.0f}".format(calcFK(cOrgSS, sandSS, siltSS )*100), #FC 
-                            "{:2.0f}".format(calcPWP(cOrgSS, sandSS, siltSS)*100), #WP 
-                            "{:2.0f}".format(getPoreVolume(bulkDensitySS)*100),    #PS 
-                            "{:02d}".format(int(out[soilheader["Sand_subsoil"]])), #S% 
-                            "{:02d}".format(int(out[soilheader["Silt_subsoil"]])), #SI% 
-                            "{:02d}".format(int(out[soilheader["Clay_subsoil"]])), #C%
+                            "{:02.0f}".format(rootDepth),   #Rd
+                            numberOfHorizons,               #NuHo
+                            "{:2.0f}".format(calcFK(cOrgTS, sandTS, siltTS )*100), #FC 
+                            "{:2.0f}".format(calcPWP(cOrgTS, sandTS, siltTS)*100), #WP 
+                            "{:2.0f}".format(getPoreVolume(bulkDensityTS)*100),    #PS 
+                            "{:02d}".format(int(out[soilheader["Sand_topsoil"]])), #S% 
+                            "{:02d}".format(int(out[soilheader["Silt_topsoil"]])), #SI% 
+                            "{:02d}".format(int(out[soilheader["Clay_topsoil"]])), #C%
                             "00",                           #lamda 
                             " 20 ",                         #DraiT  
                             " 00",                          #Drai% 
-                            "   ",                          #GW 
-                            "  ",                           #LBG 
+                            " 99",                          #GW 
+                            "01",                           #LBG 
                             ]
                         outSoilfile.writelines(" ".join(outlineSoil) + "\n")
+    
+                        # layer 2
+                        if hasSecondLayer :
+                            # second layer
+                            outlineSoil = [
+                                "{:03d}".format(soildIdNumber), # SID
+                                cOrgSSstr,                      #Corg
+                                textSS,                         #Te
+                                "20",                           #lb
+                                str(bulkDensityClassSS),        #B
+                                "00",                           #St
+                                "10",                           #C/N
+                                "    ",                         #C/S
+                                "00",                           #Hy
+                                "  ",                           #Rd
+                                "    ",                         #NuHo
+                                "{:2.0f}".format(calcFK(cOrgSS, sandSS, siltSS )*100), #FC 
+                                "{:2.0f}".format(calcPWP(cOrgSS, sandSS, siltSS)*100), #WP 
+                                "{:2.0f}".format(getPoreVolume(bulkDensitySS)*100),    #PS 
+                                "{:02d}".format(int(out[soilheader["Sand_subsoil"]])), #S% 
+                                "{:02d}".format(int(out[soilheader["Silt_subsoil"]])), #SI% 
+                                "{:02d}".format(int(out[soilheader["Clay_subsoil"]])), #C%
+                                "00",                           #lamda 
+                                " 20 ",                         #DraiT  
+                                " 00",                          #Drai% 
+                                "   ",                          #GW 
+                                "  ",                           #LBG 
+                                ]
+                            outSoilfile.writelines(" ".join(outlineSoil) + "\n")
+                        
+                    outLookupFile.writelines("{0},{1:03d}\n".format(out[soilheader["soil_ref"]], soilLookup[soilId]))    
 
-SOIL_COLUMN_NAMES = ["col","row","elevation","latitude","longitude","depth","OC_topsoil","OC_subsoil","BD_topsoil","BD_subsoil","Sand_topsoil","Clay_topsoil","Silt_topsoil","Sand_subsoil","Clay_subsoil","Silt_subsoil"]
+#SOIL_COLUMN_NAMES = ["col","row","elevation","latitude","longitude","depth","OC_topsoil","OC_subsoil","BD_topsoil","BD_subsoil","Sand_topsoil","Clay_topsoil","Silt_topsoil","Sand_subsoil","Clay_subsoil","Silt_subsoil"]
 
 def ReadSoilHeader(line) : 
     #col,row,elevation,latitude,longitude,depth,OC_topsoil,OC_subsoil,BD_topsoil,BD_subsoil,Sand_topsoil,Clay_topsoil,Silt_topsoil,Sand_subsoil,Clay_subsoil,Silt_subsoil
@@ -124,14 +130,14 @@ def ReadSoilHeader(line) :
     for token in tokens :
         token = token.strip()
         i = i+1
-        if token in SOIL_COLUMN_NAMES :
-            colDic[token] = i
+        #if token in SOIL_COLUMN_NAMES :
+        colDic[token] = i
     return colDic
 
 def loadSoilLine(line) :
     # read relevant content from line 
     tokens = line.split(",")
-    numCOl = len(SOIL_COLUMN_NAMES)
+    numCOl = len(tokens) 
     out = [""] * (numCOl)
     for i in range(numCOl):
         out[i] = tokens[i].strip()
