@@ -14,6 +14,7 @@ def extractGridData() :
     for file in files :
         with open(file) as sourcefile:
             firstLine = True
+            header = dict()
             for line in sourcefile:
                 if firstLine :
                     firstLine = False
@@ -42,6 +43,7 @@ def extractGridData() :
             # read soil data
             with open("stu_eu_layers.csv") as sourcefile:
                 firstLine = True
+                soilheader = dict()
                 for line in sourcefile:
                     if firstLine :
                         firstLine = False
