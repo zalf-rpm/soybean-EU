@@ -1,0 +1,35 @@
+crop Jan Feb  Mrch Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec  comment
+--- 0.18 0.18 0.18 0.18 0.24 0.24 0.24 0.18 0.18 0.18 0.18 0.18 Original values. Evaporation bare soil. This line must be the first! no catch crop -- h
+AB  0.24 0.24 0.24 0.34 0.47 0.48 0.45 0.40 0.24 0.24 0.24 0.24 as ERB Ackerbohne Korn. Leg Sd h
+DIN 0.24 0.24 0.25 0.35 0.45 0.50 0.45 0.25 0.28 0.26 0.24 0.24 wie WWE Dinkel Korn Sd h
+ERB 0.24 0.24 0.24 0.34 0.47 0.48 0.45 0.40 0.24 0.24 0.24 0.24 Originalwerte Pea Korn. Leg Sd h
+GR  0.28 0.28 0.28 0.39 0.39 0.37 0.35 0.33 0.31 0.29 0.28 0.28 as Greenland Grass. Fodder green mass Sd h
+HAF 0.20 0.20 0.24 0.34 0.40 0.48 0.35 0.24 0.24 0.24 0.24 0.24 Original values Hafer Korn LPG 
+HAF 0.20 0.20 0.24 0.34 0.40 0.48 0.35 0.24 0.24 0.24 0.24 0.24 Original values Hafer Korn Sd h
+KAR 0.27 0.28 0.34 0.35 0.40 0.40 0.40 0.35 0.30 0.30 0.27 0.27 Original Values Potatoe. allg. Knolle Sd h
+KGR 0.28 0.28 0.28 0.39 0.39 0.37 0.35 0.33 0.31 0.29 0.28 0.28 as Greenland clover grass Greenm. Leg Sd h
+WK  0.28 0.28 0.28 0.39 0.39 0.37 0.35 0.33 0.31 0.29 0.28 0.28  Clover undersown Greenm. Leg Sd h
+M   0.24 0.28 0.28 0.28 0.28 0.33 0.43 0.39 0.35 0.31 0.26 0.26  Maize. Körner- Korn Sd h
+LGM 0.28 0.28 0.28 0.39 0.39 0.37 0.35 0.33 0.31 0.29 0.28 0.28 as greenland "Landsberger Gemenge".  catch crop Greenm. Leg Sd h
+LUP 0.24 0.24 0.24 0.34 0.35 0.40 0.40 0.35 0.30 0.30 0.24 0.24 Original values Lupines. allg. Korn. Leg Sd h
+LUZ 0.28 0.28 0.28 0.39 0.39 0.39 0.39 0.38 0.34 0.29 0.28 0.28 Original values Lucerne. Seed production Korn. Leg Sd 
+ORH 0.24 0.24 0.24 0.28 0.30 0.40 0.35 0.28 0.30 0.34 0.28 0.28  Oil raddish. catch crop Grünm. Krzbl Sd h
+PHA 0.27 0.27 0.28 0.39 0.39 0.37 0.35 0.20 0.27 0.28 0.27 0.27  Phacelia Green mass Sd h
+SB  0.24 0.24 0.24 0.27 0.34 0.43 0.48 0.46 0.34 0.24 0.24 0.24  Sunflowers Korn Sd h
+SE  0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00  Mustard. Catch crop Green mass Sd h
+SRA 0.24 0.24 0.24 0.24 0.24 0.24 0.24 0.28 0.30 0.30 0.24 0.24  Rape. Summer. Catch crop Greenm. Krzbl Sd h
+SG  0.20 0.20 0.24 0.34 0.40 0.48 0.35 0.24 0.24 0.24 0.24 0.24 warum 0.2? Barley. Sommer-. Futter- Korn LPG 
+SM  0.24 0.28 0.28 0.28 0.28 0.33 0.43 0.39 0.35 0.31 0.26 0.26 Original values Maize. Silo- Grünmasse Sd h
+STI 0.28 0.28 0.28 0.39 0.39 0.37 0.35 0.33 0.31 0.29 0.28 0.28 as WIW Rotationsbrache. begrünt  Sd h
+SW  0.20 0.20 0.24 0.34 0.40 0.48 0.35 0.24 0.24 0.24 0.24 0.24 Originalwerte Weizen. Sommer- Korn LPG 
+TR  0.24 0.24 0.26 0.40 0.51 0.58 0.38 0.26 0.24 0.24 0.24 0.24 Originalwerte Triticale Korn Sd h
+V   0.18 0.18 0.18 0.18 0.20 0.24 0.26 0.26 0.23 0.19 0.18 0.18 Vitis vinifera, transplant
+V5  0.18 0.18 0.18 0.18 0.20 0.24 0.26 0.26 0.23 0.19 0.18 0.18 Vitis vinifera, five years
+V10 0.18 0.18 0.18 0.18 0.20 0.24 0.26 0.26 0.23 0.19 0.18 0.18 Vitis vinifera, ten years
+V20 0.18 0.18 0.18 0.18 0.20 0.24 0.26 0.26 0.23 0.19 0.18 0.18 Vitis vinifera, twenty years
+WG  0.24 0.24 0.26 0.40 0.51 0.48 0.38 0.26 0.24 0.24 0.24 0.24 Original values Barley. Winter- Korn Sd h
+WRA 0.24 0.24 0.24 0.43 0.50 0.47 0.35 0.27 0.24 0.24 0.24 0.24 Original values Rape. Winter- Korn. Krzbl Sd h
+WR  0.24 0.24 0.26 0.40 0.51 0.48 0.38 0.26 0.24 0.24 0.24 0.24 Original values Rye. Winter- Korn LPG 
+WW  0.24 0.24 0.25 0.35 0.45 0.50 0.45 0.29 0.28 0.26 0.24 0.24 Original values Wheat. Winter- Korn LPG 
+ZR  0.24 0.24 0.24 0.24 0.30 0.40 0.48 0.42 0.34 0.25 0.24 0.24 Original values Sugarbeet Root Sd h
+SOY 0.24 0.24 0.24 0.34 0.35 0.40 0.40 0.35 0.30 0.30 0.24 0.24 Soya TBD
