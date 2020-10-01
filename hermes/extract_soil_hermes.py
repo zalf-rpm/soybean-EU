@@ -8,9 +8,10 @@ pathSoilLookupFile = "./soil_lookup.csv"
 def extractGridData() :
 
     outSoilHeader = "SID Corg Te  lb B St C/N C/S Hy Rd NuHo  FC WP PS S% SI% C% lamda DraiT  Drai% GW LBG\n"
-    lookupRefHeader = "soil_ref,SID\n"
+    lookupRefHeader = "soil_ref,SID,soil_layer\n"
     soildIdNumber = 0
     soilLookup = dict()
+    soilLayerLookup = dict()
     with open(pathOutputFile, mode="wt", newline="") as outSoilfile :
         outSoilfile.writelines(outSoilHeader)
         with open(pathSoilLookupFile, mode="wt", newline="") as outLookupFile :
@@ -61,7 +62,7 @@ def extractGridData() :
                         bulkDensityClassTS = getBulkDensityClass(bulkDensityTS) 
                         bulkDensitySS = float(out[soilheader["BD_subsoil"]])
                         bulkDensityClassSS = getBulkDensityClass(bulkDensitySS) 
-    
+                        soilLayerLookup[soildIdNumber] = 2 if hasSecondLayer else 1
                         # layer 1
                         outlineSoil = [
                             "{:03d}".format(soildIdNumber), # SID
@@ -118,7 +119,7 @@ def extractGridData() :
                                 ]
                             outSoilfile.writelines(" ".join(outlineSoil) + "\n")
                         
-                    outLookupFile.writelines("{0},{1:03d}\n".format(out[soilheader["soil_ref"]], soilLookup[soilId]))    
+                    outLookupFile.writelines("{0},{1:03d},{2:d}\n".format(out[soilheader["soil_ref"]], soilLookup[soilId], soilLayerLookup[soilLookup[soilId]]))    
 
 #SOIL_COLUMN_NAMES = ["col","row","elevation","latitude","longitude","depth","OC_topsoil","OC_subsoil","BD_topsoil","BD_subsoil","Sand_topsoil","Clay_topsoil","Silt_topsoil","Sand_subsoil","Clay_subsoil","Silt_subsoil"]
 
