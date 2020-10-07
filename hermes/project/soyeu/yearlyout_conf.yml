@@ -1,0 +1,219 @@
+FillCharacter: ' '
+SeperatorCharacter: ','
+NaValue: n.a.
+DataColumns:
+- Format: '%8s'
+  DataAlignment: left
+  Width: 10
+  VariableName: AKTUELL
+- Format: '%04.f'
+  DataAlignment: right
+  Width: 4
+  Modifier: 10
+  VariableName: VERDUNST
+- Format: '%04.f'
+  DataAlignment: right
+  Width: 4
+  Modifier: 10
+  VariableName: PFTRANS
+- Format: '%04.f'
+  DataAlignment: right
+  Width: 4
+  Modifier: 10
+  VariableName: TRAY
+- Format: '%04.f'
+  DataAlignment: right
+  Width: 4
+  VariableName: PerY
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCY1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCY2
+- Format: '%s'
+  DataAlignment: left
+  Width: 6
+  VariableName: NA
+- Format: '%06.1f'
+  DataAlignment: left
+  Width: 7
+  VariableName: OUTSUM
+- Format: '%07.1f'
+  DataAlignment: right
+  Width: 7
+  VariableName: MINSUM
+- Format: '%07.3f'
+  DataAlignment: right
+  Width: 7
+  VariableName: CUMDENIT
+- Format: '%s'
+  DataAlignment: left
+  Width: 7
+  VariableName: NA
+- Format: '%07.f'
+  DataAlignment: left
+  Width: 7
+  VariableName: SOC1
+- Format: '%s'
+  DataAlignment: left
+  Width: 7
+  VariableName: NA
+- Format: '%s'
+  DataAlignment: left
+  Width: 21
+  VariableName: POLYD
+- Format: '%s'
+  DataAlignment: left
+  Width: 11
+  VariableName: C1NotStableErr
+Headlines:
+  1:
+  - ColumnName: date
+    TextAlignment: left
+    StartColumn: 1
+    EndColumn: 1
+    FillCharacter: ' '
+  - ColumnName: ETcy
+    TextAlignment: right
+    StartColumn: 2
+    EndColumn: 2
+    FillCharacter: ' '
+  - ColumnName: ETaY
+    TextAlignment: right
+    StartColumn: 3
+    EndColumn: 3
+    FillCharacter: ' '
+  - ColumnName: TraY
+    TextAlignment: right
+    StartColumn: 4
+    EndColumn: 4
+    FillCharacter: ' '
+  - ColumnName: PerY
+    TextAlignment: right
+    StartColumn: 5
+    EndColumn: 5
+    FillCharacter: ' '
+  - ColumnName: SWCY1
+    TextAlignment: left
+    StartColumn: 6
+    EndColumn: 6
+    FillCharacter: ' '
+  - ColumnName: SWCY2
+    TextAlignment: left
+    StartColumn: 7
+    EndColumn: 7
+    FillCharacter: ' '
+  - ColumnName: Runoff
+    TextAlignment: right
+    StartColumn: 8
+    EndColumn: 8
+    FillCharacter: ' '
+  - ColumnName: NleaY
+    TextAlignment: left
+    StartColumn: 9
+    EndColumn: 9
+    FillCharacter: ' '
+  - ColumnName: MINY
+    TextAlignment: left
+    StartColumn: 10
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: DENY
+    TextAlignment: left
+    StartColumn: 11
+    EndColumn: 11
+    FillCharacter: ' '
+  - ColumnName: VOLAT
+    TextAlignment: left
+    StartColumn: 12
+    EndColumn: 12
+    FillCharacter: ' '
+  - ColumnName: SOC1
+    TextAlignment: left
+    StartColumn: 13
+    EndColumn: 13
+    FillCharacter: ' '
+  - ColumnName: SOC2
+    TextAlignment: left
+    StartColumn: 14
+    EndColumn: 14
+    FillCharacter: ' '
+  - ColumnName: code
+    TextAlignment: left
+    StartColumn: 15
+    EndColumn: 15
+    FillCharacter: ' '
+  - ColumnName: Error
+    TextAlignment: left
+    StartColumn: 16
+    EndColumn: 16
+    FillCharacter: ' '
+  2:
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 2
+    EndColumn: 2
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 3
+    EndColumn: 3
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 4
+    EndColumn: 4
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 5
+    EndColumn: 5
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 6
+    EndColumn: 6
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 7
+    EndColumn: 7
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 8
+    EndColumn: 8
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: center
+    StartColumn: 9
+    EndColumn: 9
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: center
+    StartColumn: 10
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: center
+    StartColumn: 11
+    EndColumn: 11
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: center
+    StartColumn: 12
+    EndColumn: 12
+    FillCharacter: ' '
+  - ColumnName: kg C/ha
+    TextAlignment: center
+    StartColumn: 13
+    EndColumn: 13
+    FillCharacter: ' '
+  - ColumnName: kg C/ha
+    TextAlignment: center
+    StartColumn: 14
+    EndColumn: 14
+    FillCharacter: ' '
