@@ -55,7 +55,7 @@ def writeBatchFile() :
                             createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, maxSoilLayer, parameter, resultout)
         
     for resultID in range(len(outfiles)) : 
-        outfiles[resultID].Close()
+        outfiles[resultID].close()
 
 
 
