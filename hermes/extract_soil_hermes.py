@@ -150,67 +150,67 @@ def sand_and_clay_to_ka5_texture(sand, clay):
     soil_texture = ""
 
     if silt < 0.1 and clay < 0.05:
-        soil_texture = "Ss "
+        soil_texture = "SS "
     elif silt < 0.25 and clay < 0.05:
-        soil_texture = "Su2"
+        soil_texture = "SU2"
     elif silt < 0.25 and clay < 0.08:
-        soil_texture = "Sl2"
+        soil_texture = "SL2"
     elif silt < 0.40 and clay < 0.08:
-        soil_texture = "Su3"
+        soil_texture = "SU3"
     elif silt < 0.50 and clay < 0.08:
-        soil_texture = "Su4"
+        soil_texture = "SU4"
     elif silt < 0.8 and clay < 0.08:
-        soil_texture = "Us "
+        soil_texture = "US "
     elif silt >= 0.8 and clay < 0.08:
-        soil_texture = "Uu "
+        soil_texture = "UU "
     elif silt < 0.1 and clay < 0.17:
-        soil_texture = "St2"
+        soil_texture = "ST2"
     elif silt < 0.4 and clay < 0.12:
-        soil_texture = "Sl3"
+        soil_texture = "SL3"
     elif silt < 0.4 and clay < 0.17:
-        soil_texture = "Sl4"
+        soil_texture = "SL4"
     elif silt < 0.5 and clay < 0.17:
-        soil_texture = "Slu"
+        soil_texture = "SLU"
     elif silt < 0.65 and clay < 0.17:
-        soil_texture = "Uls"
+        soil_texture = "ULS"
     elif silt >= 0.65 and clay < 0.12:
-        soil_texture = "Ut2"
+        soil_texture = "UT2"
     elif silt >= 0.65 and clay < 0.17:
-        soil_texture = "Ut3"
+        soil_texture = "UT3"
     elif silt < 0.15 and clay < 0.25:
-        soil_texture = "St3"
+        soil_texture = "ST3"
     elif silt < 0.30 and clay < 0.25:
-        soil_texture = "Ls4"
+        soil_texture = "LS4"
     elif silt < 0.40 and clay < 0.25:
-        soil_texture = "Ls3"
+        soil_texture = "LS3"
     elif silt < 0.50 and clay < 0.25:
-        soil_texture = "Ls2"
+        soil_texture = "LS2"
     elif silt < 0.65 and clay < 0.30:
-        soil_texture = "Lu "
+        soil_texture = "LU "
     elif silt >= 0.65 and clay < 0.25:
-        soil_texture = "Ut4"
+        soil_texture = "UT4"
     elif silt < 0.15 and clay < 0.35:
-        soil_texture = "Ts4"
+        soil_texture = "TS4"
     elif silt < 0.30 and clay < 0.45:
-        soil_texture = "Lts"
+        soil_texture = "LTS"
     elif silt < 0.50 and clay < 0.35:
-        soil_texture = "Lt2"
+        soil_texture = "LT2"
     elif silt < 0.65 and clay < 0.45:
-        soil_texture = "Tu3"
+        soil_texture = "TU3"
     elif silt >= 0.65 and clay >= 0.25:
-        soil_texture = "Tu4"
+        soil_texture = "TU4"
     elif silt < 0.15 and clay < 0.45:
-        soil_texture = "Ts3"
+        soil_texture = "TS3"
     elif silt < 0.50 and clay < 0.45:
-        soil_texture = "Lt3"
+        soil_texture = "LT3"
     elif silt < 0.15 and clay < 0.65:
-        soil_texture = "Ts2"
+        soil_texture = "TS2"
     elif silt < 0.30 and clay < 0.65:
-        soil_texture = "Tl "
+        soil_texture = "TL "
     elif silt >= 0.30 and clay < 0.65:
-        soil_texture = "Tu2"
+        soil_texture = "TU2"
     elif clay >= 0.65:
-        soil_texture = "Tt "
+        soil_texture = "TT "
     else:
         soil_texture = ""
 
