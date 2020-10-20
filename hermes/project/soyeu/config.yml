@@ -2,7 +2,7 @@ Dateformat: DateENlong
 GroundWaterFrom: soilfile
 ResultFile: Ex1out
 OutputIntervall: 0
-InitSelection: 3
+InitSelection: 1
 SoilFile: soil
 WeatherFile: '%s_v3test.csv'
 WeatherFileSeperator: 1
