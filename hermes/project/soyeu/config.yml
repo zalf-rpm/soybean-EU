@@ -29,6 +29,6 @@ VirtualDateFertilizerPrediction: '--------'
 KcFactorBareSoil: 0.4
 AnnualAverageTemperature: 8.7
 AutoSowingHarvest: 1
-AutoFertilization: 0
-AutoIrrigation: 1
+AutoFertilization: 1
+AutoIrrigation: 0
 AutoHarvest: 1
