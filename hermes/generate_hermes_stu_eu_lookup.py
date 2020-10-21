@@ -17,7 +17,7 @@ def writeLookupFile() :
                 firstLine = False
                 continue
             tokens = line.split(",")
-            lookup[tokens[0]] = (tokens[1].strip(), tokens[2].strip())
+            lookup[tokens[0]] = tokens[1].strip()
 
     lookupAlti = dict()
     files = ["../missingregions.csv", "../gridcells_altitude_ZALF-DK94-DK59.csv"]
@@ -38,7 +38,7 @@ def writeLookupFile() :
     with open(pathoutLookupFile, mode="wt", newline="") as outlookupfile :
         # read soil data
         with open(pathSoilLayerFile) as sourcefile:
-            outlookupfile.writelines("soil_ref,sid,fcode,latitude,altitude,soil_layer\n")
+            outlookupfile.writelines("soil_ref,sid,fcode,latitude,altitude\n")
             firstLine = True
             soilheader = dict()
             for line in sourcefile:
@@ -48,8 +48,7 @@ def writeLookupFile() :
                     continue
                 out = loadSoilLine(line)
                 soil_ref = out[soilheader["soil_ref"]]
-                sid = lookup[soil_ref][0]
-                soil_layer = lookup[soil_ref][1]
+                sid = lookup[soil_ref]
                 fcode = out[soilheader["CLocation"]]
                 Lat = out[soilheader["latitude"]]
                 altitude = lookupAlti[fcode]
@@ -59,7 +58,6 @@ def writeLookupFile() :
                     fcode,
                     Lat,
                     altitude,
-                    soil_layer,
                 ]
                                 
                 outlookupfile.writelines(",".join(outline) + "\n")

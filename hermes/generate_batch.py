@@ -13,7 +13,7 @@ maturityGroup = ["0", "00","000","0000","i","ii"]
 paramfolderTmpl="./parameter_{0}"
 resultfolderTemplate = "{0}/{1}/{2}/RESULT" # climateScenario/irrigation/maturityGroup/
 CO2concentration=["360","499","499","499","499","499"]
-batchLine = "project={0} WeatherFolder={1} soilId={2} fcode={3} plotNr={4} Altitude={5} Latitude={6} poligonID={7} AutoIrrigation={8} CO2concentration={9} maxSoilLayer={10} parameter={11} resultfolder={12}\n"
+batchLine = "project={0} WeatherFolder={1} soilId={2} fcode={3} plotNr={4} Altitude={5} Latitude={6} poligonID={7} AutoIrrigation={8} CO2concentration={9} parameter={10} resultfolder={11}\n"
 
 
 pathOutBatchFile = "./soyeu_all_{0}_batch.txt" 
@@ -40,8 +40,6 @@ def writeBatchFile() :
             fcode = out[header["fcode"]]
             Lat = out[header["latitude"]]
             altitude = out[header["altitude"]]
-            soil_layer = out[header["soil_layer"]]
-            maxSoilLayer = 20 if soil_layer == "2" else 3
             
             for resultID in range(len(resultfolder)) : 
                 wfolder = WeatherFolder[resultID]
@@ -52,15 +50,15 @@ def writeBatchFile() :
                         for mat in maturityGroup :
                             resultout = resultfolderTemplate.format(resultName,AutoIrrigationFolder[irri],mat)# climateScenario/irrigation/maturityGroup
                             parameter = paramfolderTmpl.format(mat)
-                            createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, maxSoilLayer, parameter, resultout)
+                            createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, parameter, resultout)
         
     for resultID in range(len(outfiles)) : 
         outfiles[resultID].close()
 
 
 
-def createLine(outSoilfile,proj, wfolder, sid, fcode, plotNr, altitude, Lat, poligonID, irri, CO2concentration, maxSoilLayer, parameter, resultfolder) :
-    newline = batchLine.format(proj, wfolder, sid, fcode, plotNr, altitude, Lat, poligonID, irri, CO2concentration, maxSoilLayer, parameter, resultfolder)
+def createLine(outSoilfile,proj, wfolder, sid, fcode, plotNr, altitude, Lat, poligonID, irri, CO2concentration, parameter, resultfolder) :
+    newline = batchLine.format(proj, wfolder, sid, fcode, plotNr, altitude, Lat, poligonID, irri, CO2concentration, parameter, resultfolder)
     outSoilfile.writelines(newline)
 
 
