@@ -1,0 +1,301 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+)
+
+const maxSoilRef = 99367
+const headline = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,ProductionCase,Year,Yield,MaxLAI,SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,sum_ET,AWC_30_sow,AWC_60_sow,AWC_90_sow,AWC_30_harv,AWC_60_harv,AWC_90_harv,tradef,sum_irri,sum_Nmin"
+
+func main() {
+
+	// input TODO: read from cmdline
+	pathToHermesOutput := "../0_0_0"
+	pathToAccOutput := "../acc_0_0_0"
+	co2 := "360"
+	period := "0"
+	sce := "0_0"
+
+	irrigation := [...]string{"Ir", "noIr"}
+	matG := [...]string{"0", "00", "000", "0000", "i", "ii"}
+	cRotation := [...]string{"10001", "10002"}
+
+	outline := newOutLineContent(co2, period, sce)
+
+	for soilRef := 1; soilRef <= maxSoilRef; soilRef++ {
+		outPath := filepath.Join(pathToAccOutput, fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
+		var outfile *Fout
+
+		for _, ir := range irrigation {
+			for _, mat := range matG {
+				for _, cRot := range cRotation {
+					pathToFileC := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
+					// pathToFileY := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("Y%d%s.RES", soilRef, cRot))
+					if _, err := os.Stat(pathToFileC); err != nil {
+						break
+					}
+					if outfile == nil {
+						makeDir(outPath)
+						file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+						if err != nil {
+							log.Fatal(err)
+						}
+						outfile = &Fout{file, bufio.NewWriter(file)}
+						outfile.WriteString(headline)
+						outfile.WriteString("\r\n")
+					}
+					cfile, err := os.Open(pathToFileC)
+					if err != nil {
+						log.Fatal(err)
+					}
+					scanner := bufio.NewScanner(cfile)
+					lineIdx := -3
+					for scanner.Scan() {
+						lineIdx++
+						if lineIdx >= 0 {
+							token := strings.Fields(scanner.Text())
+							outline.soilref = strconv.Itoa(soilRef)
+							outline.SowDOY = token[columIdxC[sowingDOY]]
+							outline.EmergDOY = token[columIdxC[emergDOY]]
+							outline.AntDOY = token[columIdxC[anthDOY]]
+							outline.MatDOY = token[columIdxC[matDOY]]
+							outline.HarvDOY = token[columIdxC[harvestDOY]]
+							outline.Year = token[columIdxC[year]]
+							outline.Yield = token[columIdxC[yield]]
+							outline.MaxLAI = token[columIdxC[laimax]]
+							outline.sumirri = token[columIdxC[irrig]]
+
+							outline.TrtNo = trtNoMapping[ir]
+							outline.ProductionCase = productionCaseMapping[ir]
+							outline.firstcrop = fistCrop[cRot]
+							if token[columIdxC[crop]] == "SOY" {
+								outline.Crop = matGroupMapping[mat]
+							} else {
+								outline.Crop = matGroupMapping["maize"]
+							}
+							outfile.writeOutLineContent(&outline, ',')
+						}
+					}
+
+				}
+			}
+		}
+		if outfile != nil {
+			outfile.Close()
+			outfile = nil
+		}
+	}
+}
+
+type header int
+
+const (
+	sowingDOY header = iota
+	emergDOY
+	anthDOY
+	matDOY
+	harvestDOY
+	year
+	crop
+	yield
+	laimax
+	irrig
+)
+
+var columIdxC = map[header]int{
+	sowingDOY:  1,
+	emergDOY:   2,
+	anthDOY:    3,
+	matDOY:     4,
+	harvestDOY: 6,
+	year:       5,
+	crop:       7,
+	yield:      8,
+	laimax:     11,
+	irrig:      13,
+}
+
+type outLineContent struct {
+	Model          string
+	soilref        string
+	firstcrop      string
+	Crop           string
+	period         string
+	sce            string
+	CO2            string
+	TrtNo          string
+	ProductionCase string
+	Year           string
+	Yield          string
+	MaxLAI         string
+	SowDOY         string
+	EmergDOY       string
+	AntDOY         string
+	MatDOY         string
+	HarvDOY        string
+	sumET          string
+	AWC30sow       string
+	AWC60sow       string
+	AWC90sow       string
+	AWC30harv      string
+	AWC60harv      string
+	AWC90harv      string
+	tradef         string
+	sumirri        string
+	sumNmin        string
+}
+
+func newOutLineContent(co2, period, sce string) outLineContent {
+	return outLineContent{
+		Model:          "HE",
+		soilref:        "n.a",
+		firstcrop:      "n.a",
+		Crop:           "n.a",
+		period:         period,
+		sce:            sce,
+		CO2:            co2,
+		TrtNo:          "n.a",
+		ProductionCase: "n.a",
+		Year:           "n.a",
+		Yield:          "n.a",
+		MaxLAI:         "n.a",
+		SowDOY:         "n.a",
+		EmergDOY:       "n.a",
+		AntDOY:         "n.a",
+		MatDOY:         "n.a",
+		HarvDOY:        "n.a",
+		sumET:          "n.a",
+		AWC30sow:       "n.a",
+		AWC60sow:       "n.a",
+		AWC90sow:       "n.a",
+		AWC30harv:      "n.a",
+		AWC60harv:      "n.a",
+		AWC90harv:      "n.a",
+		tradef:         "n.a",
+		sumirri:        "n.a",
+		sumNmin:        "n.a",
+	}
+}
+
+var productionCaseMapping = map[string]string{
+	"Ir":   "Unlimited water",
+	"noIr": "Actual",
+}
+var trtNoMapping = map[string]string{
+	"Ir":   "T2",
+	"noIr": "T1",
+}
+var matGroupMapping = map[string]string{
+	"0000":  "soybean/0000",
+	"000":   "soybean/000",
+	"00":    "soybean/00",
+	"0":     "soybean/0",
+	"i":     "soybean/I",
+	"ii":    "soybean/II",
+	"maize": "maize/silage maize",
+}
+var fistCrop = map[string]string{
+	"10001": "soybean",
+	"10002": "maize",
+}
+
+// Fout file output struct
+type Fout struct {
+	file    *os.File
+	fwriter *bufio.Writer
+}
+
+// WriteString string to bufferd file
+func (f *Fout) WriteString(s string) (int, error) {
+	return f.fwriter.WriteString(s)
+}
+
+// Write writes a bufferd byte array
+func (f *Fout) Write(s []byte) (int, error) {
+	return f.fwriter.Write(s)
+}
+
+// WriteRune writes a bufferd rune
+func (f *Fout) WriteRune(s rune) (int, error) {
+	return f.fwriter.WriteRune(s)
+}
+
+func (f *Fout) writeOutLineContent(s *outLineContent, seperator rune) (int, error) {
+	var numAll int
+	var overAll error
+
+	doWrite := func(olc string, writeSeperator bool) {
+		num, err := f.fwriter.WriteString(olc)
+		numAll = numAll + num
+		if err != nil {
+			overAll = err
+		}
+		if writeSeperator {
+			num, err := f.fwriter.WriteRune(seperator)
+			if err != nil {
+				overAll = err
+			}
+			numAll = numAll + num
+		}
+	}
+	doWrite(s.Model, true)
+	doWrite(s.soilref, true)
+	doWrite(s.firstcrop, true)
+	doWrite(s.Crop, true)
+	doWrite(s.period, true)
+	doWrite(s.sce, true)
+	doWrite(s.CO2, true)
+	doWrite(s.TrtNo, true)
+	doWrite(s.ProductionCase, true)
+	doWrite(s.Year, true)
+	doWrite(s.Yield, true)
+	doWrite(s.MaxLAI, true)
+	doWrite(s.SowDOY, true)
+	doWrite(s.EmergDOY, true)
+	doWrite(s.AntDOY, true)
+	doWrite(s.MatDOY, true)
+	doWrite(s.HarvDOY, true)
+	doWrite(s.sumET, true)
+	doWrite(s.AWC30sow, true)
+	doWrite(s.AWC60sow, true)
+	doWrite(s.AWC90sow, true)
+	doWrite(s.AWC30harv, true)
+	doWrite(s.AWC60harv, true)
+	doWrite(s.AWC90harv, true)
+	doWrite(s.tradef, true)
+	doWrite(s.sumirri, true)
+	doWrite(s.sumNmin, false)
+	num, err := f.fwriter.WriteString("\r\n")
+	numAll = numAll + num
+	if err != nil {
+		overAll = err
+	}
+	return numAll, overAll
+}
+
+// Close file writer
+func (f *Fout) Close() {
+	err := f.fwriter.Flush()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = f.file.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func makeDir(outPath string) {
+	dir := filepath.Dir(outPath)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatalf("ERROR: Failed to generate output path %s :%v", dir, err)
+		}
+	}
+}
