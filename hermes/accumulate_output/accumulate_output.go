@@ -18,10 +18,12 @@ func main() {
 
 	inputFolderPtr := flag.String("in", "..", "path to input")
 	outFolderPtr := flag.String("out", "..", "path to output")
+	concurrentPtr := flag.Int("concurrent", 10, "concurrent generation")
 
 	flag.Parse()
 	inputFolder := *inputFolderPtr
 	outFolder := *outFolderPtr
+	numConcurrent := *concurrentPtr
 
 	scenarioFolder := [...]string{"0_0_0", "2_GFDL-CM3_45", "2_GISS-E2-R_45", "2_HadGEM2-ES_45", "2_MIROC5_45", "2_MPI-ESM-MR_45"}
 	sce := [...]string{"0_0", "GFDL-CM3_45", "GISS-E2-R_45", "HadGEM2-ES_45", "MIROC5_45", "MPI-ESM-MR_45"}
@@ -32,70 +34,114 @@ func main() {
 	matG := [...]string{"0", "00", "000", "0000", "i", "ii"}
 	cRotation := [...]string{"10001", "10002"}
 
-	for soilRef := 1; soilRef <= maxSoilRef; soilRef++ {
-		var outfile *Fout
-		for cIdx, cScenario := range scenarioFolder {
-			outline := newOutLineContent(co2[cIdx], period[cIdx], sce[cIdx])
-			for _, ir := range irrigation {
-				for _, mat := range matG {
-					for _, cRot := range cRotation {
-						pathToFileC := filepath.Join(inputFolder, cScenario, ir, mat, "RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
-						// pathToFileY := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("Y%d%s.RES", soilRef, cRot))
-						cfile, err := os.Open(pathToFileC)
-						if err != nil {
-							break
-						}
-						if outfile == nil {
-							outPath := filepath.Join(outFolder, "acc", fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
-							makeDir(outPath)
-							file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-							if err != nil {
-								log.Fatal(err)
-							}
-							outfile = &Fout{file, bufio.NewWriter(file)}
-							outfile.WriteString(headline)
-							outfile.WriteString("\r\n")
-						}
-						scanner := bufio.NewScanner(cfile)
-						lineIdx := -3
-						for scanner.Scan() {
-							lineIdx++
-							if lineIdx >= 0 {
-								token := strings.Fields(scanner.Text())
-								outline.soilref = strconv.Itoa(soilRef)
-								outline.SowDOY = token[columIdxC[sowingDOY]]
-								outline.EmergDOY = token[columIdxC[emergDOY]]
-								outline.AntDOY = token[columIdxC[anthDOY]]
-								outline.MatDOY = token[columIdxC[matDOY]]
-								outline.HarvDOY = token[columIdxC[harvestDOY]]
-								outline.Year = token[columIdxC[year]]
-								outline.Yield = token[columIdxC[yield]]
-								outline.MaxLAI = token[columIdxC[laimax]]
-								outline.sumirri = token[columIdxC[irrig]]
-								outline.sumET = token[columIdxC[eTsum]]
-
-								outline.TrtNo = trtNoMapping[ir]
-								outline.ProductionCase = productionCaseMapping[ir]
-								outline.firstcrop = fistCrop[cRot]
-								if token[columIdxC[crop]] == "SOY" {
-									outline.Crop = matGroupMapping[mat]
-								} else {
-									outline.Crop = matGroupMapping["maize"]
-								}
-								outfile.writeOutLineContent(&outline, ',')
-							}
-						}
-						cfile.Close()
-					}
-				}
+	folderLookup := make(map[int]string, len(scenarioFolder)*len(irrigation)*len(matG))
+	for cIdx, cScenario := range scenarioFolder {
+		for irIdx, ir := range irrigation {
+			for matIdx, mat := range matG {
+				folderLookup[cIdx|irIdx<<4|matIdx<<6] = filepath.Join(inputFolder, cScenario, ir, mat)
 			}
-		}
-		if outfile != nil {
-			outfile.Close()
-			outfile = nil
 		}
 	}
 
+	current := 0
+	out := make(chan string)
+	for sRef := 1; sRef <= maxSoilRef; sRef++ {
+
+		for current >= numConcurrent {
+			select {
+			case isOK, isOpen := <-out:
+				if !isOpen {
+					log.Fatal("output channel unexpected close")
+				}
+				log.Println(isOK)
+				current--
+				break
+			}
+		}
+		current++
+
+		go func(soilRef int, outChan chan string) {
+			var outfile *Fout
+			fnLookup := make(map[int]string, 2)
+			for cRotidx, cRot := range cRotation {
+				fnLookup[cRotidx] = filepath.Join("RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
+			}
+			for cIdx := 0; cIdx < len(scenarioFolder); cIdx++ {
+				outline := newOutLineContent(co2[cIdx], period[cIdx], sce[cIdx])
+				for irIdx, ir := range irrigation {
+					for matIdx, mat := range matG {
+						for cRotidx, cRot := range cRotation {
+							pathToFileC := filepath.Join(folderLookup[cIdx|irIdx<<4|matIdx<<6], fnLookup[cRotidx])
+							// pathToFileY := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("Y%d%s.RES", soilRef, cRot))
+							cfile, err := os.Open(pathToFileC)
+							if err != nil {
+								break
+							}
+							if outfile == nil {
+								outPath := filepath.Join(outFolder, "acc", fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
+								makeDir(outPath)
+								file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+								if err != nil {
+									log.Fatal(err)
+								}
+								outfile = &Fout{file, bufio.NewWriter(file)}
+								outfile.WriteString(headline)
+								outfile.WriteString("\r\n")
+							}
+							scanner := bufio.NewScanner(cfile)
+							lineIdx := -3
+							for scanner.Scan() {
+								lineIdx++
+								if lineIdx >= 0 {
+									token := strings.Fields(scanner.Text())
+									outline.soilref = strconv.Itoa(soilRef)
+									outline.SowDOY = token[columIdxC[sowingDOY]]
+									outline.EmergDOY = token[columIdxC[emergDOY]]
+									outline.AntDOY = token[columIdxC[anthDOY]]
+									outline.MatDOY = token[columIdxC[matDOY]]
+									outline.HarvDOY = token[columIdxC[harvestDOY]]
+									outline.Year = token[columIdxC[year]]
+									outline.Yield = token[columIdxC[yield]]
+									outline.MaxLAI = token[columIdxC[laimax]]
+									outline.sumirri = token[columIdxC[irrig]]
+									outline.sumET = token[columIdxC[eTsum]]
+
+									outline.TrtNo = trtNoMapping[ir]
+									outline.ProductionCase = productionCaseMapping[ir]
+									outline.firstcrop = fistCrop[cRot]
+									if token[columIdxC[crop]] == "SOY" {
+										outline.Crop = matGroupMapping[mat]
+									} else {
+										outline.Crop = matGroupMapping["maize"]
+									}
+									outfile.writeOutLineContent(&outline, ',')
+								}
+							}
+							cfile.Close()
+						}
+					}
+				}
+			}
+			if outfile != nil {
+				outfile.Close()
+				outfile = nil
+			}
+			outChan <- fmt.Sprintf("%d ", soilRef)
+		}(sRef, out)
+	}
+	for current > 0 {
+		select {
+		case isOK, isOpen := <-out:
+			if !isOpen {
+				log.Fatal("output channel unexpected close")
+			}
+			log.Println(isOK)
+			current--
+			if current == 0 {
+				return
+			}
+		}
+	}
 }
 
 type header int
