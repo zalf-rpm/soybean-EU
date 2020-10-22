@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -15,74 +16,77 @@ const headline = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,Production
 
 func main() {
 
-	// input TODO: read from cmdline
-	pathToHermesOutput := "../0_0_0"
-	pathToAccOutput := "../acc_0_0_0"
-	co2 := "360"
-	period := "0"
-	sce := "0_0"
+	inputFolderPtr := flag.String("in", "..", "path to input")
+	outFolderPtr := flag.String("out", "..", "path to output")
+
+	flag.Parse()
+	inputFolder := *inputFolderPtr
+	outFolder := *outFolderPtr
+
+	scenarioFolder := [...]string{"0_0_0", "2_GFDL-CM3_45", "2_GISS-E2-R_45", "2_HadGEM2-ES_45", "2_MIROC5_45", "2_MPI-ESM-MR_45"}
+	sce := [...]string{"0_0", "GFDL-CM3_45", "GISS-E2-R_45", "HadGEM2-ES_45", "MIROC5_45", "MPI-ESM-MR_45"}
+	period := [...]string{"0", "2", "2", "2", "2", "2"}
+	co2 := [...]string{"360", "499", "499", "499", "499", "499"}
 
 	irrigation := [...]string{"Ir", "noIr"}
 	matG := [...]string{"0", "00", "000", "0000", "i", "ii"}
 	cRotation := [...]string{"10001", "10002"}
 
-	outline := newOutLineContent(co2, period, sce)
-
 	for soilRef := 1; soilRef <= maxSoilRef; soilRef++ {
-		outPath := filepath.Join(pathToAccOutput, fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
 		var outfile *Fout
-
-		for _, ir := range irrigation {
-			for _, mat := range matG {
-				for _, cRot := range cRotation {
-					pathToFileC := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
-					// pathToFileY := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("Y%d%s.RES", soilRef, cRot))
-					if _, err := os.Stat(pathToFileC); err != nil {
-						break
-					}
-					if outfile == nil {
-						makeDir(outPath)
-						file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+		for cIdx, cScenario := range scenarioFolder {
+			outline := newOutLineContent(co2[cIdx], period[cIdx], sce[cIdx])
+			for _, ir := range irrigation {
+				for _, mat := range matG {
+					for _, cRot := range cRotation {
+						pathToFileC := filepath.Join(inputFolder, cScenario, ir, mat, "RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
+						// pathToFileY := filepath.Join(pathToHermesOutput, ir, mat, "RESULT", fmt.Sprintf("Y%d%s.RES", soilRef, cRot))
+						cfile, err := os.Open(pathToFileC)
 						if err != nil {
-							log.Fatal(err)
+							break
 						}
-						outfile = &Fout{file, bufio.NewWriter(file)}
-						outfile.WriteString(headline)
-						outfile.WriteString("\r\n")
-					}
-					cfile, err := os.Open(pathToFileC)
-					if err != nil {
-						log.Fatal(err)
-					}
-					scanner := bufio.NewScanner(cfile)
-					lineIdx := -3
-					for scanner.Scan() {
-						lineIdx++
-						if lineIdx >= 0 {
-							token := strings.Fields(scanner.Text())
-							outline.soilref = strconv.Itoa(soilRef)
-							outline.SowDOY = token[columIdxC[sowingDOY]]
-							outline.EmergDOY = token[columIdxC[emergDOY]]
-							outline.AntDOY = token[columIdxC[anthDOY]]
-							outline.MatDOY = token[columIdxC[matDOY]]
-							outline.HarvDOY = token[columIdxC[harvestDOY]]
-							outline.Year = token[columIdxC[year]]
-							outline.Yield = token[columIdxC[yield]]
-							outline.MaxLAI = token[columIdxC[laimax]]
-							outline.sumirri = token[columIdxC[irrig]]
-
-							outline.TrtNo = trtNoMapping[ir]
-							outline.ProductionCase = productionCaseMapping[ir]
-							outline.firstcrop = fistCrop[cRot]
-							if token[columIdxC[crop]] == "SOY" {
-								outline.Crop = matGroupMapping[mat]
-							} else {
-								outline.Crop = matGroupMapping["maize"]
+						if outfile == nil {
+							outPath := filepath.Join(outFolder, "acc", fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
+							makeDir(outPath)
+							file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+							if err != nil {
+								log.Fatal(err)
 							}
-							outfile.writeOutLineContent(&outline, ',')
+							outfile = &Fout{file, bufio.NewWriter(file)}
+							outfile.WriteString(headline)
+							outfile.WriteString("\r\n")
 						}
-					}
+						scanner := bufio.NewScanner(cfile)
+						lineIdx := -3
+						for scanner.Scan() {
+							lineIdx++
+							if lineIdx >= 0 {
+								token := strings.Fields(scanner.Text())
+								outline.soilref = strconv.Itoa(soilRef)
+								outline.SowDOY = token[columIdxC[sowingDOY]]
+								outline.EmergDOY = token[columIdxC[emergDOY]]
+								outline.AntDOY = token[columIdxC[anthDOY]]
+								outline.MatDOY = token[columIdxC[matDOY]]
+								outline.HarvDOY = token[columIdxC[harvestDOY]]
+								outline.Year = token[columIdxC[year]]
+								outline.Yield = token[columIdxC[yield]]
+								outline.MaxLAI = token[columIdxC[laimax]]
+								outline.sumirri = token[columIdxC[irrig]]
+								outline.sumET = token[columIdxC[eTsum]]
 
+								outline.TrtNo = trtNoMapping[ir]
+								outline.ProductionCase = productionCaseMapping[ir]
+								outline.firstcrop = fistCrop[cRot]
+								if token[columIdxC[crop]] == "SOY" {
+									outline.Crop = matGroupMapping[mat]
+								} else {
+									outline.Crop = matGroupMapping["maize"]
+								}
+								outfile.writeOutLineContent(&outline, ',')
+							}
+						}
+						cfile.Close()
+					}
 				}
 			}
 		}
@@ -91,6 +95,7 @@ func main() {
 			outfile = nil
 		}
 	}
+
 }
 
 type header int
@@ -106,6 +111,7 @@ const (
 	yield
 	laimax
 	irrig
+	eTsum
 )
 
 var columIdxC = map[header]int{
@@ -119,6 +125,7 @@ var columIdxC = map[header]int{
 	yield:      8,
 	laimax:     11,
 	irrig:      13,
+	eTsum:      16,
 }
 
 type outLineContent struct {
