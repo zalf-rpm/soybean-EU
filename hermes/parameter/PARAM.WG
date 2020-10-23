@@ -1,7 +1,7 @@
 Parameter Pflanzenmodell
 Frucht: Winter Gerste
 Fruchtnummer/ Abkurzung  .....................................   1  WG 
-AMAX: Max. CO2 Assimilationsrate (kg CO2/ha Blatt/h)....37..45   44
+AMAX: Max. CO2 Assimilationsrate (kg CO2/ha Blatt/h)....37..45   38
 Typ der Temperaturabhängigkeit (C3 = 1/ C4 = 2) ..............   1
 Minimumtemperatur Pflanzenwachstum (Grad C) ..................   4     
 maximale effektive Wurzeltiefe (dm) ..........................   10
@@ -25,7 +25,7 @@ Tageslaengenanspruch (Stunden)................................   0
 Basistageslaenge 1(Stunden) ..................................   0 
 Trockenstress ab ETA/ETP-Quotient von ........................   1
 kritischer Luftgehalt im Oberboden ...........................   0.08 
-Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0015        
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.002        
 N-Gehalt Wurzel Ende 1. Phase ................................   0.02                                  
 Partitionierung Wachstumsbeginn  0.500.. 0.500.. 0.000.. 0.000.. 0.000
 Sterberaten Ende 1. Phase ...... 0.000.. 0.000.. 0.000.. 0.000.. 0.000
@@ -38,7 +38,7 @@ Tageslaengenanspruch 2(Stunden) ..............................   20
 Basistageslaenge 2(Stunden) ..................................   0 
 Trockenstress ab ETA/ETP-Quotient von ........................   0.7
 kritischer Luftgehalt im Oberboden ...........................   0.08 
-Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0014
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0015
 N-Gehalt Wurzel Ende 2. Phase ................................   0.02 
 Partitionierung Ende 1. Phase... 0.200.. 0.620.. 0.180.. 0.000.. 0.000
 Sterberaten Ende 1. Phase ...... 0.000.. 0.000.. 0.000.. 0.000.. 0.000

@@ -1,7 +1,7 @@
 Parameter crop model
 Frucht: Silage maize
 Fruchtnummer/ Abkurzung  .....................................   10 SM 
-AMAX: Max. CO2 Assimilationsrate (kg CO2/ha Blatt/h).....80.98   85
+AMAX: Max. CO2 Assimilationsrate (kg CO2/ha Blatt/h).....80.98   90
 Typ der Temperaturabhängigkeit (C3 = 1/ C4 = 2) ..............   2
 Minimumtemperatur Pflanzenwachstum (Grad C) ..................   6     
 maximale effektive Wurzeltiefe (dm) .......................8..   9
@@ -9,7 +9,7 @@ Wurzeltiefenfunktion Nr. .....................................   1
 N-Gehaltsfunktion Nr. ........................................   2
 Oberidische Organe (Nummern der Kompartimente aufsteigend) ...   234
 organ no. for yield and fraction of organ.(organ 4 80% =4.80).   0.85  
-Anfangskonzentration N in oberird. Biomasse (% i. Trm.) ......   1.7
+Anfangskonzentration N in oberird. Biomasse (% i. Trm.) ......   6.0
 Anfangskonzentration N in Wurzelmasse (% i. Trm.) ............   1.7
 Anzahl Pflanzenkompartimente..................................   4
 Kompartimente.................   Wurzel  Blatt   Spross  Kolben  ASPOO
