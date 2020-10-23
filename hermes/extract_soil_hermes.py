@@ -75,9 +75,9 @@ def extractGridData() :
                             "00",                           #Hy
                             "{:02.0f}".format(rootDepth),   #Rd
                             numberOfHorizons,               #NuHo
-                            "{:2.0f}".format(calcFK(cOrgTS, sandTS, siltTS )*100), #FC 
-                            "{:2.0f}".format(calcPWP(cOrgTS, sandTS, siltTS)*100), #WP 
-                            "{:2.0f}".format(getPoreVolume(bulkDensityTS)*100),    #PS 
+                            "{:02.0f}".format(calcFK(cOrgTS, clayTS, siltTS )*100), #FC 
+                            "{:02.0f}".format(calcPWP(cOrgTS, clayTS, siltTS)*100), #WP 
+                            "{:02.0f}".format(getPoreVolume(bulkDensityTS)*100),    #PS 
                             "{:02d}".format(int(out[soilheader["Sand_topsoil"]])), #S% 
                             "{:02d}".format(int(out[soilheader["Silt_topsoil"]])), #SI% 
                             "{:02d}".format(int(out[soilheader["Clay_topsoil"]])), #C%
@@ -104,9 +104,9 @@ def extractGridData() :
                                 "00",                           #Hy
                                 "  ",                           #Rd
                                 "    ",                         #NuHo
-                                "{:2.0f}".format(calcFK(cOrgSS, sandSS, siltSS )*100), #FC 
-                                "{:2.0f}".format(calcPWP(cOrgSS, sandSS, siltSS)*100), #WP 
-                                "{:2.0f}".format(getPoreVolume(bulkDensitySS)*100),    #PS 
+                                "{:02.0f}".format(calcFK(cOrgSS, claySS, siltSS )*100), #FC 
+                                "{:02.0f}".format(calcPWP(cOrgSS, claySS, siltSS)*100), #WP 
+                                "{:02.0f}".format(getPoreVolume(bulkDensitySS)*100),    #PS 
                                 "{:02d}".format(int(out[soilheader["Sand_subsoil"]])), #S% 
                                 "{:02d}".format(int(out[soilheader["Silt_subsoil"]])), #SI% 
                                 "{:02d}".format(int(out[soilheader["Clay_subsoil"]])), #C%
@@ -216,7 +216,7 @@ def sand_and_clay_to_ka5_texture(sand, clay):
     return soil_texture
 
 def getPoreVolume(bulkDensity) :
-    return 1 - (bulkDensity/1000) / 2.65
+    return 1 - ((bulkDensity/1000) / 2.65)
 
 def getBulkDensityClass(bulkDensity) :
     bulkDensityClass = 1
@@ -236,7 +236,7 @@ def getBulkDensityClass(bulkDensity) :
 # PTF nach Toth 2015
 #FK:  Let W(LT)    = 0.2449 - 0.1887 * (1/(CGEHALT(1)+1)) + 0.004527 * Ton(1) + 0.001535 * SLUF(1) + 0.001442 * SLUF(1) * (1/(CGEHALT(1)+1)) - 0.0000511 * SLUF(1) * Ton(1) + 0.0008676 * Ton(1) * (1/(CGEHALT(1)+1))
 def calcFK(cgehalt, ton, sluf ) :
-     return  0.2449 - 0.1887 * (1/(cgehalt+1)) + 0.004527 * ton + 0.001535 * sluf + 0.001442 * sluf * (1/(cgehalt+1)) - 0.0000511 * sluf * ton + 0.0008676 * ton * (1/(cgehalt+1))
+    return  0.2449 - 0.1887 * (1/(cgehalt+1)) + 0.004527 * ton + 0.001535 * sluf + 0.001442 * sluf * (1/(cgehalt+1)) - 0.0000511 * sluf * ton + 0.0008676 * ton * (1/(cgehalt+1))
 # PWP: Let WMIN(LT) = 0.09878 + 0.002127* Ton(1) - 0.0008366 *SLUF(1) - 0.0767 *(1/(CGEHALT(1)+1)) + 0.00003853 * SLUF(1) * Ton(1) + 0.00233 * SLUF(1) * (1/(CGEHALT(1)+1)) + 0.0009498 * SLUF(1) * (1/(CGEHALT(1)+1))
 def calcPWP(cgehalt, ton, sluf) :
     val = 0.09878 + 0.002127 * ton - 0.0008366 * sluf - 0.0767 * (1/(cgehalt+1)) + 0.00003853 * sluf * ton + 0.00233 * sluf * (1/(cgehalt+1)) + 0.0009498 * sluf * (1/(cgehalt+1))
