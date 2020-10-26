@@ -80,7 +80,7 @@ func main() {
 							if outfile == nil {
 								outPath := filepath.Join(outFolder, "acc", fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
 								makeDir(outPath)
-								file, err := os.OpenFile(outPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+								file, err := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY, 0600)
 								if err != nil {
 									log.Fatal(err)
 								}
