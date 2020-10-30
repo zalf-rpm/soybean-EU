@@ -1,6 +1,6 @@
 crp Sow1 Sow2 har2 TSmin Smomin Smomax Hmomin Hmomax Rainav Rainact TACCU Tbase Irrdv1 Irrdv2 Ndem1 Ndem2 Ndem3 stage1 stage 2 stage 3 Twindow orgF  amount appdat Irrlow irrdep irrmax    
-SM  0315 0515 1031 9.1    0.0   97.0   0.0    99.0   5.0    0.5     380   0     3      6      120   120   0     S0     S3      0       5       RM    200    H1     100    60     100 
-SOY 0315 0515 1031 9.1    0.0   95.0   0.0    99.0   2.0    0.1     80    0     2      6      00    00    0     0      0       0       5       ---   0      00     100    60     100 
+SM  0315 0515 1031 9.1    0.0   97.0   0.0    99.0   5.0    0.5     380   0     3      6      120   120   0     S0     S3      0       5       RM    200    H1     60     60     50 
+SOY 0315 0515 1031 9.1    0.0   95.0   0.0    99.0   2.0    0.1     380   0     2      6      00    00    0     0      0       0       5       ---   0      00     60     60     50 
 
 
 
