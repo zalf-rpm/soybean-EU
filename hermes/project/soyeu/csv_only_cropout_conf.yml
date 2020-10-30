@@ -1,0 +1,42 @@
+FillCharacter: ' '
+SeperatorCharacter: ','
+NaValue: n.a.
+DataColumns:
+- Format: '%s'
+  VariableName: Crop
+- Format: '%d'
+  VariableName: HarvestYear  
+- Format: '%1.f'
+  VariableName: Yield  
+- Format: '%1.1f'
+  VariableName: LAImax  
+- Format: '%d'
+  VariableName: SowDOY
+- Format: '%d'
+  VariableName: EmergDOY
+- Format: '%d'
+  VariableName: AnthDOY
+- Format: '%d'
+  VariableName: MatDOY
+- Format: '%d'
+  VariableName: HarvestDOY
+- Format: '%1.f'
+  VariableName: ETcG
+- Format: '%1.f'
+  VariableName: Irrig
+- Format: '%s'
+  VariableName: NotStableErr
+Headlines:
+  1:
+  - ColumnName: Crop
+  - ColumnName: Year
+  - ColumnName: Yield
+  - ColumnName: MaxLAI
+  - ColumnName: SowDOY
+  - ColumnName: EmergDOY
+  - ColumnName: AntDOY
+  - ColumnName: MatDOY
+  - ColumnName: HarvDOY
+  - ColumnName: sum_ET
+  - ColumnName: sum_irri
+  - ColumnName: error
