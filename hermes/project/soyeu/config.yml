@@ -1,14 +1,13 @@
 Dateformat: DateENlong
 GroundWaterFrom: soilfile
 ResultFile: Ex1out
-ResultFileFormat: 1
 OutputIntervall: 0
 InitSelection: 1
 SoilFile: soil
 WeatherFile: '%s_v3test.csv'
 WeatherFileSeperator: 1
 WeatherFolder: "0/0_0"
-WeatherRootFolder: "C:/Users/sschulz/go/src/github.com/zalf-rpm/soybean-EU/climate-data"
+WeatherRootFolder: "/beegfs/common/data/climate/macsur_european_climate_scenarios_v3/testing/corrected2"
 WeatherNoneValue: 999.9
 WeatherNumHeader: 2
 CorrectionPrecipitation: 0
