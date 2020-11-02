@@ -24,6 +24,12 @@ DataColumns:
   VariableName: ETcG
 - Format: '%1.f'
   VariableName: Irrig
+- Format: '%1.f'
+  VariableName: SWCS1
+- Format: '%1.f'
+  VariableName: SWCM1
+- Format: '%1.f'
+  VariableName: Nmin2
 - Format: '%s'
   VariableName: NotStableErr
 Headlines:
@@ -39,4 +45,7 @@ Headlines:
   - ColumnName: HarvDOY
   - ColumnName: sum_ET
   - ColumnName: sum_irri
+  - ColumnName: AWC_30_sow
+  - ColumnName: AWC_30_harv
+  - ColumnName: sum_Nmin
   - ColumnName: error
