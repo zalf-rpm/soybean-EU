@@ -64,7 +64,7 @@ func main() {
 			var outfile *Fout
 			fnLookup := make(map[int]string, 2)
 			for cRotidx, cRot := range cRotation {
-				fnLookup[cRotidx] = filepath.Join("RESULT", fmt.Sprintf("C%d%s.RES", soilRef, cRot))
+				fnLookup[cRotidx] = filepath.Join("RESULT", fmt.Sprintf("C%d%s.csv", soilRef, cRot))
 			}
 			for cIdx := 0; cIdx < len(scenarioFolder); cIdx++ {
 				outline := newOutLineContent(co2[cIdx], period[cIdx], sce[cIdx])
@@ -89,11 +89,15 @@ func main() {
 								outfile.WriteString("\r\n")
 							}
 							scanner := bufio.NewScanner(cfile)
-							lineIdx := -3
+							lineIdx := -1
+							var columIdxC map[header]int
 							for scanner.Scan() {
 								lineIdx++
-								if lineIdx >= 0 {
-									token := strings.Fields(scanner.Text())
+								if lineIdx == 0 {
+									columIdxC = readHeader(scanner.Text())
+								}
+								if lineIdx > 0 {
+									token := strings.Split(scanner.Text(), ",")
 									outline.soilref = strconv.Itoa(soilRef)
 									outline.SowDOY = token[columIdxC[sowingDOY]]
 									outline.EmergDOY = token[columIdxC[emergDOY]]
@@ -105,6 +109,9 @@ func main() {
 									outline.MaxLAI = token[columIdxC[laimax]]
 									outline.sumirri = token[columIdxC[irrig]]
 									outline.sumET = token[columIdxC[eTsum]]
+									outline.AWC30harv = token[columIdxC[aWC30harv]]
+									outline.AWC30sow = token[columIdxC[aWC30sow]]
+									outline.sumNmin = token[columIdxC[sumNmin]]
 
 									outline.TrtNo = trtNoMapping[ir]
 									outline.ProductionCase = productionCaseMapping[ir]
@@ -158,20 +165,65 @@ const (
 	laimax
 	irrig
 	eTsum
+	aWC30sow
+	aWC30harv
+	sumNmin
 )
 
-var columIdxC = map[header]int{
-	sowingDOY:  1,
-	emergDOY:   2,
-	anthDOY:    3,
-	matDOY:     4,
-	harvestDOY: 6,
-	year:       5,
-	crop:       7,
-	yield:      8,
-	laimax:     11,
-	irrig:      13,
-	eTsum:      16,
+func readHeader(line string) map[header]int {
+	//read header
+	tokens := strings.Split(line, ",")
+	indices := map[header]int{
+		sowingDOY:  -1,
+		emergDOY:   -1,
+		anthDOY:    -1,
+		matDOY:     -1,
+		harvestDOY: -1,
+		year:       -1,
+		crop:       -1,
+		yield:      -1,
+		laimax:     -1,
+		irrig:      -1,
+		eTsum:      -1,
+		aWC30sow:   -1,
+		aWC30harv:  -1,
+		sumNmin:    -1,
+	}
+
+	for i, token := range tokens {
+		switch token {
+		case "Crop":
+			indices[crop] = i
+		case "Yield":
+			indices[yield] = i
+		case "EmergDOY":
+			indices[emergDOY] = i
+		case "SowDOY":
+			indices[sowingDOY] = i
+		case "AntDOY":
+			indices[anthDOY] = i
+		case "MatDOY":
+			indices[matDOY] = i
+		case "HarvDOY":
+			indices[harvestDOY] = i
+		case "Year":
+			indices[year] = i
+		case "MaxLAI":
+			indices[laimax] = i
+		case "sum_ET":
+			indices[eTsum] = i
+		case "sum_irri":
+			indices[irrig] = i
+		case "AWC_30_sow":
+			indices[aWC30sow] = i
+		case "AWC_30_harv":
+			indices[aWC30harv] = i
+		case "sum_Nmin":
+			indices[sumNmin] = i
+		}
+	}
+
+	return indices
 }
 
 type outLineContent struct {
