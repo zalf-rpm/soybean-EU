@@ -1,0 +1,641 @@
+FillCharacter: ' '
+SeperatorCharacter: ','
+NaValue: n.a.
+DataColumns:
+- Format: '%s'
+  DataAlignment: left
+  Width: 10
+  VariableName: AKTUELL
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 1
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 2
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 3
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 4
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 5
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 6
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 7
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 100
+  VariableName: WG
+  VarIndex1: 1
+  VarIndex2: 8
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 2
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 3
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 4
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 5
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 6
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 7
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: C1
+  VarIndex1: 8
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: Nmin9to20
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: PESUM
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: OUTSUM
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SickerDaily
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: CUMDENIT
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: OBMAS
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: MINSUM
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 6
+  VariableName: HARVEST
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: PHYLLO
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: WORG
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: WORG
+  VarIndex1: 1
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: WORG
+  VarIndex1: 2
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: WORG
+  VarIndex1: 3
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: WORG
+  VarIndex1: 4
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: ASPOO
+- Format: '%05.2f'
+  DataAlignment: left
+  Width: 5
+  VariableName: LAI
+- Format: '%5.3f'
+  DataAlignment: left
+  Width: 5
+  VariableName: GEHMIN
+- Format: '%5.3f'
+  DataAlignment: left
+  Width: 5
+  VariableName: GEHMAX
+- Format: '%4.f'
+  DataAlignment: left
+  Width: 4
+  VariableName: NAOSAKT
+- Format: '%2d'
+  DataAlignment: left
+  Width: 2
+  VariableName: WURZ
+- Format: '%2.f'
+  DataAlignment: left
+  Width: 3
+  VariableName: INTWICK.Num
+- Format: '%06.2f'
+  DataAlignment: left
+  Width: 6
+  VariableName: BLATTSUM
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: NFOSAKT
+- Format: '%06.1f'
+  DataAlignment: left
+  Width: 6
+  VariableName: SumMINAOS
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SumMINFOS
+- Format: '%5.f'
+  DataAlignment: left
+  Width: 5
+  Modifier: 10
+  VariableName: VERDUNST
+- Format: '%5.f'
+  DataAlignment: left
+  Width: 5
+  Modifier: 10
+  VariableName: PFTRANS
+- Format: '%04.2f'
+  DataAlignment: left
+  Width: 4
+  VariableName: TRREL
+- Format: '%04.2f'
+  DataAlignment: left
+  Width: 7
+  VariableName: REDUK
+- Format: '%s'
+  DataAlignment: left
+  Width: 7
+  VariableName: NA
+- Format: '%s'
+  DataAlignment: left
+  Width: 7
+  VariableName: NA
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: ASPOO
+- Format: '%4.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: DRAISUM
+- Format: '%6.f'
+  DataAlignment: left
+  Width: 6
+  VariableName: DRAINLOSS
+- Format: '%06.4f'
+  DataAlignment: left
+  Width: 6
+  VariableName: GEHOB
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: NFIXSUM
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: NAOSAKT
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: NFOSAKT
+- Format: '%+05.1f'
+  DataAlignment: right
+  Width: 7
+  VariableName: AvgTSoil
+  VarIndex1: 5
+- Format: '%+05.1f'
+  DataAlignment: left
+  Width: 6
+  VariableName: TD
+  VarIndex1: 5
+- Format: '%s'
+  DataAlignment: left
+  Width: 10
+  VariableName: C1NotStable
+Headlines:
+  1:
+  - ColumnName: Date
+    TextAlignment: left
+    StartColumn: 1
+    EndColumn: 1
+    FillCharacter: ' '
+  - ColumnName: water contents
+    TextAlignment: center
+    StartColumn: 2
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: -Nmin-content-
+    TextAlignment: center
+    StartColumn: 11
+    EndColumn: 20
+    FillCharacter: ' '
+  - ColumnName: N crp
+    TextAlignment: center
+    StartColumn: 21
+    EndColumn: 21
+    FillCharacter: ' '
+  - ColumnName: Nleac
+    TextAlignment: center
+    StartColumn: 22
+    EndColumn: 22
+    FillCharacter: ' '
+  - ColumnName: perco
+    TextAlignment: center
+    StartColumn: 23
+    EndColumn: 23
+    FillCharacter: ' '
+  - ColumnName: denit
+    TextAlignment: center
+    StartColumn: 24
+    EndColumn: 24
+    FillCharacter: ' '
+  - ColumnName: agDM
+    TextAlignment: center
+    StartColumn: 25
+    EndColumn: 25
+    FillCharacter: ' '
+  - ColumnName: miner
+    TextAlignment: center
+    StartColumn: 26
+    EndColumn: 26
+    FillCharacter: ' '
+  - ColumnName: yield
+    TextAlignment: center
+    StartColumn: 27
+    EndColumn: 27
+    FillCharacter: ' '
+  - ColumnName: Phyl
+    TextAlignment: center
+    StartColumn: 28
+    EndColumn: 28
+    FillCharacter: ' '
+  - ColumnName: ORG1
+    TextAlignment: center
+    StartColumn: 29
+    EndColumn: 29
+    FillCharacter: ' '
+  - ColumnName: ORG2
+    TextAlignment: center
+    StartColumn: 30
+    EndColumn: 30
+    FillCharacter: ' '
+  - ColumnName: ORG3
+    TextAlignment: center
+    StartColumn: 31
+    EndColumn: 31
+    FillCharacter: ' '
+  - ColumnName: ORG4
+    TextAlignment: center
+    StartColumn: 32
+    EndColumn: 32
+    FillCharacter: ' '
+  - ColumnName: ORG5
+    TextAlignment: center
+    StartColumn: 33
+    EndColumn: 33
+    FillCharacter: ' '
+  - ColumnName: ASPO
+    TextAlignment: center
+    StartColumn: 34
+    EndColumn: 34
+    FillCharacter: ' '
+  - ColumnName: LAI
+    TextAlignment: left
+    StartColumn: 35
+    EndColumn: 35
+    FillCharacter: ' '
+  - ColumnName: ghmin
+    TextAlignment: center
+    StartColumn: 36
+    EndColumn: 36
+    FillCharacter: ' '
+  - ColumnName: ghmax
+    TextAlignment: center
+    StartColumn: 37
+    EndColumn: 37
+    FillCharacter: ' '
+  - ColumnName: NAOS
+    TextAlignment: center
+    StartColumn: 38
+    EndColumn: 38
+    FillCharacter: ' '
+  - ColumnName: rt
+    TextAlignment: center
+    StartColumn: 39
+    EndColumn: 39
+    FillCharacter: ' '
+  - ColumnName: stg
+    TextAlignment: center
+    StartColumn: 40
+    EndColumn: 40
+    FillCharacter: ' '
+  - ColumnName: leave
+    TextAlignment: center
+    StartColumn: 41
+    EndColumn: 41
+    FillCharacter: ' '
+  - ColumnName: NFOS
+    TextAlignment: center
+    StartColumn: 42
+    EndColumn: 42
+    FillCharacter: ' '
+  - ColumnName: MAOS
+    TextAlignment: center
+    StartColumn: 43
+    EndColumn: 43
+    FillCharacter: ' '
+  - ColumnName: MFOS
+    TextAlignment: center
+    StartColumn: 44
+    EndColumn: 44
+    FillCharacter: ' '
+  - ColumnName: ETP
+    TextAlignment: center
+    StartColumn: 45
+    EndColumn: 45
+    FillCharacter: ' '
+  - ColumnName: ETA
+    TextAlignment: center
+    StartColumn: 46
+    EndColumn: 46
+    FillCharacter: ' '
+  - ColumnName: TREL
+    TextAlignment: center
+    StartColumn: 47
+    EndColumn: 47
+    FillCharacter: ' '
+  - ColumnName: REDUK
+    TextAlignment: center
+    StartColumn: 48
+    EndColumn: 48
+    FillCharacter: ' '
+  - ColumnName: GPHOT
+    TextAlignment: center
+    StartColumn: 49
+    EndColumn: 49
+    FillCharacter: ' '
+  - ColumnName: MAINT
+    TextAlignment: center
+    StartColumn: 50
+    EndColumn: 50
+    FillCharacter: ' '
+  - ColumnName: ASPOO
+    TextAlignment: center
+    StartColumn: 51
+    EndColumn: 51
+    FillCharacter: ' '
+  - ColumnName: Wdrai
+    TextAlignment: center
+    StartColumn: 52
+    EndColumn: 52
+    FillCharacter: ' '
+  - ColumnName: NDrain
+    TextAlignment: center
+    StartColumn: 53
+    EndColumn: 53
+    FillCharacter: ' '
+  - ColumnName: Nagrb
+    TextAlignment: center
+    StartColumn: 54
+    EndColumn: 54
+    FillCharacter: ' '
+  - ColumnName: Nfix
+    TextAlignment: center
+    StartColumn: 55
+    EndColumn: 55
+    FillCharacter: ' '
+  - ColumnName: AOSAK
+    TextAlignment: center
+    StartColumn: 56
+    EndColumn: 56
+    FillCharacter: ' '
+  - ColumnName: FOSAK
+    TextAlignment: center
+    StartColumn: 57
+    EndColumn: 57
+    FillCharacter: ' '
+  - ColumnName: TS15
+    TextAlignment: center
+    StartColumn: 58
+    EndColumn: 58
+    FillCharacter: ' '
+  - ColumnName: TS50
+    TextAlignment: center
+    StartColumn: 59
+    EndColumn: 59
+    FillCharacter: ' '
+  - ColumnName: Error
+    TextAlignment: left
+    StartColumn: 60
+    EndColumn: 60
+    FillCharacter: ' '
+  2:
+  - ColumnName: ' Vol% '
+    TextAlignment: center
+    StartColumn: 2
+    EndColumn: 10
+    FillCharacter: '-'
+  - ColumnName: ' kg N/ha '
+    TextAlignment: center
+    StartColumn: 11
+    EndColumn: 20
+    FillCharacter: '-'
+  - ColumnName: ' kg/ha '
+    TextAlignment: center
+    StartColumn: 21
+    EndColumn: 22
+    FillCharacter: '-'
+  - ColumnName: mm
+    TextAlignment: center
+    StartColumn: 23
+    EndColumn: 23
+    FillCharacter: ' '
+  - ColumnName: '----'
+    TextAlignment: left
+    StartColumn: 24
+    EndColumn: 24
+    FillCharacter: ' '
+  - ColumnName: kg/ha
+    TextAlignment: left
+    StartColumn: 25
+    EndColumn: 25
+    FillCharacter: ' '
+  - ColumnName: --
+    TextAlignment: left
+    StartColumn: 26
+    EndColumn: 26
+    FillCharacter: ' '
+  3:
+  - ColumnName: "0_1"
+    TextAlignment: center
+    StartColumn: 2
+    EndColumn: 2
+    FillCharacter: ' '
+  - ColumnName: "1_2"
+    TextAlignment: center
+    StartColumn: 3
+    EndColumn: 3
+    FillCharacter: ' '
+  - ColumnName: "2_3"
+    TextAlignment: center
+    StartColumn: 4
+    EndColumn: 4
+    FillCharacter: ' '
+  - ColumnName: "3_4"
+    TextAlignment: center
+    StartColumn: 5
+    EndColumn: 5
+    FillCharacter: ' '
+  - ColumnName: "4_5"
+    TextAlignment: center
+    StartColumn: 6
+    EndColumn: 6
+    FillCharacter: ' '
+  - ColumnName: "5_6"
+    TextAlignment: center
+    StartColumn: 7
+    EndColumn: 7
+    FillCharacter: ' '
+  - ColumnName: "6_7"
+    TextAlignment: center
+    StartColumn: 8
+    EndColumn: 8
+    FillCharacter: ' '
+  - ColumnName: "7_8"
+    TextAlignment: center
+    StartColumn: 9
+    EndColumn: 9
+    FillCharacter: ' '
+  - ColumnName: "8_9"
+    TextAlignment: center
+    StartColumn: 10
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: "0_1"
+    TextAlignment: center
+    StartColumn: 11
+    EndColumn: 11
+    FillCharacter: ' '
+  - ColumnName: "1_2"
+    TextAlignment: center
+    StartColumn: 12
+    EndColumn: 12
+    FillCharacter: ' '
+  - ColumnName: "2_3"
+    TextAlignment: center
+    StartColumn: 13
+    EndColumn: 13
+    FillCharacter: ' '
+  - ColumnName: "3_4"
+    TextAlignment: center
+    StartColumn: 14
+    EndColumn: 14
+    FillCharacter: ' '
+  - ColumnName: "4_5"
+    TextAlignment: center
+    StartColumn: 15
+    EndColumn: 15
+    FillCharacter: ' '
+  - ColumnName: "5_6"
+    TextAlignment: center
+    StartColumn: 16
+    EndColumn: 16
+    FillCharacter: ' '
+  - ColumnName: "6_7"
+    TextAlignment: center
+    StartColumn: 17
+    EndColumn: 17
+    FillCharacter: ' '
+  - ColumnName: "7_8"
+    TextAlignment: center
+    StartColumn: 18
+    EndColumn: 18
+    FillCharacter: ' '
+  - ColumnName: "8_9"
+    TextAlignment: center
+    StartColumn: 19
+    EndColumn: 19
+    FillCharacter: ' '
+  - ColumnName: "9_20"
+    TextAlignment: center
+    StartColumn: 20
+    EndColumn: 20
+    FillCharacter: ' '
+  4:
+  - ColumnName: _
+    TextAlignment: left
+    StartColumn: 1
+    EndColumn: 15
+    FillCharacter: _

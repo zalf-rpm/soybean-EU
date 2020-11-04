@@ -1,0 +1,582 @@
+FillCharacter: ' '
+SeperatorCharacter: ','
+NaValue: n.a.
+DataColumns:
+- Format: '%s'
+  DataAlignment: left
+  Width: 12
+  VariableName: SowDate
+- Format: '%3d'
+  DataAlignment: left
+  Width: 4
+  VariableName: SowDOY
+- Format: '%3d'
+  DataAlignment: left
+  Width: 5
+  VariableName: EmergDOY
+- Format: '%3d'
+  DataAlignment: left
+  Width: 5
+  VariableName: AnthDOY
+- Format: '%3d'
+  DataAlignment: left
+  Width: 3
+  VariableName: MatDOY
+- Format: '%4d'
+  DataAlignment: left
+  Width: 4
+  VariableName: HarvestYear
+- Format: '%3d'
+  DataAlignment: left
+  Width: 4
+  VariableName: HarvestDOY
+- Format: '%3s'
+  DataAlignment: left
+  Width: 5
+  VariableName: Crop
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 6
+  VariableName: Yield
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 7
+  VariableName: Biomass
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: Roots
+- Format: '%04.1f'
+  DataAlignment: left
+  Width: 6
+  VariableName: LAImax
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 7
+  VariableName: Nfertil
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: Irrig
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 8
+  VariableName: Nuptake
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 7
+  VariableName: Nagb
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 10
+  VariableName: ETcG
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 10
+  VariableName: ETaG
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 4
+  Modifier: 10
+  VariableName: TraG
+- Format: '%06.1f'
+  DataAlignment: left
+  Width: 6
+  VariableName: PerG
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCS1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCS2
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCA1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCA2
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCM1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: SWCM2
+- Format: '%05.f'
+  DataAlignment: left
+  Width: 7
+  VariableName: SoilN1
+- Format: '%s'
+  DataAlignment: left
+  Width: 7
+  VariableName: NA
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 7
+  VariableName: Nmin1
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 7
+  VariableName: Nmin2
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 7
+  VariableName: NLeaG
+- Format: '%5.3f'
+  DataAlignment: left
+  Width: 5
+  VariableName: TRRel
+- Format: '%5.3f'
+  DataAlignment: left
+  Width: 5
+  VariableName: Reduk
+- Format: '%03.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: DryD1
+- Format: '%03.f'
+  DataAlignment: left
+  Width: 5
+  VariableName: DryD2
+- Format: '%04.f'
+  DataAlignment: left
+  Width: 8
+  VariableName: Nresid
+- Format: '%s'
+  DataAlignment: left
+  Width: 10
+  VariableName: Orgdat
+- Format: '%3s'
+  DataAlignment: right
+  Width: 4
+  VariableName: Type
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: OrgN
+- Format: '%s'
+  DataAlignment: left
+  Width: 12
+  VariableName: NDat1
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: N1
+- Format: '%s'
+  DataAlignment: left
+  Width: 12
+  VariableName: Ndat2
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: N2
+- Format: '%s'
+  DataAlignment: left
+  Width: 12
+  VariableName: Ndat3
+- Format: '%05.1f'
+  DataAlignment: left
+  Width: 5
+  VariableName: N3
+- Format: '%s'
+  DataAlignment: center
+  Width: 12
+  VariableName: Tdat
+- Format: '%s'
+  DataAlignment: center
+  Width: 35
+  VariableName: Code
+- Format: '%s'
+  DataAlignment: center
+  Width: 10
+  VariableName: NotStableErr
+Headlines:
+  1:
+  - ColumnName: date
+    TextAlignment: left
+    StartColumn: 1
+    EndColumn: 1
+    FillCharacter: ' '
+  - ColumnName: DOY
+    TextAlignment: left
+    StartColumn: 2
+    EndColumn: 2
+    FillCharacter: ' '
+  - ColumnName: DOY
+    TextAlignment: left
+    StartColumn: 3
+    EndColumn: 3
+    FillCharacter: ' '
+  - ColumnName: DOY
+    TextAlignment: left
+    StartColumn: 4
+    EndColumn: 4
+    FillCharacter: ' '
+  - ColumnName: DOY
+    TextAlignment: left
+    StartColumn: 5
+    EndColumn: 5
+    FillCharacter: ' '
+  - ColumnName: Year
+    TextAlignment: left
+    StartColumn: 6
+    EndColumn: 6
+    FillCharacter: ' '
+  - ColumnName: DOY
+    TextAlignment: left
+    StartColumn: 7
+    EndColumn: 7
+    FillCharacter: ' '
+  - ColumnName: crop
+    TextAlignment: left
+    StartColumn: 8
+    EndColumn: 8
+    FillCharacter: ' '
+  - ColumnName: yield
+    TextAlignment: left
+    StartColumn: 9
+    EndColumn: 9
+    FillCharacter: ' '
+  - ColumnName: biomass
+    TextAlignment: left
+    StartColumn: 10
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: roots
+    TextAlignment: left
+    StartColumn: 11
+    EndColumn: 11
+    FillCharacter: ' '
+  - ColumnName: LAImax
+    TextAlignment: left
+    StartColumn: 12
+    EndColumn: 12
+    FillCharacter: ' '
+  - ColumnName: Nfertil
+    TextAlignment: left
+    StartColumn: 13
+    EndColumn: 13
+    FillCharacter: ' '
+  - ColumnName: irrig
+    TextAlignment: left
+    StartColumn: 14
+    EndColumn: 14
+    FillCharacter: ' '
+  - ColumnName: N-uptake
+    TextAlignment: left
+    StartColumn: 15
+    EndColumn: 15
+    FillCharacter: ' '
+  - ColumnName: Nagb
+    TextAlignment: left
+    StartColumn: 16
+    EndColumn: 16
+    FillCharacter: ' '
+  - ColumnName: ETcG
+    TextAlignment: left
+    StartColumn: 17
+    EndColumn: 17
+    FillCharacter: ' '
+  - ColumnName: ETaG
+    TextAlignment: left
+    StartColumn: 18
+    EndColumn: 18
+    FillCharacter: ' '
+  - ColumnName: TraG
+    TextAlignment: left
+    StartColumn: 19
+    EndColumn: 19
+    FillCharacter: ' '
+  - ColumnName: PerG
+    TextAlignment: left
+    StartColumn: 20
+    EndColumn: 20
+    FillCharacter: ' '
+  - ColumnName: SWCS1
+    TextAlignment: left
+    StartColumn: 21
+    EndColumn: 21
+    FillCharacter: ' '
+  - ColumnName: SWCS2
+    TextAlignment: left
+    StartColumn: 22
+    EndColumn: 22
+    FillCharacter: ' '
+  - ColumnName: SWCA1
+    TextAlignment: left
+    StartColumn: 23
+    EndColumn: 23
+    FillCharacter: ' '
+  - ColumnName: SWCA2
+    TextAlignment: left
+    StartColumn: 24
+    EndColumn: 24
+    FillCharacter: ' '
+  - ColumnName: SWCM1
+    TextAlignment: left
+    StartColumn: 25
+    EndColumn: 25
+    FillCharacter: ' '
+  - ColumnName: SWCM2
+    TextAlignment: left
+    StartColumn: 26
+    EndColumn: 26
+    FillCharacter: ' '
+  - ColumnName: soilN1
+    TextAlignment: left
+    StartColumn: 27
+    EndColumn: 27
+    FillCharacter: ' '
+  - ColumnName: soilN2
+    TextAlignment: left
+    StartColumn: 28
+    EndColumn: 28
+    FillCharacter: ' '
+  - ColumnName: Nmin1
+    TextAlignment: left
+    StartColumn: 29
+    EndColumn: 29
+    FillCharacter: ' '
+  - ColumnName: Nmin2
+    TextAlignment: left
+    StartColumn: 30
+    EndColumn: 30
+    FillCharacter: ' '
+  - ColumnName: NLeaG
+    TextAlignment: left
+    StartColumn: 31
+    EndColumn: 31
+    FillCharacter: ' '
+  - ColumnName: TRRel
+    TextAlignment: left
+    StartColumn: 32
+    EndColumn: 32
+    FillCharacter: ' '
+  - ColumnName: Reduk
+    TextAlignment: left
+    StartColumn: 33
+    EndColumn: 33
+    FillCharacter: ' '
+  - ColumnName: DryD1
+    TextAlignment: left
+    StartColumn: 34
+    EndColumn: 34
+    FillCharacter: ' '
+  - ColumnName: DryD2
+    TextAlignment: left
+    StartColumn: 35
+    EndColumn: 35
+    FillCharacter: ' '
+  - ColumnName: Nresid
+    TextAlignment: left
+    StartColumn: 36
+    EndColumn: 36
+    FillCharacter: ' '
+  - ColumnName: Orgdat
+    TextAlignment: left
+    StartColumn: 37
+    EndColumn: 37
+    FillCharacter: ' '
+  - ColumnName: Type
+    TextAlignment: left
+    StartColumn: 38
+    EndColumn: 38
+    FillCharacter: ' '
+  - ColumnName: OrgN
+    TextAlignment: left
+    StartColumn: 39
+    EndColumn: 39
+    FillCharacter: ' '
+  - ColumnName: NDat1
+    TextAlignment: left
+    StartColumn: 40
+    EndColumn: 40
+    FillCharacter: ' '
+  - ColumnName: N1
+    TextAlignment: left
+    StartColumn: 41
+    EndColumn: 41
+    FillCharacter: ' '
+  - ColumnName: Ndat2
+    TextAlignment: left
+    StartColumn: 42
+    EndColumn: 42
+    FillCharacter: ' '
+  - ColumnName: N2
+    TextAlignment: left
+    StartColumn: 43
+    EndColumn: 43
+    FillCharacter: ' '
+  - ColumnName: Ndat3
+    TextAlignment: left
+    StartColumn: 44
+    EndColumn: 44
+    FillCharacter: ' '
+  - ColumnName: N3
+    TextAlignment: left
+    StartColumn: 45
+    EndColumn: 45
+    FillCharacter: ' '
+  - ColumnName: T_dat
+    TextAlignment: center
+    StartColumn: 46
+    EndColumn: 46
+    FillCharacter: ' '
+  - ColumnName: code
+    TextAlignment: center
+    StartColumn: 47
+    EndColumn: 47
+    FillCharacter: ' '
+  - ColumnName: Error
+    TextAlignment: left
+    StartColumn: 48
+    EndColumn: 48
+    FillCharacter: ' '
+  2:
+  - ColumnName: sowing
+    TextAlignment: left
+    StartColumn: 1
+    EndColumn: 1
+    FillCharacter: ' '
+  - ColumnName: emerg
+    TextAlignment: left
+    StartColumn: 3
+    EndColumn: 3
+    FillCharacter: ' '
+  - ColumnName: anth
+    TextAlignment: left
+    StartColumn: 4
+    EndColumn: 4
+    FillCharacter: ' '
+  - ColumnName: mat
+    TextAlignment: left
+    StartColumn: 5
+    EndColumn: 5
+    FillCharacter: ' '
+  - ColumnName: harvest
+    TextAlignment: left
+    StartColumn: 6
+    EndColumn: 7
+    FillCharacter: ' '
+  - ColumnName: kg/ha
+    TextAlignment: left
+    StartColumn: 9
+    EndColumn: 9
+    FillCharacter: ' '
+  - ColumnName: kg/ha
+    TextAlignment: left
+    StartColumn: 10
+    EndColumn: 10
+    FillCharacter: ' '
+  - ColumnName: kg/ha
+    TextAlignment: left
+    StartColumn: 11
+    EndColumn: 11
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 13
+    EndColumn: 13
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 14
+    EndColumn: 14
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 15
+    EndColumn: 15
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 16
+    EndColumn: 16
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 17
+    EndColumn: 17
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 18
+    EndColumn: 18
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 19
+    EndColumn: 19
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 20
+    EndColumn: 20
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 21
+    EndColumn: 21
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 22
+    EndColumn: 22
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 23
+    EndColumn: 23
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 24
+    EndColumn: 24
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 25
+    EndColumn: 25
+    FillCharacter: ' '
+  - ColumnName: mm
+    TextAlignment: left
+    StartColumn: 26
+    EndColumn: 26
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 27
+    EndColumn: 27
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 28
+    EndColumn: 28
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 29
+    EndColumn: 29
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 30
+    EndColumn: 30
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 31
+    EndColumn: 31
+    FillCharacter: ' '
+  - ColumnName: kg N/ha
+    TextAlignment: left
+    StartColumn: 36
+    EndColumn: 36
+    FillCharacter: ' '
