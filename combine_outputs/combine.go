@@ -398,9 +398,11 @@ func main() {
 			currRuns--
 		}
 	}
-	// part 2: merge
+	// part 2: merge To get one past and one future
+
 	// part 2.1 merge all future Climate scenarios per model
 	// part 2.2 merge all future climate scenarios over all merged models
+	// part 2.3 merge historical over models
 
 	// part 3: generate ascii grids
 	waitForNum := 0
@@ -474,6 +476,68 @@ func newProcessedData() (p ProcessedData) {
 	p.outputGridsGenerated = false
 	return p
 }
+func (p *ProcessedData) mergeFuture() {
+
+	futureScenarioKey := "fut"
+	isFuture := func(simKey SimKeyTuple) bool {
+		return simKey.climateSenario != "0_0"
+	}
+	futureKeys := make(map[TreatmentKeyTuple][]SimKeyTuple, 12)
+	numSource := 0
+	maxRefNo := 0
+	for simKey, currGrid := range p.allYieldGrids {
+		if isFuture(simKey) {
+			fKey := TreatmentKeyTuple{comment: simKey.comment,
+				treatNo: simKey.treatNo,
+				mGroup:  simKey.mGroup}
+
+			if _, ok := futureKeys[fKey]; !ok {
+				futureKeys[fKey] = make([]SimKeyTuple, 0, 5)
+				numSource = len(currGrid)
+				maxRefNo = len(currGrid[0])
+			}
+			futureKeys[fKey] = append(futureKeys[fKey], simKey)
+		}
+	}
+	for mergeTreatmentKey, simkeys := range futureKeys {
+
+		// make a simKey for sumarized future
+		futureSimKey := SimKeyTuple{climateSenario: futureScenarioKey,
+			comment: mergeTreatmentKey.comment,
+			mGroup:  mergeTreatmentKey.mGroup,
+			treatNo: mergeTreatmentKey.treatNo,
+		}
+		p.allYieldGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.StdDevAvgGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.harvestGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.matIsHavestGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.lateHarvestGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.coolWeatherImpactGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.coolWeatherDeathGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.coolWeatherImpactWeightGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+		p.wetHarvestGrid[futureSimKey] = newGridLookup(numSource, maxRefNo, NONEVALUE)
+
+		for sIdx := 0; sIdx < numSource; sIdx++ {
+			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+				numSimKey := len(simkeys)
+				for _, simKey := range simkeys {
+
+				}
+				// take the median!
+				// std error for climate deviation
+				p.allYieldGrids[futureSimKey][sIdx][rIdx]
+				p.StdDevAvgGrids[futureSimKey][sIdx][rIdx]
+				p.harvestGrid[futureSimKey][sIdx][rIdx]
+				p.matIsHavestGrid[futureSimKey][sIdx][rIdx]
+				p.lateHarvestGrid[futureSimKey][sIdx][rIdx]
+				p.coolWeatherImpactGrid[futureSimKey][sIdx][rIdx]
+				p.coolWeatherDeathGrid[futureSimKey][sIdx][rIdx]
+				p.coolWeatherImpactWeightGrid[futureSimKey][sIdx][rIdx]
+				p.wetHarvestGrid[futureSimKey][sIdx][rIdx]
+			}
+		}
+	}
+}
 
 func (p *ProcessedData) setClimateFilePeriod(climateSenario, period string) {
 	p.mux.Lock()
@@ -482,7 +546,6 @@ func (p *ProcessedData) setClimateFilePeriod(climateSenario, period string) {
 	}
 	p.mux.Unlock()
 }
-
 func (p *ProcessedData) setMaxAllAvgYield(pixelValue float64) {
 	p.mux.Lock()
 	if pixelValue > p.maxAllAvgYield {
@@ -497,7 +560,6 @@ func (p *ProcessedData) setMaxSdtDeviation(stdDeviation float64) {
 	}
 	p.mux.Unlock()
 }
-
 func (p *ProcessedData) setMaxLateHarvest(val int) {
 	p.mux.Lock()
 	if p.maxLateHarvest < val {
@@ -512,7 +574,6 @@ func (p *ProcessedData) setMaxMatHarvest(val int) {
 	}
 	p.mux.Unlock()
 }
-
 func (p *ProcessedData) setSumLowOccurrence(val int) {
 	p.mux.Lock()
 	if p.sumLowOccurrence < val {
@@ -548,7 +609,6 @@ func (p *ProcessedData) setSumMaxDeathOccurrence(sumDeathOccurrence int) {
 	}
 	p.mux.Unlock()
 }
-
 func (p *ProcessedData) setMaxWetHarvest(val int) {
 	p.mux.Lock()
 	if p.maxWetHarvest < val {
@@ -556,7 +616,6 @@ func (p *ProcessedData) setMaxWetHarvest(val int) {
 	}
 	p.mux.Unlock()
 }
-
 func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]float64, numSoures, maxRefNo int) bool {
 
 	p.mux.Lock()
@@ -567,6 +626,14 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 		for simKey := range simulations {
 			p.allYieldGrids[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
 			p.StdDevAvgGrids[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.harvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.matIsHavestGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.lateHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.coolWeatherImpactGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.coolWeatherDeathGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+			p.wetHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, NONEVALUE)
+
 		}
 	}
 	p.mux.Unlock()
@@ -763,6 +830,13 @@ type SimKeyTuple struct {
 	climateSenario string
 	mGroup         string
 	comment        string
+}
+
+// TreatmentKeyTuple key to identify a setup without climate scenario
+type TreatmentKeyTuple struct {
+	treatNo string
+	mGroup  string
+	comment string
 }
 
 // SimData simulation data from a line
