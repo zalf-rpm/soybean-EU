@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -27,6 +28,9 @@ const CROPNAME = "soybean"
 const NONEVALUE = -9999
 
 const climateFilePattern = "%s_v3test.csv"
+
+// output pattern
+const asciiOutTemplate = "%s_%s_trno%s.asc" // <descriptio>_<scenario>_<treatmentnumber>
 
 func main() {
 
@@ -127,7 +131,8 @@ func main() {
 		}
 	}
 
-	p := newProcessedData()
+	var p ProcessedData
+	p.initProcessedData()
 
 	// part 1: get all data
 	currRuns := 0
@@ -411,8 +416,8 @@ func main() {
 	// part 2.1 merge, merged maps for all future Climate scenarios per model
 	p.mergeFuture()
 	// part 2.2 merge all future climate scenarios over all merged models
-
 	// part 2.3 merge historical over models
+	p.mergeSources()
 
 	// iterate over all values to determine max value
 
@@ -422,8 +427,49 @@ func main() {
 
 	// TODO:
 	// map of max yield average(30y) over all models and maturity groups
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.maxYieldGridsAll,
+		asciiOutTemplate,
+		"max_yield",
+		extCol, extRow,
+		asciiOutFolder,
+		"Max Yield  - Scn: %v %v",
+		"counted occurrences in 30 years",
+		false,
+		"inferno",
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield), outC)
+
 	// map of max yield average(30y) over all models and maturity groups with acceptable variation
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.maxYieldDeviationGridsAll,
+		asciiOutTemplate,
+		"max_yield_low_devi",
+		extCol, extRow,
+		asciiOutFolder,
+		"Max Yield with lower deviation - Scn: %v %v",
+		"counted occurrences in 30 years",
+		false,
+		"inferno",
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield), outC)
+
 	// map max yield maturity groups over all models
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.matGroupGridsAll,
+		asciiOutTemplate,
+		"maturity_group_max_yield",
+		extCol, extRow,
+		asciiOutFolder,
+		"Mat. grp. for max yield Scn: %v %v",
+		"TODO TBD",
+		false,
+		"inferno",
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield), outC)
 	// map max yield maturity groups over all models with acceptable variation
 
 	// The same for the future
@@ -489,7 +535,7 @@ type ProcessedData struct {
 	mux                       sync.Mutex
 }
 
-func newProcessedData() (p ProcessedData) {
+func (p *ProcessedData) initProcessedData() {
 	p.maxAllAvgYield = 0.0
 	p.maxSdtDeviation = 0.0
 	p.allYieldGrids = make(map[SimKeyTuple][][]int)
@@ -544,9 +590,8 @@ func newProcessedData() (p ProcessedData) {
 	p.coolweatherDeathDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.potentialWaterStressAll = make(map[string][]int)
 	p.potentialWaterStressDeviationGridsAll = make(map[string][]int)
-
-	return p
 }
+
 func (p *ProcessedData) mergeFuture() {
 	// create a new key for summarized future events
 	futureScenarioAvgKey := "fut_avg"
@@ -770,7 +815,7 @@ func (p *ProcessedData) mergeSources() {
 			maxRefNo = len(currGrid[0])
 		}
 	}
-	for idx, mergedKey := range mergedKeys {
+	for _, mergedKey := range mergedKeys {
 
 		p.maxYieldGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, NONEVALUE)
 		p.matGroupGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, NONEVALUE)
@@ -783,63 +828,64 @@ func (p *ProcessedData) mergeSources() {
 		p.potentialWaterStressAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, NONEVALUE)
 		p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, NONEVALUE)
 
+		matGroupDistribution := make([]int, numSource)
+		matGroupDevDistribution := make([]int, numSource)
+
 		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 
 			numharvestRainGrids := 0
 			numharvestRainDeviationGrids := 0
 			numcoolweatherDeathGrids := 0
 			numcoolweatherDeathDeviationGrids := 0
-			matGroupClimDistribution := make([]int, numSource)
-			matGroupDevClimDistribution := make([]int, numSource)
 
 			for sIdx := 0; sIdx < numSource; sIdx++ {
 
-				p.maxYieldGrids[futureSimKey][sIdx][rIdx] = p.maxYieldGrids[futureSimKey][sIdx][rIdx] + p.maxYieldGrids[scenariokey][sIdx][rIdx]
-				p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] = p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] + p.maxYieldDeviationGrids[scenariokey][sIdx][rIdx]
+				matGroupDistribution[sIdx] = p.matGroupGrids[mergedKey][sIdx][rIdx]
+				matGroupDevDistribution[sIdx] = p.matGroupDeviationGrids[mergedKey][sIdx][rIdx]
 
-				matGroupClimDistribution[i] = p.matGroupGrids[scenariokey][sIdx][rIdx]
-				matGroupDevClimDistribution[i] = p.matGroupDeviationGrids[scenariokey][sIdx][rIdx]
+				p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] + p.maxYieldGrids[mergedKey][sIdx][rIdx]
+				p.maxYieldDeviationGridsAll[mergedKey][rIdx] = p.maxYieldDeviationGridsAll[mergedKey][rIdx] + p.maxYieldDeviationGrids[mergedKey][sIdx][rIdx]
 
 				// below 0 means no data
-				if p.harvestRainGrids[scenariokey][sIdx][rIdx] >= 0 {
+				if p.harvestRainGrids[mergedKey][sIdx][rIdx] >= 0 {
 					numharvestRainGrids++
-					p.harvestRainGrids[futureSimKey][sIdx][rIdx] = p.harvestRainGrids[futureSimKey][sIdx][rIdx] + p.harvestRainGrids[scenariokey][sIdx][rIdx]
+					p.harvestRainGridsAll[mergedKey][rIdx] = p.harvestRainGridsAll[mergedKey][rIdx] + p.harvestRainGrids[mergedKey][sIdx][rIdx]
 				}
-				if p.harvestRainDeviationGrids[scenariokey][sIdx][rIdx] >= 0 {
+				if p.harvestRainDeviationGrids[mergedKey][sIdx][rIdx] >= 0 {
 					numharvestRainDeviationGrids++
-					p.harvestRainDeviationGrids[futureSimKey][sIdx][rIdx] = p.harvestRainDeviationGrids[futureSimKey][sIdx][rIdx] + p.harvestRainDeviationGrids[scenariokey][sIdx][rIdx]
+					p.harvestRainDeviationGridsAll[mergedKey][rIdx] = p.harvestRainDeviationGridsAll[mergedKey][rIdx] + p.harvestRainDeviationGrids[mergedKey][sIdx][rIdx]
 				}
-				if p.coolweatherDeathGrids[scenariokey][sIdx][rIdx] >= 0 {
+				if p.coolweatherDeathGrids[mergedKey][sIdx][rIdx] >= 0 {
 					numcoolweatherDeathGrids++
-					p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] = p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] + p.coolweatherDeathGrids[scenariokey][sIdx][rIdx]
+					p.coolweatherDeathGridsAll[mergedKey][rIdx] = p.coolweatherDeathGridsAll[mergedKey][rIdx] + p.coolweatherDeathGrids[mergedKey][sIdx][rIdx]
 				}
-				if p.coolweatherDeathDeviationGrids[scenariokey][sIdx][rIdx] >= 0 {
+				if p.coolweatherDeathDeviationGrids[mergedKey][sIdx][rIdx] >= 0 {
 					numcoolweatherDeathDeviationGrids++
-					p.coolweatherDeathDeviationGrids[futureSimKey][sIdx][rIdx] = p.coolweatherDeathDeviationGrids[futureSimKey][sIdx][rIdx] + p.coolweatherDeathDeviationGrids[scenariokey][sIdx][rIdx]
+					p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] = p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] + p.coolweatherDeathDeviationGrids[mergedKey][sIdx][rIdx]
 				}
 
-				p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] + p.potentialWaterStress[scenariokey.climateSenario][sIdx][rIdx]
-				p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] + p.potentialWaterStressDeviationGrids[scenariokey.climateSenario][sIdx][rIdx]
+				p.potentialWaterStressAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressAll[mergedKey.climateSenario][rIdx] + p.potentialWaterStress[mergedKey.climateSenario][sIdx][rIdx]
+				p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] + p.potentialWaterStressDeviationGrids[mergedKey.climateSenario][sIdx][rIdx]
 			}
-			sort.Ints(matGroupClimDistribution)
-			sort.Ints(matGroupDevClimDistribution)
-			centerIdx := int(float64(numSimKey)/2 + 0.5)
-			p.matGroupGrids[futureSimKey][sIdx][rIdx] = matGroupClimDistribution[centerIdx]
-			p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = matGroupDevClimDistribution[centerIdx]
+			p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] / numSource
 
-			p.deviationClimateScenarios[futureScenarioAvgKey][sIdx][rIdx] = int(stat.StdDev(stdDevClimScen, nil))
-			p.maxYieldGrids[futureSimKey][sIdx][rIdx] = p.maxYieldGrids[futureSimKey][sIdx][rIdx] / numSimKey
-			p.matGroupGrids[futureSimKey][sIdx][rIdx] = p.matGroupGrids[futureSimKey][sIdx][rIdx] / numSimKey
-			p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] = p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] / numSimKey
-			p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] / numSimKey
-			p.harvestRainGrids[futureSimKey][sIdx][rIdx] = p.harvestRainGrids[futureSimKey][sIdx][rIdx] / numharvestRainGrids
-			p.harvestRainDeviationGrids[futureSimKey][sIdx][rIdx] = p.harvestRainDeviationGrids[futureSimKey][sIdx][rIdx] / numharvestRainDeviationGrids
-			p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] = p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] / numcoolweatherDeathGrids
-			p.coolweatherDeathDeviationGrids[futureSimKey][sIdx][rIdx] = p.coolweatherDeathDeviationGrids[futureSimKey][sIdx][rIdx] / numcoolweatherDeathDeviationGrids
-			p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] / numSimKey
-			p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numSimKey
+			sort.Ints(matGroupDistribution)
+			sort.Ints(matGroupDevDistribution)
+			centerIdx := int(float64(numSource)/2 + 0.5)
+			p.matGroupGridsAll[mergedKey][rIdx] = matGroupDistribution[centerIdx]
+			p.matGroupDeviationGridsAll[mergedKey][rIdx] = matGroupDevDistribution[centerIdx]
+
+			p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] / numSource
+			p.matGroupGridsAll[mergedKey][rIdx] = p.matGroupGridsAll[mergedKey][rIdx] / numSource
+			p.maxYieldDeviationGridsAll[mergedKey][rIdx] = p.maxYieldDeviationGridsAll[mergedKey][rIdx] / numSource
+			p.matGroupDeviationGridsAll[mergedKey][rIdx] = p.matGroupDeviationGridsAll[mergedKey][rIdx] / numSource
+			p.harvestRainGridsAll[mergedKey][rIdx] = p.harvestRainGridsAll[mergedKey][rIdx] / numharvestRainGrids
+			p.harvestRainDeviationGridsAll[mergedKey][rIdx] = p.harvestRainDeviationGridsAll[mergedKey][rIdx] / numharvestRainDeviationGrids
+			p.coolweatherDeathGridsAll[mergedKey][rIdx] = p.coolweatherDeathGridsAll[mergedKey][rIdx] / numcoolweatherDeathGrids
+			p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] = p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] / numcoolweatherDeathDeviationGrids
+			p.potentialWaterStressAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressAll[mergedKey.climateSenario][rIdx] / numSource
+			p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
 		}
-
 	}
 }
 
@@ -1362,4 +1408,132 @@ func loadClimateLine(line string, header ClimateHeader) ClimateContent {
 	cC.tmin, _ = strconv.ParseFloat(tokens[header.tminIdx], 64)
 	cC.precip, _ = strconv.ParseFloat(tokens[header.precipIdx], 64)
 	return cC
+}
+
+func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, showBar bool, colormap string, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, outC chan string) {
+
+	for simKey, simVal := range grids {
+		//simkey = treatmentNo, climateSenario, maturityGroup, comment
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, simKey.climateSenario, simKey.treatNo)
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
+		file.Close()
+		title := fmt.Sprintf(titleFormat, simKey.climateSenario, simKey.treatNo, simKey.comment)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
+
+	}
+	outC <- "done"
+}
+
+func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
+	cornerX := 0.0
+	cornery := 0.0
+	novalue := -9999
+	cellsize := 1.0
+	// create an ascii file, which contains the header
+	makeDir(name)
+	file, err := os.OpenFile(name+".gz", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gfile := gzip.NewWriter(file)
+	fwriter := bufio.NewWriter(gfile)
+	fout = Fout{file, gfile, fwriter}
+
+	fout.Write(fmt.Sprintf("ncols %d\n", nCol))
+	fout.Write(fmt.Sprintf("nrows %d\n", nRow))
+	fout.Write(fmt.Sprintf("xllcorner     %f\n", cornerX))
+	fout.Write(fmt.Sprintf("yllcorner     %f\n", cornery))
+	fout.Write(fmt.Sprintf("cellsize      %f\n", cellsize))
+	fout.Write(fmt.Sprintf("NODATA_value  %d\n", novalue))
+
+	return fout
+}
+
+func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int) {
+	metaFilePath := gridFilePath + ".meta"
+	makeDir(metaFilePath)
+	file, err := os.OpenFile(metaFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.WriteString(fmt.Sprintf("title: '%s'\n", title))
+	file.WriteString(fmt.Sprintf("labeltext: '%s'\n", labeltext))
+	if colormap != "" {
+		file.WriteString(fmt.Sprintf("colormap: '%s'\n", colormap))
+	}
+	if colorlist != nil {
+		file.WriteString("colorlist: \n")
+		for _, item := range colorlist {
+			file.WriteString(fmt.Sprintf(" - '%s'\n", item))
+		}
+	}
+	if cbarLabel != nil {
+		file.WriteString("cbarLabel: \n")
+		for _, cbarItem := range cbarLabel {
+			file.WriteString(fmt.Sprintf(" - '%s'\n", cbarItem))
+		}
+	}
+	if ticklist != nil {
+		file.WriteString("ticklist: \n")
+		for _, tick := range ticklist {
+			file.WriteString(fmt.Sprintf(" - %f\n", tick))
+		}
+	}
+	file.WriteString(fmt.Sprintf("factor: %f\n", factor))
+	if maxValue != NONEVALUE {
+		file.WriteString(fmt.Sprintf("maxValue: %d\n", maxValue))
+	}
+	if minValue != NONEVALUE {
+		file.WriteString(fmt.Sprintf("minValue: %d\n", minValue))
+	}
+}
+
+func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup [][]int) {
+	for row := 0; row < extRow; row++ {
+
+		for col := 0; col < extCol; col++ {
+			refID := gridSourceLookup[row][col]
+			if refID >= 0 {
+				fout.Write(strconv.Itoa(simGrid[refID-1]))
+				fout.Write(" ")
+			} else {
+				fout.Write("-9999 ")
+			}
+		}
+		fout.Write("\n")
+	}
+}
+
+// Fout combined file writer
+type Fout struct {
+	file    *os.File
+	gfile   *gzip.Writer
+	fwriter *bufio.Writer
+}
+
+// Write string to zip file
+func (f Fout) Write(s string) {
+	f.fwriter.WriteString(s)
+}
+
+// Close file writer
+func (f Fout) Close() {
+	f.fwriter.Flush()
+	// Close the gzip first.
+	f.gfile.Close()
+	f.file.Close()
+}
+
+func makeDir(outPath string) {
+	dir := filepath.Dir(outPath)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatalf("ERROR: Failed to generate output path %s :%v", dir, err)
+		}
+	}
 }
