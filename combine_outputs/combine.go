@@ -30,7 +30,8 @@ const NONEVALUE = -9999
 const climateFilePattern = "%s_v3test.csv"
 
 // output pattern
-const asciiOutTemplate = "%s_%s_trno%s.asc" // <descriptio>_<scenario>_<treatmentnumber>
+const asciiOutTemplate = "%s_%s_trno%s.asc"  // <descriptio>_<scenario>_<treatmentnumber>
+const asciiOutCombinedTemplate = "%s_%s.asc" // <descriptio>_<scenario>
 
 func main() {
 
@@ -434,8 +435,8 @@ func main() {
 		"max_yield",
 		extCol, extRow,
 		asciiOutFolder,
-		"Max Yield  - Scn: %v %v",
-		"counted occurrences in 30 years",
+		"Max Yield: %v %v",
+		"average over 30 years",
 		false,
 		"inferno",
 		nil, nil, 1.0, NONEVALUE,
@@ -446,11 +447,11 @@ func main() {
 	go drawScenarioMaps(gridSourceLookup,
 		p.maxYieldDeviationGridsAll,
 		asciiOutTemplate,
-		"max_yield_low_devi",
+		"dev_max_yield",
 		extCol, extRow,
 		asciiOutFolder,
-		"Max Yield with lower deviation - Scn: %v %v",
-		"counted occurrences in 30 years",
+		"(Dev )Max Yield: %v %v",
+		"average over 30 years",
 		false,
 		"inferno",
 		nil, nil, 1.0, NONEVALUE,
@@ -472,8 +473,97 @@ func main() {
 		int(p.maxAllAvgYield), outC)
 	// map max yield maturity groups over all models with acceptable variation
 
-	// The same for the future
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.coolweatherDeathDeviationGridsAll,
+		asciiOutTemplate,
+		"dev_cool_weather_severity",
+		extCol, extRow,
+		asciiOutFolder,
+		"(Dev) Cool weather severity: %v %v",
+		"counted occurrences with severity factor",
+		false,
+		"nipy_spectral",
+		nil, nil, 0.0001, NONEVALUE,
+		p.sumMaxDeathOccurrence, outC)
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.coolweatherDeathGridsAll,
+		asciiOutTemplate,
+		"cool_weather_severity",
+		extCol, extRow,
+		asciiOutFolder,
+		"Cool weather severity: %v %v",
+		"counted occurrences with severity factor",
+		false,
+		"nipy_spectral",
+		nil, nil, 0.0001, NONEVALUE,
+		p.sumMaxDeathOccurrence, outC)
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.harvestRainGridsAll,
+		asciiOutTemplate,
+		"harvest_rain",
+		extCol, extRow,
+		asciiOutFolder,
+		"Rain during/before harvest: %v %v",
+		"counted occurrences in 30 years",
+		false,
+		"nipy_spectral",
+		nil, nil, 1.0, NONEVALUE,
+		p.maxWetHarvest, outC)
 
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.harvestRainDeviationGridsAll,
+		asciiOutTemplate,
+		"dev_harvest_rain",
+		extCol, extRow,
+		asciiOutFolder,
+		"(Dev) Rain during/before harvest: %v %v",
+		"counted occurrences in 30 years",
+		false,
+		"nipy_spectral",
+		nil, nil, 1.0, NONEVALUE,
+		p.maxWetHarvest, outC)
+	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.potentialWaterStressAll,
+		asciiOutCombinedTemplate,
+		"drought_stress",
+		extCol, extRow,
+		asciiOutFolder,
+		"drought stress effect: %v",
+		"average yield loss to drought",
+		false,
+		"nipy_spectral",
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield), outC)
+	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.potentialWaterStressDeviationGridsAll,
+		asciiOutCombinedTemplate,
+		"dev_drought_stress",
+		extCol, extRow,
+		asciiOutFolder,
+		"(Dev) drought stress effect: %v",
+		"average yield loss to drought",
+		false,
+		"nipy_spectral",
+		nil, nil, 1.0, NONEVALUE,
+		int(p.maxAllAvgYield), outC)
+
+	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
+	colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
+
+	for id := range p.matGroupIDGrids {
+		sidebarLabel[p.matGroupIDGrids[id]] = id
+	}
+	ticklist := []float64{0, 3, 7, 11}
+	ticklist = make([]float64, len(sidebarLabel))
+	for tick := 0; tick < len(ticklist); tick++ {
+		ticklist[tick] = float64(tick) + 0.5
+	}
 	for waitForNum > 0 {
 		select {
 		case progessStatus := <-outC:
@@ -482,6 +572,31 @@ func main() {
 		}
 	}
 
+	for scenarioKey, scenarioVal := range p.matGroupGridsAll {
+		gridFileName := fmt.Sprintf(asciiOutTemplate, "maturity_groups", scenarioKey.climateSenario, scenarioKey.treatNo)
+		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+
+		// create ascii file
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+		file.Close()
+		// create png
+		title := fmt.Sprintf("Maturity groups for max average yield: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
+	}
+
+	for scenarioKey, scenarioVal := range p.matGroupDeviationGridsAll {
+		gridFileName := fmt.Sprintf(asciiOutTemplate, "dev_maturity_groups", scenarioKey.climateSenario, scenarioKey.treatNo)
+		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+
+		// create ascii file
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+		file.Close()
+		// create png
+		title := fmt.Sprintf("(Dev)Maturity groups for max average yield: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
+	}
 }
 
 // ProcessedData combined data from results
@@ -1421,6 +1536,23 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
 		title := fmt.Sprintf(titleFormat, simKey.climateSenario, simKey.treatNo, simKey.comment)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
+
+	}
+	outC <- "done"
+}
+
+func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, showBar bool, colormap string, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, outC chan string) {
+
+	for simKey, simVal := range grids {
+		//simkey = treatmentNo, climateSenario, maturityGroup, comment
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, simKey)
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
+		file.Close()
+		title := fmt.Sprintf(titleFormat, simKey)
 		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
 
 	}
