@@ -863,6 +863,13 @@ func (p *ProcessedData) calcYieldMatDistribution() {
 				if p.matGroupDeviationGrids[scenarioKey][idx][ref] != NONEVALUE {
 					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
 					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
+
+					fmt.Println(matGroupKey)
+					fmt.Println("refidx:", ref)
+					fmt.Println("len curr grid:", len(currGridDeviation))
+					fmt.Println("sourceIdx:", idx)
+					fmt.Println("len StdDevAvg", len(p.StdDevAvgGrids[matGroupKey][idx]))
+
 					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
 						currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
 						p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
