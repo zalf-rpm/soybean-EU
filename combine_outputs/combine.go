@@ -39,14 +39,14 @@ func main() {
 		"local": {
 			"projectdatapath": "./",
 			"outputpath":      ".",
-			"climate-data":    "./climate-data/corrected/", // path to climate data
-			"ascii-out":       "asciigrids_debug/",         // path to ascii grids
+			"climate-data":    "./climate-data/corrected/",  // path to climate data
+			"ascii-out":       "asciigrids_combined_debug/", // path to ascii grids
 		},
 		"Cluster": {
 			"projectdatapath": "/project/",
 			"outputpath":      "/out/",
-			"climate-data":    "/climate-data/", // path to climate data
-			"ascii-out":       "asciigrid/",     // path to ascii grids
+			"climate-data":    "/climate-data/",      // path to climate data
+			"ascii-out":       "asciigrid_combined/", // path to ascii grids
 		},
 	}
 	pathPtr := flag.String("path", USER, "path id")
