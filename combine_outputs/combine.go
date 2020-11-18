@@ -386,7 +386,7 @@ func main() {
 						}
 					}
 				}
-
+				outChan <- true
 			}(idxSource, sourcefileInfo.Name(), outChan)
 			currRuns++
 			if currRuns >= maxRuns {
