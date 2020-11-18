@@ -852,21 +852,19 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 			currGridDeviation := p.StdDevAvgGrids[simKey][idx]
 			for ref := 0; ref < maxRefNo; ref++ {
-				if p.matGroupDeviationGrids[scenarioKey][idx][ref] != NONEVALUE {
-					if p.matGroupDeviationGrids[scenarioKey][idx][ref] != 0 {
-						matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
-						matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
-						// fmt.Println(matGroupKey)
-						// fmt.Println("refidx:", ref)
-						// fmt.Println("len curr grid:", len(currGridDeviation))
-						// fmt.Println("sourceIdx:", idx)
-						// fmt.Println("len StdDevAvg", len(p.StdDevAvgGrids[matGroupKey][idx]))
+				if p.matGroupDeviationGrids[scenarioKey][idx][ref] > 0 {
+					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
+					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
+					// fmt.Println(matGroupKey)
+					// fmt.Println("refidx:", ref)
+					// fmt.Println("len curr grid:", len(currGridDeviation))
+					// fmt.Println("sourceIdx:", idx)
+					// fmt.Println("len StdDevAvg", len(p.StdDevAvgGrids[matGroupKey][idx]))
 
-						if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
-							currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
-							p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
-							p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
-						}
+					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
+						currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
+						p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
+						p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
 					}
 				}
 			}
