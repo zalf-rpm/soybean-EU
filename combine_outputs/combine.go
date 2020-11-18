@@ -874,22 +874,27 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 		if _, ok := p.harvestRainGrids[scenarioKey]; !ok {
 			maxRefNo = len(sourcreGrids[0])
 			numSources = len(sourcreGrids)
-			p.harvestRainGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
-			p.harvestRainDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
-			p.coolweatherDeathGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
-			p.coolweatherDeathDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
+			p.harvestRainGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
+			p.harvestRainDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
+			p.coolweatherDeathGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -10000)
+			p.coolweatherDeathDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -10000)
 		}
 
 		for sourceID, sourceGrid := range sourcreGrids {
 			for ref := 0; ref < maxRefNo; ref++ {
-				matGroup := invMatGroupIDGrids[sourceGrid[ref]]
-				matGroupDev := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][sourceID][ref]]
-				matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
-				matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
-				p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
-				p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
-				p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
-				p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
+				if sourceGrid[ref] > 0 {
+					matGroup := invMatGroupIDGrids[sourceGrid[ref]]
+					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
+					p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
+					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
+				}
+
+				if p.matGroupDeviationGrids[scenarioKey][sourceID][ref] > 0 {
+					matGroupDev := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][sourceID][ref]]
+					matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
+					p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
+					p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
+				}
 			}
 		}
 		for scenarioKey, simValue := range p.maxYieldGrids {
