@@ -414,12 +414,12 @@ func main() {
 	// coolweather, coolweatherStddev
 	// coolweatherWeight, coolweatherWeigthStddev
 	// diffDroughtStress, diffDroughtStressStdDev
-	p.calcYieldMatDistribution()
+	p.calcYieldMatDistribution(maxRefNoOverAll, len(sourceFolder))
 	// part 2.1 merge, merged maps for all future Climate scenarios per model
-	p.mergeFuture()
+	p.mergeFuture(maxRefNoOverAll, len(sourceFolder))
 	// part 2.2 merge all future climate scenarios over all merged models
 	// part 2.3 merge historical over models
-	p.mergeSources()
+	p.mergeSources(maxRefNoOverAll, len(sourceFolder))
 
 	// iterate over all values to determine max value
 
@@ -708,24 +708,20 @@ func (p *ProcessedData) initProcessedData() {
 	p.potentialWaterStressDeviationGridsAll = make(map[string][]int)
 }
 
-func (p *ProcessedData) mergeFuture() {
+func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	// create a new key for summarized future events
 	futureScenarioAvgKey := "fut_avg"
 	isFuture := func(simKey ScenarioKeyTuple) bool {
 		return simKey.climateSenario != "0_0"
 	}
 	futureKeys := make(map[TreatmentKeyTuple][]ScenarioKeyTuple, 2)
-	numSource := 0
-	maxRefNo := 0
-	for simKey, currGrid := range p.maxYieldGrids {
+	for simKey := range p.maxYieldGrids {
 		if isFuture(simKey) {
 			fKey := TreatmentKeyTuple{comment: simKey.comment,
 				treatNo: simKey.treatNo}
 
 			if _, ok := futureKeys[fKey]; !ok {
 				futureKeys[fKey] = make([]ScenarioKeyTuple, 0, 5)
-				numSource = len(currGrid)
-				maxRefNo = len(currGrid[0])
 			}
 			futureKeys[fKey] = append(futureKeys[fKey], simKey)
 		}
@@ -816,16 +812,12 @@ func (p *ProcessedData) mergeFuture() {
 	}
 }
 
-func (p *ProcessedData) calcYieldMatDistribution() {
+func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 	// calculate max yield layer and maturity layer grid
-	maxRefNo := 0
-	numSources := 0
 	for simKey, currGrid := range p.allYieldGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 		if _, ok := p.maxYieldGrids[scenarioKey]; !ok {
-			maxRefNo = len(currGrid[0])
-			numSources = len(currGrid)
 			p.maxYieldGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
 			p.matGroupGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
 			p.maxYieldDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, NONEVALUE)
@@ -833,7 +825,7 @@ func (p *ProcessedData) calcYieldMatDistribution() {
 		}
 		for idx, sourceGrid := range currGrid {
 
-			for ref := 1; ref < maxRefNo; ref++ {
+			for ref := 0; ref < maxRefNo; ref++ {
 				if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] {
 					p.maxYieldGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 					p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
@@ -859,21 +851,22 @@ func (p *ProcessedData) calcYieldMatDistribution() {
 			//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 			scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 			currGridDeviation := p.StdDevAvgGrids[simKey][idx]
-			for ref := 1; ref < maxRefNo; ref++ {
+			for ref := 0; ref < maxRefNo; ref++ {
 				if p.matGroupDeviationGrids[scenarioKey][idx][ref] != NONEVALUE {
-					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
-					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
+					if p.matGroupDeviationGrids[scenarioKey][idx][ref] != 0 {
+						matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
+						matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
+						// fmt.Println(matGroupKey)
+						// fmt.Println("refidx:", ref)
+						// fmt.Println("len curr grid:", len(currGridDeviation))
+						// fmt.Println("sourceIdx:", idx)
+						// fmt.Println("len StdDevAvg", len(p.StdDevAvgGrids[matGroupKey][idx]))
 
-					fmt.Println(matGroupKey)
-					fmt.Println("refidx:", ref)
-					fmt.Println("len curr grid:", len(currGridDeviation))
-					fmt.Println("sourceIdx:", idx)
-					fmt.Println("len StdDevAvg", len(p.StdDevAvgGrids[matGroupKey][idx]))
-
-					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
-						currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
-						p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
-						p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
+						if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
+							currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
+							p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
+							p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
+						}
 					}
 				}
 			}
@@ -890,7 +883,7 @@ func (p *ProcessedData) calcYieldMatDistribution() {
 		}
 
 		for sourceID, sourceGrid := range sourcreGrids {
-			for ref := 1; ref < maxRefNo; ref++ {
+			for ref := 0; ref < maxRefNo; ref++ {
 				matGroup := invMatGroupIDGrids[sourceGrid[ref]]
 				matGroupDev := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][sourceID][ref]]
 				matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
@@ -920,7 +913,7 @@ func (p *ProcessedData) calcYieldMatDistribution() {
 	}
 }
 
-func (p *ProcessedData) mergeSources() {
+func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 	// create a new key for summarized future events
 	isFuture := func(simKey ScenarioKeyTuple) bool {
 		return simKey.climateSenario == "fut_avg"
@@ -929,13 +922,9 @@ func (p *ProcessedData) mergeSources() {
 		return simKey.climateSenario == "0_0"
 	}
 	mergedKeys := make([]ScenarioKeyTuple, 0, 4)
-	numSource := 0
-	maxRefNo := 0
-	for simKey, currGrid := range p.maxYieldGrids {
+	for simKey := range p.maxYieldGrids {
 		if isFuture(simKey) || isHistorical(simKey) {
 			mergedKeys = append(mergedKeys, simKey)
-			numSource = len(currGrid)
-			maxRefNo = len(currGrid[0])
 		}
 	}
 	for _, mergedKey := range mergedKeys {
@@ -954,7 +943,7 @@ func (p *ProcessedData) mergeSources() {
 		matGroupDistribution := make([]int, numSource)
 		matGroupDevDistribution := make([]int, numSource)
 
-		for rIdx := 1; rIdx < maxRefNo; rIdx++ {
+		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 
 			numharvestRainGrids := 0
 			numharvestRainDeviationGrids := 0
