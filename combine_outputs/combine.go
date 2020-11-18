@@ -388,13 +388,13 @@ func main() {
 				}
 
 			}(idxSource, sourcefileInfo.Name(), outChan)
-		}
-		currRuns++
-		if currRuns >= maxRuns {
-			for currRuns >= maxRuns {
-				select {
-				case <-outChan:
-					currRuns--
+			currRuns++
+			if currRuns >= maxRuns {
+				for currRuns >= maxRuns {
+					select {
+					case <-outChan:
+						currRuns--
+					}
 				}
 			}
 		}
