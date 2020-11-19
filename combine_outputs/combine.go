@@ -430,7 +430,7 @@ func main() {
 	outC := make(chan string)
 
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"lightgrey", "crimson", "magenta", "gold", "lightgreen", "blue", "navy"}
+	colorList := []string{"black", "crimson", "bisque", "gold", "lightgreen", "blue", "mediumorchid"}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
@@ -479,7 +479,7 @@ func main() {
 		asciiOutFolder,
 		"Max Yield: %v %v",
 		"Yield in t",
-		"inferno",
+		"viridis",
 		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
@@ -493,7 +493,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev )Max Yield: %v %v",
 		"Yield in t",
-		"inferno",
+		"viridis",
 		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
@@ -506,7 +506,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) Cool weather severity: %v %v",
 		"counted occurrences with severity factor",
-		"nipy_spectral",
+		"inferno",
 		nil, nil, 0.0001, NONEVALUE,
 		p.sumMaxDeathOccurrence, outC)
 	waitForNum++
@@ -518,7 +518,7 @@ func main() {
 		asciiOutFolder,
 		"Cool weather severity: %v %v",
 		"counted occurrences with severity factor",
-		"nipy_spectral",
+		"inferno",
 		nil, nil, 0.0001, NONEVALUE,
 		p.sumMaxDeathOccurrence, outC)
 	waitForNum++
@@ -530,7 +530,7 @@ func main() {
 		asciiOutFolder,
 		"Rain during/before harvest: %v %v",
 		"counted occurrences in 30 years",
-		"nipy_spectral",
+		"cividis",
 		nil, nil, 1.0, NONEVALUE,
 		p.maxWetHarvest, outC)
 
@@ -543,7 +543,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) Rain during/before harvest: %v %v",
 		"counted occurrences in 30 years",
-		"nipy_spectral",
+		"cividis",
 		nil, nil, 1.0, NONEVALUE,
 		p.maxWetHarvest, outC)
 	waitForNum++
@@ -555,7 +555,7 @@ func main() {
 		asciiOutFolder,
 		"drought stress effect: %v",
 		"average yield loss to drought",
-		"nipy_spectral",
+		"plasma",
 		nil, nil, 1.0, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 	waitForNum++
@@ -567,7 +567,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) drought stress effect: %v",
 		"average yield loss to drought",
-		"nipy_spectral",
+		"plasma",
 		nil, nil, 1.0, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
@@ -820,15 +820,13 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 				}
 				sort.Ints(matGroupClimDistribution)
 				sort.Ints(matGroupDevClimDistribution)
-				centerIdx := int(float64(numSimKey)/2 + 0.5)
+				centerIdx := int(float64(numSimKey)/2+0.5) - 1
 				p.matGroupGrids[futureSimKey][sIdx][rIdx] = matGroupClimDistribution[centerIdx]
 				p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = matGroupDevClimDistribution[centerIdx]
 
 				p.deviationClimateScenarios[futureSimKey][sIdx][rIdx] = int(stat.StdDev(stdDevClimScen, nil))
 				p.maxYieldGrids[futureSimKey][sIdx][rIdx] = p.maxYieldGrids[futureSimKey][sIdx][rIdx] / numSimKey
-				p.matGroupGrids[futureSimKey][sIdx][rIdx] = p.matGroupGrids[futureSimKey][sIdx][rIdx] / numSimKey
 				p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] = p.maxYieldDeviationGrids[futureSimKey][sIdx][rIdx] / numSimKey
-				p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] / numSimKey
 				if numharvestRainGrids > 0 {
 					p.harvestRainGrids[futureSimKey][sIdx][rIdx] = p.harvestRainGrids[futureSimKey][sIdx][rIdx] / numharvestRainGrids
 				}
@@ -1028,14 +1026,12 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 
 			sort.Ints(matGroupDistribution)
 			sort.Ints(matGroupDevDistribution)
-			centerIdx := int(float64(numSource)/2 + 0.5)
+			centerIdx := int(float64(numSource)/2+0.5) - 1
 			p.matGroupGridsAll[mergedKey][rIdx] = matGroupDistribution[centerIdx]
 			p.matGroupDeviationGridsAll[mergedKey][rIdx] = matGroupDevDistribution[centerIdx]
 
 			p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] / numSource
-			p.matGroupGridsAll[mergedKey][rIdx] = p.matGroupGridsAll[mergedKey][rIdx] / numSource
 			p.maxYieldDeviationGridsAll[mergedKey][rIdx] = p.maxYieldDeviationGridsAll[mergedKey][rIdx] / numSource
-			p.matGroupDeviationGridsAll[mergedKey][rIdx] = p.matGroupDeviationGridsAll[mergedKey][rIdx] / numSource
 			if numharvestRainGrids > 0 {
 				p.harvestRainGridsAll[mergedKey][rIdx] = p.harvestRainGridsAll[mergedKey][rIdx] / numharvestRainGrids
 			}
@@ -1284,6 +1280,11 @@ func gridDifference(grid1, grid2 [][]int, maxRef int) [][]int {
 		for ref := 0; ref < maxRef; ref++ {
 			if grid1[sIdx][ref] != NONEVALUE && grid2[sIdx][ref] != NONEVALUE {
 				newGridDiff[sIdx][ref] = grid1[sIdx][ref] - grid2[sIdx][ref]
+				if newGridDiff[sIdx][ref] < 0 {
+					newGridDiff[sIdx][ref] = 0
+					// effects can be negative, when sufficient water leads to a shift growth dates
+					// these are only small effects but cause trouble with rendering
+				}
 			} else {
 				newGridDiff[sIdx][ref] = NONEVALUE
 			}
