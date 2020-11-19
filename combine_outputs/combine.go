@@ -460,22 +460,6 @@ func main() {
 		nil, nil, 1.0, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
-	// map max yield maturity groups over all models
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.matGroupGridsAll,
-		asciiOutTemplate,
-		"maturity_group_max_yield",
-		extCol, extRow,
-		asciiOutFolder,
-		"Mat. grp. for max yield Scn: %v %v",
-		"TODO TBD",
-		false,
-		"inferno",
-		nil, nil, 1.0, NONEVALUE,
-		int(p.maxAllAvgYield), outC)
-	// map max yield maturity groups over all models with acceptable variation
-
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.coolweatherDeathDeviationGridsAll,
@@ -556,8 +540,17 @@ func main() {
 		nil, nil, 1.0, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
+	for waitForNum > 0 {
+		select {
+		case progessStatus := <-outC:
+			waitForNum--
+			fmt.Println(progessStatus)
+		}
+	}
+
+	// generate pictures with maturity groups
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
+	colorList := []string{"lightgrey", "crimson", "magenta", "gold", "lightgreen", "blue", "navy"}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
@@ -567,36 +560,29 @@ func main() {
 	for tick := 0; tick < len(ticklist); tick++ {
 		ticklist[tick] = float64(tick) + 0.5
 	}
-	for waitForNum > 0 {
-		select {
-		case progessStatus := <-outC:
-			waitForNum--
-			fmt.Println(progessStatus)
-		}
-	}
 
 	for scenarioKey, scenarioVal := range p.matGroupGridsAll {
 		gridFileName := fmt.Sprintf(asciiOutTemplate, "maturity_groups", scenarioKey.climateSenario, scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 
 		// create ascii file
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
 		file.Close()
-		// create png
+		// create meta description
 		title := fmt.Sprintf("Maturity groups for max average yield: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
 	}
 
 	for scenarioKey, scenarioVal := range p.matGroupDeviationGridsAll {
 		gridFileName := fmt.Sprintf(asciiOutTemplate, "dev_maturity_groups", scenarioKey.climateSenario, scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 
 		// create ascii file
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
 		file.Close()
-		// create png
+		// create meta description
 		title := fmt.Sprintf("(Dev)Maturity groups for max average yield: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
 	}
@@ -1545,17 +1531,28 @@ func loadClimateLine(line string, header ClimateHeader) ClimateContent {
 	return cC
 }
 
+func climateScenarioShortToName(climateScenarioShort string) string {
+	if climateScenarioShort == "0_0" {
+		return "historical"
+	}
+	if climateScenarioShort == "fut_avg" {
+		return "future"
+	}
+	// return original by default
+	return climateScenarioShort
+}
+
 func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, showBar bool, colormap string, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, outC chan string) {
 
 	for simKey, simVal := range grids {
 		//simkey = treatmentNo, climateSenario, maturityGroup, comment
-		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, simKey.climateSenario, simKey.treatNo)
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, climateScenarioShortToName(simKey.climateSenario), simKey.treatNo)
 		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
-		title := fmt.Sprintf(titleFormat, simKey.climateSenario, simKey.treatNo, simKey.comment)
+		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey.climateSenario), simKey.comment)
 		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
 
 	}
@@ -1566,13 +1563,13 @@ func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, 
 
 	for simKey, simVal := range grids {
 		//simkey = treatmentNo, climateSenario, maturityGroup, comment
-		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, simKey)
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, climateScenarioShortToName(simKey))
 		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
-		title := fmt.Sprintf(titleFormat, simKey)
+		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey))
 		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
 
 	}
