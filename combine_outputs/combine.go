@@ -452,7 +452,7 @@ func main() {
 		"Max Yield: %v %v",
 		"average over 30 years",
 		"inferno",
-		nil, nil, 1.0, NONEVALUE,
+		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
 	waitForNum++
@@ -480,7 +480,7 @@ func main() {
 		"Max Yield: %v %v",
 		"average over 30 years",
 		"inferno",
-		nil, nil, 1.0, NONEVALUE,
+		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
 	// map of max yield average(30y) over all models and maturity groups with acceptable variation
@@ -494,7 +494,7 @@ func main() {
 		"(Dev )Max Yield: %v %v",
 		"average over 30 years",
 		"inferno",
-		nil, nil, 1.0, NONEVALUE,
+		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), outC)
 
 	waitForNum++
@@ -682,13 +682,13 @@ func (p *ProcessedData) initProcessedData() {
 	p.outputGridsGenerated = false
 
 	p.matGroupIDGrids = map[string]int{
-		"none": 0,
-		"II":   1,
-		"I":    2,
-		"0":    3,
-		"00":   4,
-		"000":  5,
-		"0000": 6}
+		"none":         0,
+		"soybean/II":   1,
+		"soybean/I":    2,
+		"soybean/0":    3,
+		"soybean/00":   4,
+		"soybean/000":  5,
+		"soybean/0000": 6}
 	p.maxYieldGrids = make(map[ScenarioKeyTuple][][]int)
 	p.matGroupGrids = make(map[ScenarioKeyTuple][][]int)
 	p.maxYieldDeviationGrids = make(map[ScenarioKeyTuple][][]int)
