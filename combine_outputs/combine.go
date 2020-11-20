@@ -510,7 +510,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) Cool weather severity: %v %v",
 		"counted occurrences with severity factor",
-		"nipy_spectral",
+		"rainbow",
 		nil, nil, 0.0001, -1,
 		p.sumMaxDeathOccurrence, minColor, outC)
 	waitForNum++
@@ -522,7 +522,7 @@ func main() {
 		asciiOutFolder,
 		"Cool weather severity: %v %v",
 		"counted occurrences with severity factor",
-		"nipy_spectral",
+		"rainbow",
 		nil, nil, 0.0001, -1,
 		p.sumMaxDeathOccurrence, minColor, outC)
 	waitForNum++
@@ -534,7 +534,7 @@ func main() {
 		asciiOutFolder,
 		"Rain during/before harvest: %v %v",
 		"counted occurrences in 30 years",
-		"cividis",
+		"plasma",
 		nil, nil, 1.0,
 		-1, 2, minColor, outC)
 
@@ -547,7 +547,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) Rain during/before harvest: %v %v",
 		"counted occurrences in 30 years",
-		"cividis",
+		"plasma",
 		nil, nil, 1.0, -1, 2, minColor, outC)
 	waitForNum++
 
@@ -585,7 +585,7 @@ func main() {
 		asciiOutFolder,
 		"(Dev) yield loss drought: %v",
 		"potential loss steps",
-		"tab20c",
+		"plasma",
 		nil, nil, 1.0,
 		-1, 2, minColor, outC)
 
@@ -598,7 +598,7 @@ func main() {
 		asciiOutFolder,
 		"yield loss drought: %v",
 		"potential loss steps",
-		"tab20c",
+		"plasma",
 		nil, nil, 1.0, -1,
 		2, minColor, outC)
 
