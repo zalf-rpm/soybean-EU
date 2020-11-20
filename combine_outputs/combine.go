@@ -774,6 +774,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	// summarize potential water stress over all climate scenarios
 	p.potentialWaterStress[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 	p.potentialWaterStressDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
+	p.signDroughtYieldLossGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
+	p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 
 	numScenKey := len(p.potentialWaterStress)
 	for sIdx := 0; sIdx < numSource; sIdx++ {
