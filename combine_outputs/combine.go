@@ -469,6 +469,9 @@ func main() {
 	// 	sidebarLabel, ticklist, 1.0, NONEVALUE,
 	// 	len(p.matGroupIDGrids), outC)
 
+	// recalulate max values
+	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
+	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -532,7 +535,7 @@ func main() {
 		"counted occurrences in 30 years",
 		"cividis",
 		nil, nil, 1.0, NONEVALUE,
-		p.maxWetHarvest, outC)
+		2, outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -545,8 +548,10 @@ func main() {
 		"counted occurrences in 30 years",
 		"cividis",
 		nil, nil, 1.0, NONEVALUE,
-		p.maxWetHarvest, outC)
+		2, outC)
 	waitForNum++
+
+	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
 	go drawMaps(gridSourceLookup,
 		p.potentialWaterStressAll,
 		asciiOutCombinedTemplate,
@@ -557,7 +562,7 @@ func main() {
 		"average yield loss to drought",
 		"plasma",
 		nil, nil, 1.0, NONEVALUE,
-		int(p.maxAllAvgYield), outC)
+		maxPot, outC)
 	waitForNum++
 	go drawMaps(gridSourceLookup,
 		p.potentialWaterStressDeviationGridsAll,
@@ -569,7 +574,7 @@ func main() {
 		"average yield loss to drought",
 		"plasma",
 		nil, nil, 1.0, NONEVALUE,
-		int(p.maxAllAvgYield), outC)
+		maxPot, outC)
 
 	waitForNum++
 	go drawMaps(gridSourceLookup,
@@ -582,7 +587,7 @@ func main() {
 		"potential loss steps",
 		"tab20c",
 		nil, nil, 1.0, NONEVALUE,
-		int(p.maxAllAvgYield), outC)
+		2, outC)
 
 	waitForNum++
 	go drawMaps(gridSourceLookup,
@@ -595,7 +600,7 @@ func main() {
 		"potential loss steps",
 		"tab20c",
 		nil, nil, 1.0, NONEVALUE,
-		int(p.maxAllAvgYield), outC)
+		2, outC)
 
 	for waitForNum > 0 {
 		select {
@@ -750,6 +755,34 @@ func (p *ProcessedData) initProcessedData() {
 	p.potentialWaterStressDeviationGridsAll = make(map[string][]int)
 	p.signDroughtYieldLossGridsAll = make(map[string][]int)
 	p.signDroughtYieldLossDeviationGridsAll = make(map[string][]int)
+}
+
+func findMaxValueInScenarioList(lists ...map[ScenarioKeyTuple][]int) int {
+	var maxVal int
+	for _, list := range lists {
+		for _, listVal := range list {
+			for _, val := range listVal {
+				if val > maxVal {
+					maxVal = val
+				}
+			}
+		}
+	}
+	return maxVal
+}
+
+func findMaxValueInDic(lists ...map[string][]int) int {
+	var maxVal int
+	for _, list := range lists {
+		for _, listVal := range list {
+			for _, val := range listVal {
+				if val > maxVal {
+					maxVal = val
+				}
+			}
+		}
+	}
+	return maxVal
 }
 
 func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
