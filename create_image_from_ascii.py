@@ -73,6 +73,8 @@ def build() :
             makeDir(pdfpath)
             pdf = PdfPages(pdfpath)
             files.sort()
+            filepaths = list()
+            metapaths = list()
             for file in files:
                 if not file.endswith(".meta"):
                     print("file", file)
@@ -85,8 +87,12 @@ def build() :
 
                     filepath = os.path.join(root, file)
                     metapath = os.path.join(root, metafilename)
-                    out_path = os.path.join(pngFolder, scenario, pngfilename)            
+                    out_path = os.path.join(pngFolder, scenario, pngfilename)    
+                    filepaths.append(filepath)     
+                    metapaths.append(metapath)
                     createImgFromMeta( filepath, metapath, out_path, pdf=pdf)
+            #createSubPlot( filepaths, metapaths, out_path, pdf=pdf)
+
             pdf.close()
 
 
@@ -232,6 +238,173 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     plt.savefig(out_path, dpi=150)
     plt.close(fig)
   
+
+def createSubPlot(ascii_paths, meta_paths, out_path, pdf=None) :
+        
+    numImg = len(ascii_paths)
+    ascci_cols = [0] * numImg
+    ascii_rows = [0] * numImg
+    ascii_xll = [0.0] * numImg
+    ascii_yll = [0.0] * numImg
+    ascii_cs = [0.0] * numImg
+    ascii_nodata = [0.0] * numImg
+
+    title=[""] * numImg  
+    label=[""] * numImg
+    colormap = ['viridis'] * numImg
+    minColor = [""] * numImg
+    cMap = [None] * numImg
+    cbarLabel =[ None] * numImg
+    factor = [0.001] * numImg
+    ticklist = [None] * numImg
+    maxValue = [0.0] * numImg
+    maxLoaded = [False] * numImg
+    minValue = [0.0] * numImg
+    minLoaded =  [False] * numImg
+
+    for i in range(numImg) :
+        if ascii_paths[i].endswith(".gz") :
+            # Read in ascii header data
+            with gzip.open(ascii_paths[i], 'rt') as source:
+                ascii_header = source.readlines()[:6] 
+        else :
+            # Read in ascii header data
+            with open(ascii_paths[i], 'r') as source:
+                ascii_header = source.readlines()[:6]
+
+        # Read the ASCII raster header
+        ascii_header = [item.strip().split()[-1] for item in ascii_header]
+        ascci_cols[i] = int(ascii_header[0])
+        ascii_rows[i] = int(ascii_header[1])
+        ascii_xll[i] = float(ascii_header[2])
+        ascii_yll[i] = float(ascii_header[3])
+        ascii_cs[i] = float(ascii_header[4])
+        ascii_nodata[i] = float(ascii_header[5])
+    
+        maxValue[i] = ascii_nodata[i]
+        minValue[i] = ascii_nodata[i]
+
+        with open(meta_paths[i], 'rt') as meta:
+           # documents = yaml.load(meta, Loader=yaml.FullLoader)
+            yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
+            documents = yaml.load(meta)
+            #documents = yaml.full_load(meta)
+
+            for item, doc in documents.items():
+                print(item, ":", doc)
+                if item == "title" :
+                    title[i] = doc
+                elif item == "labeltext" :
+                    label[i] = doc
+                elif item == "factor" :
+                    factor[i] = float(doc)
+                elif item == "maxValue" :
+                    maxValue[i] = float(doc)
+                    maxLoaded[i] = True
+                elif item == "minValue" :
+                    minValue[i] = float(doc)
+                    minLoaded[i] = True
+                elif item == "colormap" :
+                    colormap[i] = doc
+                elif item == "minColor" :
+                    minColor[i] = doc
+                elif item == "colorlist" :
+                    cMap[i] = doc
+                elif item == "cbarLabel" :
+                    cbarLabel[i] = doc
+                elif item == "ticklist" :
+                    ticklist[i] = list()
+                    for ic in doc :
+                        ticklist.append(float(ic))
+
+
+
+    
+    # Plot data array
+    # fig, ax = plt.subplots()
+    # ax.set_title(title)
+    
+    fig, axes = plt.subplots(nrows=int(numImg/2), ncols=2)
+    fig.subplots_adjust(top=0.95, bottom=0.01, left=0.2, right=0.99,
+                        wspace=0.05)
+
+    fig.suptitle('historical     future', fontsize=14, y=1.0, x=0.6)
+
+    i = 0
+    for axRow in axes :
+        ax = axRow[ i % 2 ]
+        # Read in the ascii data array
+        ascii_data_array = np.loadtxt(ascii_paths[i], dtype=np.float, skiprows=6)
+        
+        # Set the nodata values to nan
+        ascii_data_array[ascii_data_array == ascii_nodata[i]] = np.nan
+
+        # data is stored as an integer but scaled by a factor
+        ascii_data_array *= factor[i]
+        maxValue[i] *= factor[i]
+        minValue[i] *= factor[i]
+
+        image_extent = [
+            ascii_xll[i], ascii_xll[i] + ascci_cols[i] * ascii_cs[i],
+            ascii_yll[i], ascii_yll[i] + ascii_rows[i] * ascii_cs[i]]        
+        # set min color if given
+        if len(minColor) > 0 and not cMap:
+            newColorMap = matplotlib.cm.get_cmap(colormap[i], 256)
+            newcolors = newColorMap(np.linspace(0, 1, 256))
+            rgba = matplotlib.cm.colors.to_rgba(minColor[i])
+            minColorVal = np.array([rgba])
+            newcolors[:1, :] = minColorVal
+            colorM = ListedColormap(newcolors)
+            if minLoaded and maxLoaded:
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=minValue[i], vmax=maxValue[i])
+            elif minLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=minValue[i])
+            elif maxLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=maxValue[i])
+            else :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
+
+        # Get the img object in order to pass it to the colorbar function
+        elif cMap[i] :
+            colorM = ListedColormap(cMap[i])
+            if minLoaded and maxLoaded:
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=minValue[i], vmax=maxValue[i])
+            elif minLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=minValue[i])
+            elif maxLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=maxValue[i])
+            else :
+                img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
+        else :
+            if minLoaded and maxLoaded:
+                img_plot = ax.imshow(ascii_data_array, cmap=colormap[i], extent=image_extent, interpolation='none', vmin=minValue[i], vmax=maxValue[i])
+            elif minLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colormap[i], extent=image_extent, interpolation='none', vmax=minValue[i])
+            elif maxLoaded :
+                img_plot = ax.imshow(ascii_data_array, cmap=colormap[i], extent=image_extent, interpolation='none', vmax=maxValue[i])
+            else :
+                img_plot = ax.imshow(ascii_data_array, cmap=colormap[i], extent=image_extent, interpolation='none')
+
+        if ticklist[i] :
+            # Place a colorbar next to the map
+            cbar = plt.colorbar(img_plot, ticks=ticklist[i], orientation='vertical', shrink=0.5, aspect=14)
+        else :
+            # Place a colorbar next to the map
+            cbar = plt.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14)
+        cbar.set_label(label)
+        if cbarLabel[i] :
+            cbar.ax.set_yticklabels(cbarLabel[i]) 
+
+        ax.grid(True, alpha=0.5)
+        i = i+1
+
+    # save image and pdf 
+    makeDir(out_path)
+    if pdf :
+        pdf.savefig()
+    plt.savefig(out_path, dpi=150)
+    plt.close(fig)
+
 
 def makeDir(out_path) :
     if not os.path.exists(os.path.dirname(out_path)):
