@@ -113,6 +113,7 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     title="" 
     label=""
     colormap = 'viridis'
+    minColor = ""
     cMap = None
     cbarLabel = None
     factor = 0.001
@@ -144,6 +145,8 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
                 minLoaded = True
             elif item == "colormap" :
                 colormap = doc
+            elif item == "minColor" :
+                minColor = doc
             elif item == "colorlist" :
                 cMap = doc
             elif item == "cbarLabel" :
@@ -173,8 +176,25 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     fig, ax = plt.subplots()
     ax.set_title(title)
     
+    # set min color if given
+    if len(minColor) > 0 and not cMap:
+        newColorMap = matplotlib.cm.get_cmap(colormap, 256)
+        newcolors = newColorMap(np.linspace(0, 1, 256))
+        rgba = matplotlib.cm.colors.to_rgba(minColor)
+        minColorVal = np.array([rgba])
+        newcolors[:1, :] = minColorVal
+        colorM = ListedColormap(newcolors)
+        if minLoaded and maxLoaded:
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=minValue, vmax=maxValue)
+        elif minLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=minValue)
+        elif maxLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=maxValue)
+        else :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
+
     # Get the img object in order to pass it to the colorbar function
-    if cMap :
+    elif cMap :
         colorM = ListedColormap(cMap)
         if minLoaded and maxLoaded:
             img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=minValue, vmax=maxValue)
