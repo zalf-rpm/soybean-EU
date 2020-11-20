@@ -430,7 +430,7 @@ func main() {
 	outC := make(chan string)
 
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"black", "crimson", "bisque", "gold", "lightgreen", "blue", "mediumorchid"}
+	colorList := []string{"lightgrey", "maroon", "organe", "gold", "limegreen", "blue", "mediumorchid"}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
@@ -548,7 +548,8 @@ func main() {
 		"(Dev) Rain during/before harvest: %v %v",
 		"counted occurrences in 30 years",
 		"plasma",
-		nil, nil, 1.0, -1, 2, minColor, outC)
+		nil, nil, 1.0,
+		-1, 2, minColor, outC)
 	waitForNum++
 
 	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
@@ -561,7 +562,7 @@ func main() {
 		"drought stress effect: %v",
 		"average yield loss to drought",
 		"plasma",
-		nil, nil, 1.0, NONEVALUE,
+		nil, nil, 1.0, -1,
 		maxPot, minColor, outC)
 	waitForNum++
 	go drawMaps(gridSourceLookup,
@@ -573,7 +574,7 @@ func main() {
 		"(Dev) drought stress effect: %v",
 		"average yield loss to drought",
 		"plasma",
-		nil, nil, 1.0, NONEVALUE,
+		nil, nil, 1.0, -1,
 		maxPot, minColor, outC)
 
 	waitForNum++
@@ -1051,8 +1052,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.harvestRainDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.coolweatherDeathGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.coolweatherDeathDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
-			p.potentialWaterStressAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
-			p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.potentialWaterStressAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, -1)
+			p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, -1)
 			p.signDroughtYieldLossGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 		}
@@ -1382,7 +1383,9 @@ func gridDifference(grid1, grid2 [][]int, maxRef int) [][]int {
 		for ref := 0; ref < maxRef; ref++ {
 			if grid1[sIdx][ref] != NONEVALUE && grid2[sIdx][ref] != NONEVALUE {
 				newGridDiff[sIdx][ref] = grid1[sIdx][ref] - grid2[sIdx][ref]
-				if newGridDiff[sIdx][ref] < 0 {
+				if grid1[sIdx][ref] == 0 {
+					newGridDiff[sIdx][ref] = -1
+				} else if newGridDiff[sIdx][ref] < 0 {
 					newGridDiff[sIdx][ref] = 0
 					// effects can be negative, when sufficient water leads to a shift growth dates
 					// these are only small effects but cause trouble with rendering
@@ -1402,8 +1405,11 @@ func gridSignDifference(grid1, grid2 [][]int, maxRef int) [][]int {
 	for sIdx := 0; sIdx < sourceLen; sIdx++ {
 		for ref := 0; ref < maxRef; ref++ {
 			if grid1[sIdx][ref] != NONEVALUE && grid2[sIdx][ref] != NONEVALUE {
+
 				newGridDiff[sIdx][ref] = grid1[sIdx][ref] - grid2[sIdx][ref]
-				if newGridDiff[sIdx][ref] > 0 && grid2[sIdx][ref] == 0 {
+				if grid1[sIdx][ref] == 0 {
+					newGridDiff[sIdx][ref] = -1
+				} else if newGridDiff[sIdx][ref] > 0 && grid2[sIdx][ref] == 0 {
 					newGridDiff[sIdx][ref] = 2
 				} else if newGridDiff[sIdx][ref] > grid1[sIdx][ref]/3 {
 					newGridDiff[sIdx][ref] = 1
