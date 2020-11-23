@@ -430,7 +430,7 @@ func main() {
 	outC := make(chan string)
 
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"lightgrey", "maroon", "organe", "gold", "limegreen", "blue", "mediumorchid"}
+	colorList := []string{"lightgrey", "maroon", "orange", "gold", "limegreen", "blue", "mediumorchid"}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
