@@ -430,7 +430,7 @@ func main() {
 	outC := make(chan string)
 
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"lightgrey", "maroon", "orange", "gold", "limegreen", "blue", "mediumorchid"}
+	colorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid"}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
@@ -1111,7 +1111,6 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 				p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] + p.signDroughtYieldLossGrids[mergedKey.climateSenario][sIdx][rIdx]
 				p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] + p.signDroughtYieldLossDeviationGrids[mergedKey.climateSenario][sIdx][rIdx]
 			}
-			p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] / numSource
 
 			sort.Ints(matGroupDistribution)
 			sort.Ints(matGroupDevDistribution)
@@ -1123,7 +1122,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.maxYieldDeviationGridsAll[mergedKey][rIdx] = p.maxYieldDeviationGridsAll[mergedKey][rIdx] / numSource
 			if numharvestRainGrids > 0 {
 				p.harvestRainGridsAll[mergedKey][rIdx] = p.harvestRainGridsAll[mergedKey][rIdx] / numharvestRainGrids
-				if p.harvestRainGridsAll[mergedKey][rIdx] > 10 {
+				if p.harvestRainGridsAll[mergedKey][rIdx] > 3 {
 					p.harvestRainGridsAll[mergedKey][rIdx] = 1
 				} else {
 					p.harvestRainGridsAll[mergedKey][rIdx] = 0
@@ -1131,7 +1130,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			}
 			if numharvestRainDeviationGrids > 0 {
 				p.harvestRainDeviationGridsAll[mergedKey][rIdx] = p.harvestRainDeviationGridsAll[mergedKey][rIdx] / numharvestRainDeviationGrids
-				if p.harvestRainDeviationGridsAll[mergedKey][rIdx] > 10 {
+				if p.harvestRainDeviationGridsAll[mergedKey][rIdx] > 3 {
 					p.harvestRainDeviationGridsAll[mergedKey][rIdx] = 1
 				} else {
 					p.harvestRainDeviationGridsAll[mergedKey][rIdx] = 0
@@ -1147,7 +1146,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
 
 			p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] / numSource
-			p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.potentialWaterStressDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
+			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
 
 		}
 	}
