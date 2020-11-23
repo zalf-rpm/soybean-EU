@@ -614,7 +614,7 @@ func main() {
 	// generate pictures with maturity groups
 	for scenarioKey, scenarioVal := range p.matGroupGridsAll {
 		gridFileName := fmt.Sprintf(asciiOutTemplate, "maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		gridFilePath := filepath.Join(asciiOutFolder, "max", gridFileName)
 
 		// create ascii file
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
@@ -627,7 +627,7 @@ func main() {
 
 	for scenarioKey, scenarioVal := range p.matGroupDeviationGridsAll {
 		gridFileName := fmt.Sprintf(asciiOutTemplate, "dev_maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		gridFilePath := filepath.Join(asciiOutFolder, "dev", gridFileName)
 
 		// create ascii file
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
