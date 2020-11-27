@@ -335,18 +335,19 @@ func main() {
 							precip := lineContent.precip
 							precipPrevDays.addDay(precip)
 							dateYear := date.Year()
-							if tmin < 15 {
-								for simKey := range dateYearOrder {
-									if simKey.climateSenario == scenario {
-										yearIndex := -1
-										for i, val := range dateYearOrder[simKey] {
-											if val == dateYear {
-												yearIndex = i
-											}
+
+							for simKey := range dateYearOrder {
+								if simKey.climateSenario == scenario {
+									yearIndex := -1
+									for i, val := range dateYearOrder[simKey] {
+										if val == dateYear {
+											yearIndex = i
 										}
-										if yearIndex == -1 {
-											break
-										}
+									}
+									if yearIndex == -1 {
+										break
+									}
+									if tmin < 15 {
 										startDOY := simDoyFlower[simKey][yearIndex]
 										endDOY := simDoyMature[simKey][yearIndex]
 										if IsDateInGrowSeason(startDOY, endDOY, date) {
@@ -363,19 +364,19 @@ func main() {
 												numOccurrenceLow[simKey]++
 											}
 										}
-										// check if this date is harvest
-										harvestDOY := simDoyHarvest[simKey][yearIndex]
-										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
-											wasWetHarvest := true
-											for _, x := range precipPrevDays.getData() {
-												wasWetHarvest = (x > 0) && wasWetHarvest
-											}
-											if _, ok := numWetHarvest[simKey]; !ok {
-												numWetHarvest[simKey] = 0
-											}
-											if wasWetHarvest {
-												numWetHarvest[simKey]++
-											}
+									}
+									// check if this date is harvest
+									harvestDOY := simDoyHarvest[simKey][yearIndex]
+									if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
+										wasWetHarvest := true
+										for _, x := range precipPrevDays.getData() {
+											wasWetHarvest = (x > 0) && wasWetHarvest
+										}
+										if _, ok := numWetHarvest[simKey]; !ok {
+											numWetHarvest[simKey] = 0
+										}
+										if wasWetHarvest {
+											numWetHarvest[simKey]++
 										}
 									}
 								}
@@ -558,8 +559,8 @@ func main() {
 		"Average Yield - Scn: %v %v %v",
 		"Yield in t",
 		false,
-		"viridis",
-		nil, nil, 1.0, NONEVALUE,
+		"jet",
+		nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield),
 		"average yield grids", outC)
 	waitForNum++
