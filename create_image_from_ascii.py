@@ -513,7 +513,9 @@ def createSubPlot(image, out_path, pdf=None) :
                 nplotCols = numCol
                 
         elif type(content) is Merge:
-            for f in col.content :
+            mergeHeaderList = list()
+            mergeMetaList = list()
+            for f in content.content :
                 asciiHeader = readAsciiHeader(f.name)         
                 meta = readMeta(f.meta, asciiHeader.ascii_nodata, True) 
                 mergeHeaderList.append(asciiHeader)
