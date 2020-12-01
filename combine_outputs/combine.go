@@ -256,11 +256,10 @@ func main() {
 						numOccurrenceHigh := make(map[SimKeyTuple]int)
 						numOccurrenceMedium := make(map[SimKeyTuple]int)
 						numOccurrenceLow := make(map[SimKeyTuple]int)
-						numWetHarvest := make(map[SimKeyTuple][]int)
-						indexWetHarvest := make(map[SimKeyTuple][]int)
+						numWetHarvest := make(map[SimKeyTuple]int)
 						numColdSpell := make(map[string]map[int]int)
 						var header ClimateHeader
-						precipPrevDays := newDataLastDays(5)
+						precipPrevDays := newDataLastDays(15)
 						scanner := bufio.NewScanner(climatefile)
 						for scanner.Scan() {
 							line := scanner.Text()
@@ -320,24 +319,19 @@ func main() {
 											}
 										}
 										// check if this date is harvest
-										if _, ok := numWetHarvest[simKey]; !ok {
-											numWetHarvest[simKey] = make([]int, 30)
-											indexWetHarvest[simKey] = make([]int, 30)
-										}
 										harvestDOY := simDoyHarvest[simKey][yearIndex]
-										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
-											wasWetHarvest := true
+										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY+10, harvestDOY+10, date) {
+											wasWetHarvest := 0
 											for _, x := range precipPrevDays.getData() {
-												wasWetHarvest = (x > 0) && wasWetHarvest
+												if x > 0 {
+													wasWetHarvest++
+												}
 											}
-											if wasWetHarvest {
-												numWetHarvest[simKey][yearIndex] = 1
+											if _, ok := numWetHarvest[simKey]; !ok {
+												numWetHarvest[simKey] = 0
 											}
-										}
-										if indexWetHarvest[simKey][yearIndex] < 10 && numWetHarvest[simKey][yearIndex] > 0 {
-											indexWetHarvest[simKey][yearIndex]++
-											if precip > 0 {
-												numWetHarvest[simKey][yearIndex]++
+											if wasWetHarvest > precipPrevDays.currentLen-1 {
+												numWetHarvest[simKey]++
 											}
 										}
 									}
@@ -393,14 +387,8 @@ func main() {
 									}
 									// wet harvest occurence
 									if _, ok := numWetHarvest[simKey]; ok {
-										sum := 0
-										for y := 0; y < len(numWetHarvest[simKey]); y++ {
-											if numWetHarvest[simKey][y] >= 10 {
-												sum++
-											}
-										}
-										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = sum
-										p.setMaxWetHarvest(sum)
+										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = numWetHarvest[simKey]
+										p.setMaxWetHarvest(numWetHarvest[simKey])
 									}
 									// cold spell occurence
 									if _, ok := numColdSpell[scenario]; ok {
@@ -652,7 +640,7 @@ func main() {
 		asciiOutCombinedTemplate,
 		"dev_drought_risk",
 		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
+		filepath.Join(asciiOutFolder, "dev"),
 		"(dev) drought risk: %v",
 		"",
 		"plasma",
