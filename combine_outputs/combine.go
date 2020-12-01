@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -319,24 +320,42 @@ func main() {
 											}
 										}
 										// check if this date is harvest
-										harvestDOY := simDoyHarvest[simKey][yearIndex]
+										harvestDOY := simDoyMature[simKey][yearIndex]
 										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY+10, harvestDOY+10, date) {
 											wasWetHarvest := 0
-											for _, x := range precipPrevDays.getData() {
+											for i, x := range precipPrevDays.getData() {
 												if x > 0 {
 													wasWetHarvest++
+												}
+												if i == 4 {
+													if wasWetHarvest < 4 {
+														wasWetHarvest = 0
+														break
+													}
+													wasWetHarvest = 0
 												}
 											}
 											if _, ok := numWetHarvest[simKey]; !ok {
 												numWetHarvest[simKey] = 0
 											}
-											if wasWetHarvest > precipPrevDays.currentLen-1 {
+											if wasWetHarvest >= 9 {
 												numWetHarvest[simKey]++
 											}
 										}
 									}
 								}
 							}
+						}
+						// cold spell occurence
+						if _, ok := numColdSpell[scenario]; ok {
+							sum := 0
+							for y := 0; y < 30; y++ {
+								if numColdSpell[scenario][y] > 0 {
+									sum++
+								}
+							}
+
+							p.coldSpellGrid[scenario][refIDIndex] = sum
 						}
 						for simKey := range simulations {
 							if simKey.climateSenario == scenario {
@@ -389,18 +408,6 @@ func main() {
 									if _, ok := numWetHarvest[simKey]; ok {
 										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = numWetHarvest[simKey]
 										p.setMaxWetHarvest(numWetHarvest[simKey])
-									}
-
-									// cold spell occurence
-									if _, ok := numColdSpell[scenario]; ok {
-										sum := 0
-										for y := 0; y < len(numColdSpell[scenario]); y++ {
-											if numColdSpell[scenario][y] > 0 {
-												sum++
-											}
-										}
-
-										p.coldSpellGrid[scenario][refIDIndex] = sum
 									}
 								}
 							}
@@ -554,7 +561,7 @@ func main() {
 		"counted occurrences in 30 years",
 		"plasma",
 		nil, nil, nil, 1.0,
-		-1, 2, minColor, outC)
+		0, 1, minColor, outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -567,7 +574,7 @@ func main() {
 		"counted occurrences in 30 years",
 		"plasma",
 		nil, nil, nil, 1.0,
-		-1, 2, minColor, outC)
+		0, 1, minColor, outC)
 	waitForNum++
 
 	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
@@ -661,7 +668,7 @@ func main() {
 		"",
 		"plasma",
 		colorListColdSpell, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		1, "", outC)
 	waitForNum++
 
 	go drawMaps(gridSourceLookup,
@@ -674,21 +681,21 @@ func main() {
 		"",
 		"plasma",
 		colorListColdSpell, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		1, "", outC)
 
-	colorListShortSeason := []string{"lightgrey", "cyan"}
+	//colorListShortSeason := []string{"lightgrey", "cyan"}
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.shortSeasonGridAll,
 		asciiOutTemplate,
 		"short_season",
 		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
+		filepath.Join(asciiOutFolder, "max"),
 		"Short season: %v %v",
 		"",
 		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
-		0, 1, "", outC)
+		nil, nil, nil, 1.0,
+		0, 30, "", outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -700,8 +707,8 @@ func main() {
 		"(Dev) Short season: %v %v",
 		"",
 		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
-		0, 1, "", outC)
+		nil, nil, nil, 1.0,
+		0, 30, "", outC)
 
 	for waitForNum > 0 {
 		select {
@@ -958,8 +965,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 			p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
 			p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
 			p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
-			p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
-			p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
+			p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = int(math.Round(float64(p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx]) / float64(numScenKey)))
+			p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = int(math.Round(float64(p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx]) / float64(numScenKey)))
 		}
 	}
 
@@ -967,7 +974,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 		for climateScenario := range futureScenarios {
 			p.coldSpellGrid[futureScenarioAvgKey][rIdx] = p.coldSpellGrid[futureScenarioAvgKey][rIdx] + p.coldSpellGrid[climateScenario][rIdx]
 		}
-		p.coldSpellGrid[futureScenarioAvgKey][rIdx] = p.coldSpellGrid[futureScenarioAvgKey][rIdx] / len(futureScenarios)
+		p.coldSpellGrid[futureScenarioAvgKey][rIdx] = int(math.Round(float64(p.coldSpellGrid[futureScenarioAvgKey][rIdx]) / float64(len(futureScenarios))))
 	}
 
 	for mergeTreatmentKey, scenariokeys := range futureKeys {
@@ -1321,11 +1328,11 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] / numSource
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
 
-			p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] / numSource
-			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
+			p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = int(math.Round(float64(p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx]) / float64(numSource)))
+			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = int(math.Round(float64(p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx]) / float64(numSource)))
 
-			p.shortSeasonGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonGridAll[mergedKey][rIdx] / numSource) > 6)
-			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) > 6)
+			p.shortSeasonGridAll[mergedKey][rIdx] = p.shortSeasonGridAll[mergedKey][rIdx] / numSource
+			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource
 		}
 	}
 }
