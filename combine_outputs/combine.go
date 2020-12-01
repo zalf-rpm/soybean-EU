@@ -390,6 +390,7 @@ func main() {
 										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = numWetHarvest[simKey]
 										p.setMaxWetHarvest(numWetHarvest[simKey])
 									}
+
 									// cold spell occurence
 									if _, ok := numColdSpell[scenario]; ok {
 										sum := 0
@@ -398,6 +399,7 @@ func main() {
 												sum++
 											}
 										}
+
 										p.coldSpellGrid[scenario][refIDIndex] = sum
 									}
 								}
@@ -1429,7 +1431,9 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.coolWeatherDeathGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.wetHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
-
+			if _, ok := p.coldSpellGrid[simKey.climateSenario]; !ok {
+				p.coldSpellGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			}
 		}
 	}
 	p.mux.Unlock()
