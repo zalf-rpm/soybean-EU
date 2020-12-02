@@ -163,6 +163,7 @@ func main() {
 				simDoyHarvest := make(map[SimKeyTuple][]int)
 				simMatIsHarvest := make(map[SimKeyTuple][]bool)
 				simLastHarvestDate := make(map[SimKeyTuple][]bool)
+				simNoMaturity := make(map[SimKeyTuple][]bool)
 				dateYearOrder := make(map[SimKeyTuple][]int)
 
 				firstLine := true
@@ -194,6 +195,7 @@ func main() {
 								simDoyHarvest[lineKey] = make([]int, 0, 30)
 								simMatIsHarvest[lineKey] = make([]bool, 0, 30)
 								simLastHarvestDate[lineKey] = make([]bool, 0, 30)
+								simNoMaturity[lineKey] = make([]bool, 0, 30)
 								simDoySow[lineKey] = make([]int, 0, 30)
 								dateYearOrder[lineKey] = make([]int, 0, 30)
 							}
@@ -208,6 +210,7 @@ func main() {
 								}
 								return harvestValue
 							}(matureValue, harvestValue))
+							simNoMaturity[lineKey] = append(simNoMaturity[lineKey], !(matureValue > 0))
 							simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 							simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
 							simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() == harvestValue)
@@ -237,6 +240,16 @@ func main() {
 						}
 					}
 					p.lateHarvestGrid[simKey][idxSource][refIDIndex] = sum
+
+					// no maturity
+					sum = 0
+					for _, val := range simNoMaturity[simKey] {
+						if val {
+							sum++
+						}
+					}
+					p.simNoMaturityGrid[simKey][idxSource][refIDIndex] = sum
+
 					p.allYieldGrids[simKey][idxSource][refIDIndex] = int(pixelValue)
 					p.StdDevAvgGrids[simKey][idxSource][refIDIndex] = int(stdDeviation)
 
@@ -258,7 +271,7 @@ func main() {
 						numOccurrenceMedium := make(map[SimKeyTuple]int)
 						numOccurrenceLow := make(map[SimKeyTuple]int)
 						numWetHarvest := make(map[SimKeyTuple]int)
-						numColdSpell := make(map[string]map[int]int)
+						numColdSpell := make(map[string]map[int]float64)
 						var header ClimateHeader
 						precipPrevDays := newDataLastDays(15)
 						scanner := bufio.NewScanner(climatefile)
@@ -280,14 +293,16 @@ func main() {
 								dateYear := date.Year()
 
 								if _, ok := numColdSpell[scenario]; !ok {
-									numColdSpell[scenario] = make(map[int]int, 30)
+									numColdSpell[scenario] = make(map[int]float64, 30)
 								}
 								if _, ok := numColdSpell[scenario][dateYear]; !ok {
-									numColdSpell[scenario][dateYear] = 0
+									numColdSpell[scenario][dateYear] = 50
 								}
 								// date between 1.july - 30. August
-								if tmin < 5 && IsDateInGrowSeason(182, 244, date) {
-									numColdSpell[scenario][dateYear] = 1
+								if IsDateInGrowSeason(182, 244, date) {
+									if tmin < numColdSpell[scenario][dateYear] {
+										numColdSpell[scenario][dateYear] = tmin
+									}
 								}
 
 								for simKey := range dateYearOrder {
@@ -323,18 +338,21 @@ func main() {
 										harvestDOY := simDoyMature[simKey][yearIndex]
 										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY+10, harvestDOY+10, date) {
 											wasWetHarvest := 0
-											for i, x := range precipPrevDays.getData() {
-												if x > 0 {
-													wasWetHarvest++
+											wetDayCounter := 0
+											twoDryDaysInRowDry := false
+											rainData := precipPrevDays.getData()
+											for i, x := range rainData {
+												if i > 4 && x > 0 {
+													wetDayCounter++
 												}
-												if i == 4 {
-													if wasWetHarvest < 4 {
-														wasWetHarvest = 0
-														break
-													}
-													wasWetHarvest = 0
+												if i > 4 && x == 0 && rainData[i-1] == 0 {
+													twoDryDaysInRowDry = true
 												}
 											}
+											if wetDayCounter >= 5 && !twoDryDaysInRowDry {
+												wasWetHarvest++
+											}
+
 											if _, ok := numWetHarvest[simKey]; !ok {
 												numWetHarvest[simKey] = 0
 											}
@@ -348,14 +366,14 @@ func main() {
 						}
 						// cold spell occurence
 						if _, ok := numColdSpell[scenario]; ok {
-							sum := 0
+							tmin := 50.
 							for y := 0; y < 30; y++ {
-								if numColdSpell[scenario][y] > 0 {
-									sum++
+								if numColdSpell[scenario][y] < tmin {
+									tmin++
 								}
 							}
 
-							p.coldSpellGrid[scenario][refIDIndex] = sum
+							p.coldSpellGrid[scenario][refIDIndex] = int(math.Round(tmin))
 						}
 						for simKey := range simulations {
 							if simKey.climateSenario == scenario {
@@ -657,30 +675,30 @@ func main() {
 		1, minColor, outC)
 
 	waitForNum++
-	colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	//colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
-		p.coldSpellGridAll,
+		p.coldSpellGrid,
 		asciiOutCombinedTemplate,
 		"coldSpell",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "max"),
 		"Cold snap in Summer: %v",
 		"",
-		"plasma",
-		colorListColdSpell, nil, nil, 1.0, 0,
+		"jet",
+		nil, nil, nil, 1.0, 0,
 		1, "", outC)
 	waitForNum++
 
 	go drawMaps(gridSourceLookup,
-		p.coldSpellGridAll,
+		p.coldSpellGrid,
 		asciiOutCombinedTemplate,
 		"coldSpell",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"Cold snap in Summer: %v",
 		"",
-		"plasma",
-		colorListColdSpell, nil, nil, 1.0, 0,
+		"jet",
+		nil, nil, nil, 1.0, 0,
 		1, "", outC)
 
 	//colorListShortSeason := []string{"lightgrey", "cyan"}
@@ -755,6 +773,7 @@ type ProcessedData struct {
 	harvestGrid                 map[SimKeyTuple][][]int
 	matIsHavestGrid             map[SimKeyTuple][][]int
 	lateHarvestGrid             map[SimKeyTuple][][]int
+	simNoMaturityGrid           map[SimKeyTuple][][]int
 	climateFilePeriod           map[string]string
 	coolWeatherImpactGrid       map[SimKeyTuple][][]int
 	coolWeatherDeathGrid        map[SimKeyTuple][][]int
@@ -823,6 +842,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.harvestGrid = make(map[SimKeyTuple][][]int)
 	p.matIsHavestGrid = make(map[SimKeyTuple][][]int)
 	p.lateHarvestGrid = make(map[SimKeyTuple][][]int)
+	p.simNoMaturityGrid = make(map[SimKeyTuple][][]int)
 	p.climateFilePeriod = make(map[string]string)
 	p.coolWeatherImpactGrid = make(map[SimKeyTuple][][]int)
 	p.coolWeatherDeathGrid = make(map[SimKeyTuple][][]int)
@@ -1142,6 +1162,19 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			p.shortSeasonGrid[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
 			p.shortSeasonDeviationGrid[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
 		}
+		lowestNoMaturityCount := func(scenarioKey ScenarioKeyTuple, sourceID, ref int) int {
+			lowestCount := 30
+			for matGroup, val := range p.matGroupIDGrids {
+				if val != 0 {
+					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
+					count := p.simNoMaturityGrid[matGroupKey][sourceID][ref]
+					if count < lowestCount {
+						lowestCount = count
+					}
+				}
+			}
+			return lowestCount
+		}
 
 		for sourceID, sourceGrid := range sourcreGrids {
 			for ref := 0; ref < maxRefNo; ref++ {
@@ -1150,7 +1183,9 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
 					p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
 					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
-					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.lateHarvestGrid[matGroupKey][sourceID][ref]
+					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupKey][sourceID][ref]
+				} else {
+					p.shortSeasonGrid[scenarioKey][sourceID][ref] = lowestNoMaturityCount(scenarioKey, sourceID, ref)
 				}
 
 				if p.matGroupDeviationGrids[scenarioKey][sourceID][ref] > 0 {
@@ -1158,8 +1193,11 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
 					p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
 					p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
-					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = p.lateHarvestGrid[matGroupDevKey][sourceID][ref]
+					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupDevKey][sourceID][ref]
+				} else {
+					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = lowestNoMaturityCount(scenarioKey, sourceID, ref)
 				}
+
 			}
 		}
 		for scenarioKey, simValue := range p.maxYieldGrids {
@@ -1331,8 +1369,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = int(math.Round(float64(p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx]) / float64(numSource)))
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = int(math.Round(float64(p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx]) / float64(numSource)))
 
-			p.shortSeasonGridAll[mergedKey][rIdx] = p.shortSeasonGridAll[mergedKey][rIdx] / numSource
-			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource
+			p.shortSeasonGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonGridAll[mergedKey][rIdx] / numSource) >= 6)
+			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) >= 6)
 		}
 	}
 }
