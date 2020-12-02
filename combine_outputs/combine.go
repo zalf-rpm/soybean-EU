@@ -1364,26 +1364,24 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.shortSeasonGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonGridAll[mergedKey][rIdx] / numSource) >= 6)
 			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) >= 6)
 		}
+	}
+	for scenarioKey, simValue := range p.maxYieldGridsAll {
+		// treatment number
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
 
-		for scenarioKey, simValue := range p.maxYieldGridsAll {
-			// treatment number
-			if scenarioKey.treatNo == "T1" {
-				otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
-
-				droughtRiskGrid := gridDroughtRisk(p.maxYieldGridsAll[otherKey], simValue, maxRefNo)
-				p.droughtRiskGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
-			}
+			droughtRiskGrid := gridDroughtRisk(p.maxYieldGridsAll[otherKey], simValue, maxRefNo)
+			p.droughtRiskGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
 		}
-		for scenarioKey, simValue := range p.maxYieldDeviationGridsAll {
-			// treatment number
-			if scenarioKey.treatNo == "T1" {
-				otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+	}
+	for scenarioKey, simValue := range p.maxYieldDeviationGridsAll {
+		// treatment number
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
 
-				droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGridsAll[otherKey], simValue, maxRefNo)
-				p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
-			}
+			droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGridsAll[otherKey], simValue, maxRefNo)
+			p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
 		}
-
 	}
 }
 
