@@ -1479,6 +1479,7 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			if _, ok := p.coldSpellGrid[simKey.climateSenario]; !ok {
 				p.coldSpellGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			}
+			p.simNoMaturityGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
 		}
 	}
 	p.mux.Unlock()
