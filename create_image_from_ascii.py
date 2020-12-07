@@ -251,38 +251,39 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     minValue = ascii_nodata
     minLoaded = False
 
-    with open(meta_path, 'rt') as meta:
-       # documents = yaml.load(meta, Loader=yaml.FullLoader)
-        yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
-        documents = yaml.load(meta)
-        #documents = yaml.full_load(meta)
+    if os.path.isfile(meta_path)  :
+        with open(meta_path, 'rt') as meta:
+        # documents = yaml.load(meta, Loader=yaml.FullLoader)
+            yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
+            documents = yaml.load(meta)
+            #documents = yaml.full_load(meta)
 
-        for item, doc in documents.items():
-            print(item, ":", doc)
-            if item == "title" :
-                title = doc
-            elif item == "labeltext" :
-                label = doc
-            elif item == "factor" :
-                factor = float(doc)
-            elif item == "maxValue" :
-                maxValue = float(doc)
-                maxLoaded = True
-            elif item == "minValue" :
-                minValue = float(doc)
-                minLoaded = True
-            elif item == "colormap" :
-                colormap = doc
-            elif item == "minColor" :
-                minColor = doc
-            elif item == "colorlist" :
-                cMap = doc
-            elif item == "cbarLabel" :
-                cbarLabel = doc
-            elif item == "ticklist" :
-                ticklist = list()
-                for i in doc :
-                    ticklist.append(float(i))
+            for item, doc in documents.items():
+                print(item, ":", doc)
+                if item == "title" :
+                    title = doc
+                elif item == "labeltext" :
+                    label = doc
+                elif item == "factor" :
+                    factor = float(doc)
+                elif item == "maxValue" :
+                    maxValue = float(doc)
+                    maxLoaded = True
+                elif item == "minValue" :
+                    minValue = float(doc)
+                    minLoaded = True
+                elif item == "colormap" :
+                    colormap = doc
+                elif item == "minColor" :
+                    minColor = doc
+                elif item == "colorlist" :
+                    cMap = doc
+                elif item == "cbarLabel" :
+                    cbarLabel = doc
+                elif item == "ticklist" :
+                    ticklist = list()
+                    for i in doc :
+                        ticklist.append(float(i))
 
 
     # Read in the ascii data array

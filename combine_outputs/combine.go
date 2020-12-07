@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -162,6 +163,7 @@ func main() {
 				simDoyHarvest := make(map[SimKeyTuple][]int)
 				simMatIsHarvest := make(map[SimKeyTuple][]bool)
 				simLastHarvestDate := make(map[SimKeyTuple][]bool)
+				simNoMaturity := make(map[SimKeyTuple][]bool)
 				dateYearOrder := make(map[SimKeyTuple][]int)
 
 				firstLine := true
@@ -193,6 +195,7 @@ func main() {
 								simDoyHarvest[lineKey] = make([]int, 0, 30)
 								simMatIsHarvest[lineKey] = make([]bool, 0, 30)
 								simLastHarvestDate[lineKey] = make([]bool, 0, 30)
+								simNoMaturity[lineKey] = make([]bool, 0, 30)
 								simDoySow[lineKey] = make([]int, 0, 30)
 								dateYearOrder[lineKey] = make([]int, 0, 30)
 							}
@@ -207,6 +210,7 @@ func main() {
 								}
 								return harvestValue
 							}(matureValue, harvestValue))
+							simNoMaturity[lineKey] = append(simNoMaturity[lineKey], !(matureValue > 0))
 							simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 							simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
 							simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() == harvestValue)
@@ -236,6 +240,16 @@ func main() {
 						}
 					}
 					p.lateHarvestGrid[simKey][idxSource][refIDIndex] = sum
+
+					// no maturity
+					sum = 0
+					for _, val := range simNoMaturity[simKey] {
+						if val {
+							sum++
+						}
+					}
+					p.simNoMaturityGrid[simKey][idxSource][refIDIndex] = sum
+
 					p.allYieldGrids[simKey][idxSource][refIDIndex] = int(pixelValue)
 					p.StdDevAvgGrids[simKey][idxSource][refIDIndex] = int(stdDeviation)
 
@@ -256,11 +270,10 @@ func main() {
 						numOccurrenceHigh := make(map[SimKeyTuple]int)
 						numOccurrenceMedium := make(map[SimKeyTuple]int)
 						numOccurrenceLow := make(map[SimKeyTuple]int)
-						numWetHarvest := make(map[SimKeyTuple][]int)
-						indexWetHarvest := make(map[SimKeyTuple][]int)
-						numColdSpell := make(map[string]map[int]int)
+						numWetHarvest := make(map[SimKeyTuple]int)
+						numColdSpell := make(map[string]map[int]float64)
 						var header ClimateHeader
-						precipPrevDays := newDataLastDays(5)
+						precipPrevDays := newDataLastDays(15)
 						scanner := bufio.NewScanner(climatefile)
 						for scanner.Scan() {
 							line := scanner.Text()
@@ -280,14 +293,16 @@ func main() {
 								dateYear := date.Year()
 
 								if _, ok := numColdSpell[scenario]; !ok {
-									numColdSpell[scenario] = make(map[int]int, 30)
+									numColdSpell[scenario] = make(map[int]float64, 30)
 								}
 								if _, ok := numColdSpell[scenario][dateYear]; !ok {
-									numColdSpell[scenario][dateYear] = 0
+									numColdSpell[scenario][dateYear] = 50
 								}
 								// date between 1.july - 30. August
-								if tmin < 5 && IsDateInGrowSeason(182, 244, date) {
-									numColdSpell[scenario][dateYear] = 1
+								if IsDateInGrowSeason(182, 244, date) {
+									if tmin < numColdSpell[scenario][dateYear] {
+										numColdSpell[scenario][dateYear] = tmin
+									}
 								}
 
 								for simKey := range dateYearOrder {
@@ -321,28 +336,39 @@ func main() {
 										}
 										// check if this date is harvest
 										if _, ok := numWetHarvest[simKey]; !ok {
-											numWetHarvest[simKey] = make([]int, 30)
-											indexWetHarvest[simKey] = make([]int, 30)
+											numWetHarvest[simKey] = 0
 										}
-										harvestDOY := simDoyHarvest[simKey][yearIndex]
-										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
-											wasWetHarvest := true
-											for _, x := range precipPrevDays.getData() {
-												wasWetHarvest = (x > 0) && wasWetHarvest
+										harvestDOY := simDoyMature[simKey][yearIndex]
+										if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY+10, harvestDOY+10, date) {
+											wetDayCounter := 0
+											twoDryDaysInRowDry := false
+											rainData := precipPrevDays.getData()
+											for i, x := range rainData {
+												if i > 4 && x > 0 {
+													wetDayCounter++
+												}
+												if i > 4 && x == 0 && rainData[i-1] == 0 {
+													twoDryDaysInRowDry = true
+												}
 											}
-											if wasWetHarvest {
-												numWetHarvest[simKey][yearIndex] = 1
-											}
-										}
-										if indexWetHarvest[simKey][yearIndex] < 10 && numWetHarvest[simKey][yearIndex] > 0 {
-											indexWetHarvest[simKey][yearIndex]++
-											if precip > 0 {
-												numWetHarvest[simKey][yearIndex]++
+											if wetDayCounter >= 5 && !twoDryDaysInRowDry {
+												numWetHarvest[simKey]++
 											}
 										}
 									}
 								}
 							}
+						}
+						// cold spell occurence
+						if _, ok := numColdSpell[scenario]; ok {
+							tmin := 50.
+							for y := 0; y < 30; y++ {
+								if numColdSpell[scenario][y] < tmin {
+									tmin++
+								}
+							}
+
+							p.coldSpellGrid[scenario][refIDIndex] = int(math.Round(tmin))
 						}
 						for simKey := range simulations {
 							if simKey.climateSenario == scenario {
@@ -393,24 +419,8 @@ func main() {
 									}
 									// wet harvest occurence
 									if _, ok := numWetHarvest[simKey]; ok {
-										sum := 0
-										for y := 0; y < len(numWetHarvest[simKey]); y++ {
-											if numWetHarvest[simKey][y] >= 10 {
-												sum++
-											}
-										}
-										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = sum
-										p.setMaxWetHarvest(sum)
-									}
-									// cold spell occurence
-									if _, ok := numColdSpell[scenario]; ok {
-										sum := 0
-										for y := 0; y < len(numColdSpell[scenario]); y++ {
-											if numColdSpell[scenario][y] > 0 {
-												sum++
-											}
-										}
-										p.coldSpellGrid[scenario][refIDIndex] = sum
+										p.wetHarvestGrid[simKey][idxSource][refIDIndex] = numWetHarvest[simKey]
+										p.setMaxWetHarvest(numWetHarvest[simKey])
 									}
 								}
 							}
@@ -561,10 +571,10 @@ func main() {
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "max"),
 		"Rain during/before harvest: %v %v",
-		"counted occurrences in 30 years",
+		"",
 		"plasma",
 		nil, nil, nil, 1.0,
-		-1, 2, minColor, outC)
+		0, 1, minColor, outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -574,10 +584,10 @@ func main() {
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Rain during/before harvest: %v %v",
-		"counted occurrences in 30 years",
+		"",
 		"plasma",
 		nil, nil, nil, 1.0,
-		-1, 2, minColor, outC)
+		0, 1, minColor, outC)
 	waitForNum++
 
 	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
@@ -644,7 +654,7 @@ func main() {
 		"",
 		"plasma",
 		colorListDroughtRisk, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		1, "", outC)
 
 	waitForNum++
 	go drawMaps(gridSourceLookup,
@@ -652,52 +662,52 @@ func main() {
 		asciiOutCombinedTemplate,
 		"dev_drought_risk",
 		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
+		filepath.Join(asciiOutFolder, "dev"),
 		"(dev) drought risk: %v",
 		"",
 		"plasma",
 		colorListDroughtRisk, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		1, "", outC)
 
 	waitForNum++
-	colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	//colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
-		p.coldSpellGridAll,
+		p.coldSpellGrid,
 		asciiOutCombinedTemplate,
 		"coldSpell",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "max"),
 		"Cold snap in Summer: %v",
 		"",
-		"plasma",
-		colorListColdSpell, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		"jet",
+		nil, nil, nil, 1.0, -10,
+		20, "", outC)
 	waitForNum++
 
 	go drawMaps(gridSourceLookup,
-		p.coldSpellGridAll,
+		p.coldSpellGrid,
 		asciiOutCombinedTemplate,
 		"coldSpell",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"Cold snap in Summer: %v",
 		"",
-		"plasma",
-		colorListColdSpell, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		"jet",
+		nil, nil, nil, 1.0, -10,
+		20, "", outC)
 
-	colorListShortSeason := []string{"lightgrey", "cyan"}
+	//colorListShortSeason := []string{"lightgrey", "cyan"}
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.shortSeasonGridAll,
 		asciiOutTemplate,
 		"short_season",
 		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
+		filepath.Join(asciiOutFolder, "max"),
 		"Short season: %v %v",
 		"",
 		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
+		nil, nil, nil, 1.0,
 		0, 1, "", outC)
 
 	waitForNum++
@@ -710,7 +720,7 @@ func main() {
 		"(Dev) Short season: %v %v",
 		"",
 		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
+		nil, nil, nil, 1.0,
 		0, 1, "", outC)
 
 	for waitForNum > 0 {
@@ -758,6 +768,7 @@ type ProcessedData struct {
 	harvestGrid                 map[SimKeyTuple][][]int
 	matIsHavestGrid             map[SimKeyTuple][][]int
 	lateHarvestGrid             map[SimKeyTuple][][]int
+	simNoMaturityGrid           map[SimKeyTuple][][]int
 	climateFilePeriod           map[string]string
 	coolWeatherImpactGrid       map[SimKeyTuple][][]int
 	coolWeatherDeathGrid        map[SimKeyTuple][][]int
@@ -790,8 +801,8 @@ type ProcessedData struct {
 
 	signDroughtYieldLossGrids          map[string][][]int
 	signDroughtYieldLossDeviationGrids map[string][][]int
-	droughtRiskGrids                   map[string][][]int
-	droughtRiskDeviationGrids          map[string][][]int
+	// droughtRiskGrids                   map[string][][]int
+	// droughtRiskDeviationGrids          map[string][][]int
 
 	maxYieldGridsAll                      map[ScenarioKeyTuple][]int
 	matGroupGridsAll                      map[ScenarioKeyTuple][]int
@@ -826,6 +837,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.harvestGrid = make(map[SimKeyTuple][][]int)
 	p.matIsHavestGrid = make(map[SimKeyTuple][][]int)
 	p.lateHarvestGrid = make(map[SimKeyTuple][][]int)
+	p.simNoMaturityGrid = make(map[SimKeyTuple][][]int)
 	p.climateFilePeriod = make(map[string]string)
 	p.coolWeatherImpactGrid = make(map[SimKeyTuple][][]int)
 	p.coolWeatherDeathGrid = make(map[SimKeyTuple][][]int)
@@ -863,8 +875,8 @@ func (p *ProcessedData) initProcessedData() {
 	p.potentialWaterStressDeviationGrids = make(map[string][][]int)
 	p.signDroughtYieldLossGrids = make(map[string][][]int)
 	p.signDroughtYieldLossDeviationGrids = make(map[string][][]int)
-	p.droughtRiskGrids = make(map[string][][]int)
-	p.droughtRiskDeviationGrids = make(map[string][][]int)
+	// p.droughtRiskGrids = make(map[string][][]int)
+	// p.droughtRiskDeviationGrids = make(map[string][][]int)
 
 	p.deviationClimateScenarios = make(map[ScenarioKeyTuple][][]int)
 
@@ -947,8 +959,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	p.potentialWaterStressDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 	p.signDroughtYieldLossGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 	p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
-	p.droughtRiskGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
-	p.droughtRiskDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
+	// p.droughtRiskGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
+	// p.droughtRiskDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 
 	p.coldSpellGrid[futureScenarioAvgKey] = newSmallGridLookup(maxRefNo, 0)
 
@@ -960,16 +972,16 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 				p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] + p.potentialWaterStressDeviationGrids[climateScenario][sIdx][rIdx]
 				p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] + p.signDroughtYieldLossGrids[climateScenario][sIdx][rIdx]
 				p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] + p.signDroughtYieldLossDeviationGrids[climateScenario][sIdx][rIdx]
-				p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] + p.droughtRiskGrids[climateScenario][sIdx][rIdx]
-				p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] + p.droughtRiskDeviationGrids[climateScenario][sIdx][rIdx]
+				// p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] + p.droughtRiskGrids[climateScenario][sIdx][rIdx]
+				// p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] + p.droughtRiskDeviationGrids[climateScenario][sIdx][rIdx]
 			}
 
 			p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStress[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
 			p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.potentialWaterStressDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
 			p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
 			p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.signDroughtYieldLossDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
-			p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
-			p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] / numScenKey
+			// p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx] = int(math.Round(float64(p.droughtRiskGrids[futureScenarioAvgKey][sIdx][rIdx]) / float64(numScenKey)))
+			// p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx] = int(math.Round(float64(p.droughtRiskDeviationGrids[futureScenarioAvgKey][sIdx][rIdx]) / float64(numScenKey)))
 		}
 	}
 
@@ -977,7 +989,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 		for climateScenario := range futureScenarios {
 			p.coldSpellGrid[futureScenarioAvgKey][rIdx] = p.coldSpellGrid[futureScenarioAvgKey][rIdx] + p.coldSpellGrid[climateScenario][rIdx]
 		}
-		p.coldSpellGrid[futureScenarioAvgKey][rIdx] = p.coldSpellGrid[futureScenarioAvgKey][rIdx] / len(futureScenarios)
+		p.coldSpellGrid[futureScenarioAvgKey][rIdx] = int(math.Round(float64(p.coldSpellGrid[futureScenarioAvgKey][rIdx]) / float64(len(futureScenarios))))
 	}
 
 	for mergeTreatmentKey, scenariokeys := range futureKeys {
@@ -1145,6 +1157,19 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			p.shortSeasonGrid[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
 			p.shortSeasonDeviationGrid[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
 		}
+		lowestNoMaturityCount := func(scenarioKey ScenarioKeyTuple, sourceID, ref int) int {
+			lowestCount := 30
+			for matGroup, val := range p.matGroupIDGrids {
+				if val != 0 {
+					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
+					count := p.simNoMaturityGrid[matGroupKey][sourceID][ref]
+					if count < lowestCount {
+						lowestCount = count
+					}
+				}
+			}
+			return lowestCount
+		}
 
 		for sourceID, sourceGrid := range sourcreGrids {
 			for ref := 0; ref < maxRefNo; ref++ {
@@ -1153,7 +1178,9 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
 					p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
 					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
-					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.lateHarvestGrid[matGroupKey][sourceID][ref]
+					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupKey][sourceID][ref]
+				} else {
+					p.shortSeasonGrid[scenarioKey][sourceID][ref] = lowestNoMaturityCount(scenarioKey, sourceID, ref)
 				}
 
 				if p.matGroupDeviationGrids[scenarioKey][sourceID][ref] > 0 {
@@ -1161,8 +1188,11 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
 					p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
 					p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
-					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = p.lateHarvestGrid[matGroupDevKey][sourceID][ref]
+					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupDevKey][sourceID][ref]
+				} else {
+					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = lowestNoMaturityCount(scenarioKey, sourceID, ref)
 				}
+
 			}
 		}
 		for scenarioKey, simValue := range p.maxYieldGrids {
@@ -1175,8 +1205,8 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 				signDiffGrid := gridSignDifference(p.maxYieldGrids[otherKey], simValue, maxRefNo)
 				p.signDroughtYieldLossGrids[scenarioKey.climateSenario] = signDiffGrid
 
-				droughtRiskGrid := gridDroughtRisk(p.maxYieldGrids[otherKey], simValue, maxRefNo)
-				p.droughtRiskGrids[scenarioKey.climateSenario] = droughtRiskGrid
+				// droughtRiskGrid := gridDroughtRisk(p.maxYieldGrids[otherKey], simValue, maxRefNo)
+				// p.droughtRiskGrids[scenarioKey.climateSenario] = droughtRiskGrid
 			}
 		}
 		for scenarioKey, simValue := range p.maxYieldDeviationGrids {
@@ -1189,8 +1219,8 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 				signDiffGrid := gridSignDifference(p.maxYieldDeviationGrids[otherKey], simValue, maxRefNo)
 				p.signDroughtYieldLossDeviationGrids[scenarioKey.climateSenario] = signDiffGrid
 
-				droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGrids[otherKey], simValue, maxRefNo)
-				p.droughtRiskDeviationGrids[scenarioKey.climateSenario] = droughtRiskGrid
+				// droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGrids[otherKey], simValue, maxRefNo)
+				// p.droughtRiskDeviationGrids[scenarioKey.climateSenario] = droughtRiskGrid
 			}
 		}
 	}
@@ -1288,8 +1318,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 				p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] + p.signDroughtYieldLossGrids[mergedKey.climateSenario][sIdx][rIdx]
 				p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] + p.signDroughtYieldLossDeviationGrids[mergedKey.climateSenario][sIdx][rIdx]
 
-				p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] + p.droughtRiskGrids[mergedKey.climateSenario][sIdx][rIdx]
-				p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] + p.droughtRiskDeviationGrids[mergedKey.climateSenario][sIdx][rIdx]
+				// p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] + p.droughtRiskGrids[mergedKey.climateSenario][sIdx][rIdx]
+				// p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] + p.droughtRiskDeviationGrids[mergedKey.climateSenario][sIdx][rIdx]
 
 				p.shortSeasonGridAll[mergedKey][rIdx] = p.shortSeasonGridAll[mergedKey][rIdx] + p.shortSeasonGrid[mergedKey][sIdx][rIdx]
 				p.shortSeasonDeviationGridAll[mergedKey][rIdx] = p.shortSeasonDeviationGridAll[mergedKey][rIdx] + p.shortSeasonDeviationGrid[mergedKey][sIdx][rIdx]
@@ -1331,11 +1361,26 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossGridsAll[mergedKey.climateSenario][rIdx] / numSource
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
 
-			p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskGridsAll[mergedKey.climateSenario][rIdx] / numSource
-			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] = p.droughtRiskDeviationGridsAll[mergedKey.climateSenario][rIdx] / numSource
+			p.shortSeasonGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonGridAll[mergedKey][rIdx] / numSource) >= 6)
+			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) >= 6)
+		}
+	}
+	for scenarioKey, simValue := range p.maxYieldGridsAll {
+		// treatment number
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
 
-			p.shortSeasonGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonGridAll[mergedKey][rIdx] / numSource) > 6)
-			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) > 6)
+			droughtRiskGrid := gridDroughtRisk(p.maxYieldGridsAll[otherKey], simValue, maxRefNo)
+			p.droughtRiskGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
+		}
+	}
+	for scenarioKey, simValue := range p.maxYieldDeviationGridsAll {
+		// treatment number
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+
+			droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGridsAll[otherKey], simValue, maxRefNo)
+			p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
 		}
 	}
 }
@@ -1441,7 +1486,10 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.coolWeatherDeathGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.wetHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
-
+			if _, ok := p.coldSpellGrid[simKey.climateSenario]; !ok {
+				p.coldSpellGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			}
+			p.simNoMaturityGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
 		}
 	}
 	p.mux.Unlock()
@@ -1618,28 +1666,26 @@ func gridSignDifference(grid1, grid2 [][]int, maxRef int) [][]int {
 	return newGridDiff
 }
 
-func gridDroughtRisk(gridT2, gridT1 [][]int, maxRef int) [][]int {
-	sourceLen := len(gridT2)
+func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 	// calculate the difference between 2 grids, save it to new grid
-	newGridDiff := newGridLookup(sourceLen, maxRef, NONEVALUE)
-	for sIdx := 0; sIdx < sourceLen; sIdx++ {
-		for ref := 0; ref < maxRef; ref++ {
-			if gridT2[sIdx][ref] != NONEVALUE && gridT1[sIdx][ref] != NONEVALUE {
-				newGridDiff[sIdx][ref] = 0
-				if gridT1[sIdx][ref] < 2000 {
-					gridT1value := 1
-					if gridT1[sIdx][ref] > 1 {
-						gridT1value = gridT1[sIdx][ref]
-					}
-					if gridT2[sIdx][ref] > (gridT1value + gridT1value/2) {
-						newGridDiff[sIdx][ref] = 1
-					}
+	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
+	for ref := 0; ref < maxRef; ref++ {
+		if gridT2[ref] != NONEVALUE && gridT1[ref] != NONEVALUE {
+			newGridDiff[ref] = 0
+			if gridT1[ref] < 2000 {
+				gridT1value := 1
+				if gridT1[ref] > 1 {
+					gridT1value = gridT1[ref]
 				}
-			} else {
-				newGridDiff[sIdx][ref] = NONEVALUE
+				if gridT2[ref] > (gridT1value + gridT1value/2) {
+					newGridDiff[ref] = 1
+				}
 			}
+		} else {
+			newGridDiff[ref] = NONEVALUE
 		}
 	}
+
 	return newGridDiff
 }
 
@@ -1703,7 +1749,18 @@ func (d *dataLastDays) getData() []float64 {
 	if d.currentLen == 0 {
 		return nil
 	}
-	return d.arr[:d.currentLen]
+	// return an array, starting with the oldest entry
+	rArr := make([]float64, d.currentLen)
+	hIndex := d.index
+	for i := 0; i < d.currentLen; i++ {
+		if hIndex < d.currentLen-1 {
+			hIndex++
+		} else {
+			hIndex = 0
+		}
+		rArr[i] = d.arr[hIndex]
+	}
+	return rArr
 }
 
 // SimKeyTuple key to identify each simulatio setup
