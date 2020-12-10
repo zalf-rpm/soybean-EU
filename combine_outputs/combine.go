@@ -515,7 +515,7 @@ func main() {
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
 	waitForNum++
-	drawIrrigationMaps(&gridSourceLookup,
+	go drawIrrigationMaps(&gridSourceLookup,
 		nil,
 		nil,
 		&irrLookup,
@@ -529,7 +529,7 @@ func main() {
 		nil, nil, nil, 0.001, 0,
 		1, minColor, outC)
 	waitForNum++
-	drawIrrigationMaps(&gridSourceLookup,
+	go drawIrrigationMaps(&gridSourceLookup,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
