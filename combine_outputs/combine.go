@@ -92,9 +92,11 @@ func main() {
 	asciiOutFolder := filepath.Join(outputFolder, PATHS[pathID]["ascii-out"])
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
+	irrgigationSource := filepath.Join(projectpath, "stu_eu_layer_grid_irrigation.csv")
 
 	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource)
 	climateRef := GetClimateReference(refSource)
+	irrLookup := getIrrigationGridLookup(irrgigationSource)
 
 	numSourceFolder := len(sourceFolder)
 	outMaxRefNoC := make(chan int)
@@ -513,6 +515,35 @@ func main() {
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
 	waitForNum++
+	drawIrrigationMaps(&gridSourceLookup,
+		nil,
+		nil,
+		&irrLookup,
+		"irrg_%s",
+		"irrigated_areas",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"irrigated areas",
+		"",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		1, minColor, outC)
+	waitForNum++
+	drawIrrigationMaps(&gridSourceLookup,
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&irrLookup,
+		"%s_historical",
+		"dev_max_yield",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev )Max Yield: historical",
+		"Yield in t",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		int(p.maxAllAvgYield), minColor, outC)
+
+	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.maxYieldGridsAll,
 		asciiOutTemplate,
@@ -825,8 +856,9 @@ type ProcessedData struct {
 
 	coldSpellGridAll          map[string][]int
 	deviationClimateScenarios map[ScenarioKeyTuple][][]int
-	outputGridsGenerated      bool
-	mux                       sync.Mutex
+
+	outputGridsGenerated bool
+	mux                  sync.Mutex
 }
 
 func (p *ProcessedData) initProcessedData() {
@@ -1896,6 +1928,53 @@ func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]in
 	return rowExt, colExt, lookupGrid
 }
 
+func getIrrigationGridLookup(gridsource string) map[GridCoord]bool {
+	lookup := make(map[GridCoord]bool)
+
+	sourcefile, err := os.Open(gridsource)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sourcefile.Close()
+	firstLine := true
+	colID := -1
+	rowID := -1
+	irrID := -1
+	scanner := bufio.NewScanner(sourcefile)
+	for scanner.Scan() {
+		line := scanner.Text()
+		tokens := strings.Split(line, ",")
+		if firstLine {
+			firstLine = false
+			// Column,Row,latitude,longitude,irrigation
+			for index, token := range tokens {
+				if token == "Column" {
+					colID = index
+				}
+				if token == "Row" {
+					rowID = index
+				}
+				if token == "irrigation" {
+					irrID = index
+				}
+			}
+		} else {
+			col, _ := strconv.ParseInt(tokens[colID], 10, 64)
+			row, _ := strconv.ParseInt(tokens[rowID], 10, 64)
+			irr, _ := strconv.ParseInt(tokens[irrID], 10, 64)
+			if irr > 0 {
+				lookup[GridCoord{int(row), int(col)}] = true
+			}
+		}
+	}
+	return lookup
+}
+
+func isIrrigated(row, col int, lookup *map[GridCoord]bool) bool {
+	_, ok := (*lookup)[GridCoord{row, col}]
+	return ok
+}
+
 // GetClimateReference ..
 func GetClimateReference(refSource string) map[int]string {
 	lookup := make(map[int]string)
@@ -2006,8 +2085,22 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 		file.Close()
 		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey.climateSenario), simKey.comment)
 		writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
-
 	}
+	outC <- filenameDescPart
+}
+
+func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+
+	//simkey = treatmentNo, climateSenario, maturityGroup, comment
+	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
+	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+	file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+	writeIrrigatedRows(file, extRow, extCol, irrSimVal, noIrrSimVal, gridSourceLookup, irrLookup)
+	file.Close()
+	title := titleFormat
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
 	outC <- filenameDescPart
 }
 
@@ -2116,6 +2209,33 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 }
 
+func writeIrrigatedRows(fout Fout, extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) {
+	for row := 0; row < extRow; row++ {
+
+		for col := 0; col < extCol; col++ {
+			refID := (*gridSourceLookup)[row][col]
+			if refID >= 0 {
+				if _, ok := (*irrLookup)[GridCoord{row, col}]; ok {
+					if irrSimGrid != nil {
+						fout.Write(strconv.Itoa(irrSimGrid[refID-1]))
+					} else {
+						fout.Write("1")
+					}
+				} else {
+					if noIrrSimGrid != nil {
+						fout.Write(strconv.Itoa(noIrrSimGrid[refID-1]))
+					} else {
+						fout.Write("0")
+					}
+				}
+				fout.Write(" ")
+			} else {
+				fout.Write("-9999 ")
+			}
+		}
+		fout.Write("\n")
+	}
+}
 func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup [][]int) {
 	for row := 0; row < extRow; row++ {
 
