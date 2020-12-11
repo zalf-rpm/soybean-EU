@@ -127,3 +127,11 @@ stu_eu_layers.csv
 0_0_0/
 DataToAscii.exe
 acc/
+irrGrids/
+resultsfromcluster/
+backup_ascii/
+debug_mirca/
+stu_eu_layer_climate_soil.zip
+stu_eu_layer_climate.csv
+stu_eu_layer_grid_irrigation.csv
+stu_eu_layer_grid_to_reference_v3.zip
