@@ -470,7 +470,12 @@ func main() {
 	outC := make(chan string)
 
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
-	colorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid"}
+	//colorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid"}
+	matColorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid", "deeppink"}
+	colorList := make([]string, len(p.matGroupIDGrids)+1)
+	for i := 0; i < len(p.matGroupIDGrids)+1; i++ {
+		colorList[i] = matColorList[i]
+	}
 
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
@@ -519,7 +524,7 @@ func main() {
 		nil,
 		nil,
 		&irrLookup,
-		"irrg_%s",
+		"irrg_%s.asc",
 		"irrigated_areas",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
@@ -533,7 +538,7 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
-		"%s_historical",
+		"%s_historical.asc",
 		"dev_max_yield",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),

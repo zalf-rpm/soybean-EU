@@ -710,7 +710,12 @@ func main() {
 		progressBar = progress(numInput, "mat groups grids")
 	}
 	sidebarLabel := make([]string, len(matGroupIDGrids)+1)
-	colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
+	matColorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid", "deeppink"}
+	colorList := make([]string, len(matGroupIDGrids)+1)
+	for i := 0; i < len(matGroupIDGrids)+1; i++ {
+		colorList[i] = matColorList[i]
+	}
+	//colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
 
 	for id := range matGroupIDGrids {
 		sidebarLabel[matGroupIDGrids[id]] = id

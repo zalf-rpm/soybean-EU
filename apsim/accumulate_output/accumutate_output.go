@@ -556,4 +556,5 @@ var matGroupMapping = map[string]string{
 	"Galina":  "soybean/0",
 	"Balkan":  "soybean/I",
 	"Ecudor":  "soybean/II",
+	"MG_3":    "soybean/III",
 }
