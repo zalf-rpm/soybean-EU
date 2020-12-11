@@ -486,40 +486,12 @@ func main() {
 		ticklist[tick] = float64(tick) + 0.5
 	}
 	minColor := "lightgrey"
-	// debug
-	// waitForNum++
-	// go drawScenarioPerModelMaps(gridSourceLookup,
-	// 	p.maxYieldGrids,
-	// 	"%s_%s_%s_trno%s.asc",
-	// 	"max_yield",
-	// 	numSourceFolder,
-	// 	extCol, extRow,
-	// 	asciiOutFolder,
-	// 	"Max Yield: %v %v",
-	// 	"Yield in t",
-	// 	"inferno",
-	// 	nil, nil, 0.001, NONEVALUE,
-	// 	int(p.maxAllAvgYield), outC)
-
-	// waitForNum++
-	// go drawScenarioPerModelMaps(gridSourceLookup,
-	// 	p.matGroupGrids,
-	// 	"%s_%s_%s_trno%s.asc",
-	// 	"matgroups",
-	// 	numSourceFolder,
-	// 	extCol, extRow,
-	// 	asciiOutFolder,
-	// 	"matgroups: %v %v",
-	// 	"average over 30 years",
-	// 	"inferno",
-	// 	sidebarLabel, ticklist, 1.0, NONEVALUE,
-	// 	len(p.matGroupIDGrids), outC)
-
 	// recalulate max values
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
 	waitForNum++
+	colorListIrrigArea := []string{"lightgrey", "maroon"}
 	go drawIrrigationMaps(&gridSourceLookup,
 		nil,
 		nil,
@@ -531,8 +503,9 @@ func main() {
 		"irrigated areas",
 		"",
 		"jet",
-		nil, nil, nil, 0.001, 0,
-		1, minColor, outC)
+		colorListIrrigArea, nil, nil, 1, 0,
+		1, "", outC)
+
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
@@ -543,6 +516,20 @@ func main() {
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev )Max Yield: historical",
+		"Yield in t",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		int(p.maxAllAvgYield), minColor, outC)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_max_yield",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Max Yield: future",
 		"Yield in t",
 		"jet",
 		nil, nil, nil, 0.001, 0,
@@ -758,6 +745,35 @@ func main() {
 		"plasma",
 		nil, nil, nil, 1.0,
 		0, 1, "", outC)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&irrLookup,
+		"%s_historical.asc",
+		"dev_maturity_groups",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Maturity Groups: historical",
+		"maturity groups",
+		"",
+		colorList, sidebarLabel, ticklist, 1, 0,
+		len(sidebarLabel)-1, "", outC)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_maturity_groups",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Maturity Groups: future",
+		"maturity groups",
+		"",
+		colorList, sidebarLabel, ticklist, 1, 0,
+		len(sidebarLabel)-1, "", outC)
 
 	for waitForNum > 0 {
 		select {
