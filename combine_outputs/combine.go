@@ -364,13 +364,17 @@ func main() {
 						// cold spell occurence
 						if _, ok := numColdSpell[scenario]; ok {
 							tmin := 50.
+							numTmin := 0
 							for y := 0; y < 30; y++ {
 								if numColdSpell[scenario][y] < tmin {
-									tmin++
+									tmin = numColdSpell[scenario][y]
+								}
+								if numColdSpell[scenario][y] <= 5.0 {
+									numTmin++
 								}
 							}
-
-							p.coldSpellGrid[scenario][refIDIndex] = int(math.Round(tmin))
+							p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
+							p.coldSpellGrid[scenario][refIDIndex] = numTmin
 						}
 						for simKey := range simulations {
 							if simKey.climateSenario == scenario {
@@ -472,8 +476,8 @@ func main() {
 	sidebarLabel := make([]string, len(p.matGroupIDGrids)+1)
 	//colorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid"}
 	matColorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid", "deeppink"}
-	colorList := make([]string, len(p.matGroupIDGrids)+1)
-	for i := 0; i < len(p.matGroupIDGrids)+1; i++ {
+	colorList := make([]string, len(p.matGroupIDGrids))
+	for i := 0; i < len(p.matGroupIDGrids); i++ {
 		colorList[i] = matColorList[i]
 	}
 
@@ -693,20 +697,8 @@ func main() {
 		1, "", outC)
 
 	waitForNum++
-	//colorListColdSpell := []string{"lightgrey", "blueviolet"}
-	go drawMaps(gridSourceLookup,
-		p.coldSpellGrid,
-		asciiOutCombinedTemplate,
-		"coldSpell",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Cold snap in Summer: %v",
-		"",
-		"jet",
-		nil, nil, nil, 1.0, -10,
-		20, "", outC)
-	waitForNum++
 
+	colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
 		p.coldSpellGrid,
 		asciiOutCombinedTemplate,
@@ -716,8 +708,21 @@ func main() {
 		"Cold snap in Summer: %v",
 		"",
 		"jet",
-		nil, nil, nil, 1.0, -10,
-		20, "", outC)
+		colorListColdSpell, nil, nil, 1.0, 0,
+		30, "", outC)
+	waitForNum++
+
+	go drawMaps(gridSourceLookup,
+		p.coldTempGrid,
+		asciiOutCombinedTemplate,
+		"coldSpell",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Cold snap in Summer: %v",
+		"",
+		"jet",
+		nil, nil, nil, 1.0, -20,
+		50, "", outC)
 
 	//colorListShortSeason := []string{"lightgrey", "cyan"}
 	waitForNum++
@@ -827,6 +832,7 @@ type ProcessedData struct {
 	coolWeatherImpactWeightGrid map[SimKeyTuple][][]int
 	wetHarvestGrid              map[SimKeyTuple][][]int
 	coldSpellGrid               map[string][]int
+	coldTempGrid                map[string][]int
 	sumMaxOccurrence            int
 	sumMaxDeathOccurrence       int
 	maxLateHarvest              int
@@ -875,7 +881,6 @@ type ProcessedData struct {
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
 
-	coldSpellGridAll          map[string][]int
 	deviationClimateScenarios map[ScenarioKeyTuple][][]int
 
 	outputGridsGenerated bool
@@ -897,6 +902,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.coolWeatherImpactWeightGrid = make(map[SimKeyTuple][][]int)
 	p.wetHarvestGrid = make(map[SimKeyTuple][][]int)
 	p.coldSpellGrid = make(map[string][]int)
+	p.coldTempGrid = make(map[string][]int)
 	p.sumMaxOccurrence = 0
 	p.sumMaxDeathOccurrence = 0
 	p.maxLateHarvest = 0
@@ -953,7 +959,6 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.droughtRiskGridsAll = make(map[string][]int)
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
-	p.coldSpellGridAll = make(map[string][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
 }
@@ -1016,6 +1021,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	// p.droughtRiskDeviationGrids[futureScenarioAvgKey] = newGridLookup(numSource, maxRefNo, 0)
 
 	p.coldSpellGrid[futureScenarioAvgKey] = newSmallGridLookup(maxRefNo, 0)
+	p.coldTempGrid[futureScenarioAvgKey] = newSmallGridLookup(maxRefNo, 0)
 
 	numScenKey := len(p.potentialWaterStress)
 	for sIdx := 0; sIdx < numSource; sIdx++ {
@@ -1041,8 +1047,10 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 		for climateScenario := range futureScenarios {
 			p.coldSpellGrid[futureScenarioAvgKey][rIdx] = p.coldSpellGrid[futureScenarioAvgKey][rIdx] + p.coldSpellGrid[climateScenario][rIdx]
+			p.coldTempGrid[futureScenarioAvgKey][rIdx] = p.coldTempGrid[futureScenarioAvgKey][rIdx] + p.coldTempGrid[climateScenario][rIdx]
 		}
 		p.coldSpellGrid[futureScenarioAvgKey][rIdx] = int(math.Round(float64(p.coldSpellGrid[futureScenarioAvgKey][rIdx]) / float64(len(futureScenarios))))
+		p.coldTempGrid[futureScenarioAvgKey][rIdx] = int(math.Round(float64(p.coldTempGrid[futureScenarioAvgKey][rIdx]) / float64(len(futureScenarios))))
 	}
 
 	for mergeTreatmentKey, scenariokeys := range futureKeys {
@@ -1294,9 +1302,6 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 		}
 	}
 
-	p.coldSpellGridAll["0_0"] = p.coldSpellGrid["0_0"]
-	p.coldSpellGridAll["fut_avg"] = p.coldSpellGrid["fut_avg"]
-
 	for _, mergedKey := range mergedKeys {
 
 		if _, ok := p.maxYieldGridsAll[mergedKey]; !ok {
@@ -1541,6 +1546,9 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.wetHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			if _, ok := p.coldSpellGrid[simKey.climateSenario]; !ok {
 				p.coldSpellGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			}
+			if _, ok := p.coldTempGrid[simKey.climateSenario]; !ok {
+				p.coldTempGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			}
 			p.simNoMaturityGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
 		}
