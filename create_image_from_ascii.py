@@ -132,6 +132,7 @@ def build() :
 class Image:
     name: str
     title: str
+    size: (float, float) 
     content: list
 
 @dataclass
@@ -202,19 +203,28 @@ def readSetup(filename, root, files) :
                 indexImg = indexImg + 1 
                 imagename = "none" + str(indexImg)
                 title = ""
+                imgSize = None
+                sizeX = 0
+                sizeY = 0
                 imageContent = list()
                 for entry in item["image"] :
                     if entry == "name"  :
                         imagename = item["image"][entry]
                     if entry == "title"  :
                         title = item["image"][entry]
+                    if entry == "sizeX"  :
+                        sizeX = float(item["image"][entry])
+                    if entry == "sizeY"  :
+                        sizeY = float(item["image"][entry])
                     elif entry == "file" :
                         imageContent.append(readFile(item["image"][entry]))
                     elif entry == "rows" :
                         imageContent = readRows(item["image"][entry])
                     elif entry == "merge" :
                         imageContent.append(readMerge(item["image"][entry]))
-                imageList.append(Image(imagename, title, imageContent))
+                if sizeX > 0 and sizeY > 0 :
+                    imgSize = (sizeX, sizeY)
+                imageList.append(Image(imagename, title, imgSize, imageContent))
     return imageList
 
 
@@ -530,7 +540,7 @@ def createSubPlot(image, out_path, pdf=None) :
     # fig, ax = plt.subplots()
     # ax.set_title(title)
     
-    fig, axs = plt.subplots(nrows=nplotRows, ncols=nplotCols, squeeze=False, sharex=True, sharey=True, figsize=(8,14))
+    fig, axs = plt.subplots(nrows=nplotRows, ncols=nplotCols, squeeze=False, sharex=True, sharey=True, figsize=image.size)
     fig.subplots_adjust(top=0.95, bottom=0.01, left=0.2, right=0.99, wspace=0.05)
     
     if image.title :
