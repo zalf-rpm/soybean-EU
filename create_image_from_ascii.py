@@ -209,7 +209,7 @@ def readSetup(filename, root, files) :
                     if entry == "title"  :
                         title = item["image"][entry]
                     elif entry == "file" :
-                        imageContent.append(File(item["image"][entry]))
+                        imageContent.append(readFile(item["image"][entry]))
                     elif entry == "rows" :
                         imageContent = readRows(item["image"][entry])
                     elif entry == "merge" :
