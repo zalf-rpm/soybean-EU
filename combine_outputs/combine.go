@@ -1125,11 +1125,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 					p.shortSeasonGrid[futureSimKey][sIdx][rIdx] = p.shortSeasonGrid[futureSimKey][sIdx][rIdx] + p.shortSeasonGrid[scenariokey][sIdx][rIdx]
 					p.shortSeasonDeviationGrid[futureSimKey][sIdx][rIdx] = p.shortSeasonDeviationGrid[futureSimKey][sIdx][rIdx] + p.shortSeasonDeviationGrid[scenariokey][sIdx][rIdx]
 				}
-				sort.Ints(matGroupClimDistribution)
-				sort.Ints(matGroupDevClimDistribution)
-				centerIdx := int(float64(numSimKey)/2+0.5) - 1
-				p.matGroupGrids[futureSimKey][sIdx][rIdx] = matGroupClimDistribution[centerIdx]
-				p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = matGroupDevClimDistribution[centerIdx]
+				p.matGroupGrids[futureSimKey][sIdx][rIdx] = getBestGuessMaturityGroup(matGroupClimDistribution)
+				p.matGroupDeviationGrids[futureSimKey][sIdx][rIdx] = getBestGuessMaturityGroup(matGroupDevClimDistribution)
 
 				p.deviationClimateScenarios[futureSimKey][sIdx][rIdx] = int(stat.StdDev(stdDevClimScen, nil))
 				p.maxYieldGrids[futureSimKey][sIdx][rIdx] = p.maxYieldGrids[futureSimKey][sIdx][rIdx] / numSimKey
@@ -1383,11 +1380,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 				p.shortSeasonDeviationGridAll[mergedKey][rIdx] = p.shortSeasonDeviationGridAll[mergedKey][rIdx] + p.shortSeasonDeviationGrid[mergedKey][sIdx][rIdx]
 			}
 
-			sort.Ints(matGroupDistribution)
-			sort.Ints(matGroupDevDistribution)
-			centerIdx := int(float64(numSource)/2+0.5) - 1
-			p.matGroupGridsAll[mergedKey][rIdx] = matGroupDistribution[centerIdx]
-			p.matGroupDeviationGridsAll[mergedKey][rIdx] = matGroupDevDistribution[centerIdx]
+			p.matGroupGridsAll[mergedKey][rIdx] = getBestGuessMaturityGroup(matGroupDistribution)
+			p.matGroupDeviationGridsAll[mergedKey][rIdx] = getBestGuessMaturityGroup(matGroupDevDistribution)
 
 			p.maxYieldGridsAll[mergedKey][rIdx] = p.maxYieldGridsAll[mergedKey][rIdx] / numSource
 			p.maxYieldDeviationGridsAll[mergedKey][rIdx] = p.maxYieldDeviationGridsAll[mergedKey][rIdx] / numSource
@@ -1441,6 +1435,19 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
 		}
 	}
+}
+func getBestGuessMaturityGroup(matGroupDistribution []int) int {
+	sort.Ints(matGroupDistribution)
+	numSource := len(matGroupDistribution)
+	centerIdx := int(float64(numSource)/2+0.5) - 1
+	if matGroupDistribution[centerIdx] == 0 {
+		for i := centerIdx + 1; i < len(matGroupDistribution); i++ {
+			if matGroupDistribution[i] > 0 {
+				return matGroupDistribution[i]
+			}
+		}
+	}
+	return matGroupDistribution[centerIdx]
 }
 
 func boolAsInt(v bool) int {
