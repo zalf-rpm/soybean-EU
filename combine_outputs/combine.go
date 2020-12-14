@@ -273,7 +273,7 @@ func main() {
 						numOccurrenceMedium := make(map[SimKeyTuple]int)
 						numOccurrenceLow := make(map[SimKeyTuple]int)
 						numWetHarvest := make(map[SimKeyTuple]int)
-						numColdSpell := make(map[string]map[int]float64)
+						coldSpell := make(map[int]float64, 30)
 						var header ClimateHeader
 						precipPrevDays := newDataLastDays(15)
 						scanner := bufio.NewScanner(climatefile)
@@ -294,16 +294,13 @@ func main() {
 								precipPrevDays.addDay(precip)
 								dateYear := date.Year()
 
-								if _, ok := numColdSpell[scenario]; !ok {
-									numColdSpell[scenario] = make(map[int]float64, 30)
-								}
-								if _, ok := numColdSpell[scenario][dateYear]; !ok {
-									numColdSpell[scenario][dateYear] = 50
+								if _, ok := coldSpell[dateYear]; !ok {
+									coldSpell[dateYear] = 100.0
 								}
 								// date between 1.july - 30. August
 								if IsDateInGrowSeason(182, 244, date) {
-									if tmin < numColdSpell[scenario][dateYear] {
-										numColdSpell[scenario][dateYear] = tmin
+									if tmin < coldSpell[dateYear] {
+										coldSpell[dateYear] = tmin
 									}
 								}
 
@@ -362,20 +359,19 @@ func main() {
 							}
 						}
 						// cold spell occurence
-						if _, ok := numColdSpell[scenario]; ok {
-							tmin := 50.
-							numTmin := 0
-							for y := 0; y < 30; y++ {
-								if numColdSpell[scenario][y] < tmin {
-									tmin = numColdSpell[scenario][y]
-								}
-								if numColdSpell[scenario][y] <= 5.0 {
-									numTmin++
-								}
+						tmin := 100.0
+						numTmin := 0
+						for _, value := range coldSpell {
+							if value < tmin {
+								tmin = value
 							}
-							p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
-							p.coldSpellGrid[scenario][refIDIndex] = numTmin
+							if value <= 5.0 {
+								numTmin++
+							}
 						}
+						p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
+						p.coldSpellGrid[scenario][refIDIndex] = numTmin
+
 						for simKey := range simulations {
 							if simKey.climateSenario == scenario {
 								if p.allYieldGrids[simKey][idxSource][refIDIndex] > 0 {
