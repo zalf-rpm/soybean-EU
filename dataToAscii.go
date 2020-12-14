@@ -711,8 +711,8 @@ func main() {
 	}
 	sidebarLabel := make([]string, len(matGroupIDGrids)+1)
 	matColorList := []string{"lightgrey", "maroon", "orangered", "gold", "limegreen", "blue", "mediumorchid", "deeppink"}
-	colorList := make([]string, len(matGroupIDGrids)+1)
-	for i := 0; i < len(matGroupIDGrids)+1; i++ {
+	colorList := make([]string, len(matGroupIDGrids))
+	for i := 0; i < len(matGroupIDGrids); i++ {
 		colorList[i] = matColorList[i]
 	}
 	//colorList := []string{"cyan", "blue", "crimson", "magenta", "lightgreen", "gold", "navy"}
