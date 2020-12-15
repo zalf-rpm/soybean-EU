@@ -303,7 +303,7 @@ func main() {
 			}
 			//coolWeatherImpactGrid
 			for scenario := range p.climateFilePeriod {
-				climateRowCol := climateRef[refIDIndex]
+				climateRowCol := climateRef[int(refID64)]
 				climatePath := filepath.Join(climateFolder, p.climateFilePeriod[scenario], scenario, fmt.Sprintf(climateFilePattern, climateRowCol))
 				if _, err := os.Stat(climatePath); err == nil {
 					climatefile, err := os.Open(climatePath)
