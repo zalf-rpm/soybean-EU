@@ -490,6 +490,7 @@ func main() {
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
+
 	waitForNum++
 	colorListIrrigArea := []string{"lightgrey", "maroon"}
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -520,6 +521,7 @@ func main() {
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		int(p.maxAllAvgYield), minColor, outC)
+
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
@@ -574,6 +576,7 @@ func main() {
 		"rainbow",
 		nil, nil, nil, 0.0001, -1,
 		p.sumMaxDeathOccurrence, minColor, outC)
+
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.coolweatherDeathGridsAll,
@@ -586,6 +589,7 @@ func main() {
 		"rainbow",
 		nil, nil, nil, 0.0001, -1,
 		p.sumMaxDeathOccurrence, minColor, outC)
+
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.harvestRainGridsAll,
@@ -611,8 +615,8 @@ func main() {
 		"plasma",
 		nil, nil, nil, 1.0,
 		0, 1, minColor, outC)
-	waitForNum++
 
+	waitForNum++
 	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
 	go drawMaps(gridSourceLookup,
 		p.potentialWaterStressAll,
@@ -625,6 +629,7 @@ func main() {
 		"plasma",
 		nil, nil, nil, 1.0, -1,
 		maxPot, minColor, outC)
+
 	waitForNum++
 	go drawMaps(gridSourceLookup,
 		p.potentialWaterStressDeviationGridsAll,
@@ -666,7 +671,6 @@ func main() {
 
 	waitForNum++
 	colorListDroughtRisk := []string{"lightgrey", "orange"}
-
 	go drawMaps(gridSourceLookup,
 		p.droughtRiskGridsAll,
 		asciiOutCombinedTemplate,
@@ -693,7 +697,6 @@ func main() {
 		1, "", outC)
 
 	waitForNum++
-
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
 		p.coldSpellGrid,
@@ -706,15 +709,15 @@ func main() {
 		"jet",
 		colorListColdSpell, nil, nil, 1.0, 0,
 		30, "", outC)
-	waitForNum++
 
+	waitForNum++
 	go drawMaps(gridSourceLookup,
 		p.coldTempGrid,
 		asciiOutCombinedTemplate,
-		"coldSpell",
+		"coldTemp",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"Cold snap in Summer: %v",
+		"Cold Temperature in Summer: %v",
 		"",
 		"jet",
 		nil, nil, nil, 1.0, -20,
