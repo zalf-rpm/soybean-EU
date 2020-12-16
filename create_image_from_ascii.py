@@ -96,7 +96,7 @@ def build() :
             else :
                 files.sort()
                 for file in files:
-                    if not file.endswith(".meta"):
+                    if file.endswith(".asc") or file.endswith(".asc.gz") :
                         print("file", file)
                         pngfilename = file[:-3]+"png"
                         metafilename = file+".meta"
