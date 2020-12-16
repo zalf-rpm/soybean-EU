@@ -1,946 +1,1170 @@
-  {
+{
 	"soybean": {
 		"0000": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/0000.json"],
-					"StageTemperatureSum":[  
-						[  
-						  100,
-						  50,
-						  300,
-						  220,
-						  280,
-						  740,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/0000.json"
+					],
+					"StageTemperatureSum": [
+						[
+							100,
+							50,
+							300,
+							220,
+							280,
+							740,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -14,
-						  -14,
-						  -14,
-						  -14,
-						  -14,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-14,
+							-14,
+							-14,
+							-14,
+							-14,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -22,
-						  -22,
-						  -22,
-						  -22,
-						  -22,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-22,
+							-22,
+							-22,
+							-22,
+							-22,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":28,
-					  "CropSpecificMaxRootingDepth":0.6,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 28,
+					"CropSpecificMaxRootingDepth": 0.6,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.25,
-						  0.25,
-						  0.5
+						[
+							0,
+							0.25,
+							0.25,
+							0.5
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.79
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.79
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.0018,
-						  0.0016,
-						  0.0016,
-						  0.0016
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.0018,
+							0.0016,
+							0.0016,
+							0.0016
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.03,
-						  0,
-						  0
+						[
+							0,
+							0.03,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0.05,
-						  0
+						[
+							0,
+							0.05,
+							0.05,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0.05,
-						  0
+						[
+							0,
+							0.05,
+							0.05,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		},
 		"000": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/000.json"],
-					"StageTemperatureSum":[  
-						[  
-						  100,
-						  50,
-						  350,
-						  220,
-						  320,
-						  820,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/000.json"
+					],
+					"StageTemperatureSum": [
+						[
+							100,
+							50,
+							350,
+							220,
+							320,
+							820,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -13.7,
-						  -13.7,
-						  -13.7,
-						  -13.7,
-						  -13.7,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-13.7,
+							-13.7,
+							-13.7,
+							-13.7,
+							-13.7,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -21.7,
-						  -21.7,
-						  -21.7,
-						  -21.7,
-						  -21.7,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-21.7,
+							-21.7,
+							-21.7,
+							-21.7,
+							-21.7,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":28,
-					  "CropSpecificMaxRootingDepth":1,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 28,
+					"CropSpecificMaxRootingDepth": 1,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.25,
-						  0.25,
-						  0.5
+						[
+							0,
+							0.25,
+							0.25,
+							0.5
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.79
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.79
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.002,
-						  0.0018,
-						  0.0018,
-						  0.0018
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.002,
+							0.0018,
+							0.0018,
+							0.0018
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0,
-						  0
+						[
+							0,
+							0.05,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		},
 		"00": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/00.json"],
-					"StageTemperatureSum":[  
-						[  
-						  108,
-						  50,
-						  373,
-						  230,
-						  366,
-						  939,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/00.json"
+					],
+					"StageTemperatureSum": [
+						[
+							108,
+							50,
+							373,
+							230,
+							366,
+							939,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -13.4,
-						  -13.4,
-						  -13.4,
-						  -13.4,
-						  -13.4,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-13.4,
+							-13.4,
+							-13.4,
+							-13.4,
+							-13.4,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -20.3,
-						  -20.3,
-						  -20.3,
-						  -20.3,
-						  -20.3,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-20.3,
+							-20.3,
+							-20.3,
+							-20.3,
+							-20.3,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":28.7,
-					  "CropSpecificMaxRootingDepth":1.1,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 28.7,
+					"CropSpecificMaxRootingDepth": 1.1,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.2,
-						  0.22,
-						  0.58
+						[
+							0,
+							0.2,
+							0.22,
+							0.58
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.77
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.77
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.002,
-						  0.0018,
-						  0.0018,
-						  0.0018
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.002,
+							0.0018,
+							0.0018,
+							0.0018
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0,
-						  0
+						[
+							0,
+							0.05,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		},
 		"0": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/0.json"],
-					"StageTemperatureSum":[  
-						[  
-						  117,
-						  50,
-						  396,
-						  240,
-						  412,
-						  1058,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/0.json"
+					],
+					"StageTemperatureSum": [
+						[
+							117,
+							50,
+							396,
+							240,
+							412,
+							1058,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -13.1,
-						  -13.1,
-						  -13.1,
-						  -13.1,
-						  -13.1,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-13.1,
+							-13.1,
+							-13.1,
+							-13.1,
+							-13.1,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -19,
-						  -19,
-						  -19,
-						  -19,
-						  -19,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-19,
+							-19,
+							-19,
+							-19,
+							-19,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":29.3,
-					  "CropSpecificMaxRootingDepth":1.1,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 29.3,
+					"CropSpecificMaxRootingDepth": 1.1,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.15,
-						  0.18,
-						  0.67
+						[
+							0,
+							0.15,
+							0.18,
+							0.67
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.75
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.75
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.002,
-						  0.0018,
-						  0.0018,
-						  0.0018
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.002,
+							0.0018,
+							0.0018,
+							0.0018
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0,
-						  0
+						[
+							0,
+							0.05,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		},
 		"I": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/I.json"],
-					"StageTemperatureSum":[  
-						[  
-						  125,
-						  50,
-						  420,
-						  250,
-						  460,
-						  1180,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/I.json"
+					],
+					"StageTemperatureSum": [
+						[
+							125,
+							50,
+							420,
+							250,
+							460,
+							1180,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -12.8,
-						  -12.8,
-						  -12.8,
-						  -12.8,
-						  -12.8,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-12.8,
+							-12.8,
+							-12.8,
+							-12.8,
+							-12.8,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -17.6,
-						  -17.6,
-						  -17.6,
-						  -17.6,
-						  -17.6,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-17.6,
+							-17.6,
+							-17.6,
+							-17.6,
+							-17.6,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":30,
-					  "CropSpecificMaxRootingDepth":1.2,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 30,
+					"CropSpecificMaxRootingDepth": 1.2,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.1,
-						  0.15,
-						  0.75
+						[
+							0,
+							0.1,
+							0.15,
+							0.75
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.72
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.72
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.002,
-						  0.0018,
-						  0.0018,
-						  0.0018
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.002,
+							0.0018,
+							0.0018,
+							0.0018
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0,
-						  0
+						[
+							0,
+							0.05,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		},
 		"II": {
 			"cropParams": {
-				"species": ["include-from-file", "projects/soybean-EU/soybean.json"],
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
 				"cultivar": {
-					"=": ["include-from-file", "crops/soybean/II.json"],
-					"StageTemperatureSum":[  
-						[  
-						  110,
-						  50,
-						  400,
-						  280,
-						  430,
-						  1170,
-						  25
+					"=": [
+						"include-from-file",
+						"crops/soybean/II.json"
+					],
+					"StageTemperatureSum": [
+						[
+							110,
+							50,
+							400,
+							280,
+							430,
+							1170,
+							25
 						],
 						"°C d"
-					  ],
-					  "DaylengthRequirement":[  
-						[  
-						  0,
-						  -12.5,
-						  -12.5,
-						  -12.5,
-						  -12.5,
-						  -12.5,
-						  0
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-12.5,
+							-12.5,
+							-12.5,
+							-12.5,
+							-12.5,
+							0
 						],
 						"h"
-					  ],
-					  "BaseDaylength":[  
-						[  
-						  0,
-						  -16.2,
-						  -16.2,
-						  -16.2,
-						  -16.2,
-						  -16.2,
-						  0
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-16.2,
+							-16.2,
+							-16.2,
+							-16.2,
+							-16.2,
+							0
 						],
 						"h"
-					  ],
-					  "MaxAssimilationRate":30.7,
-					  "CropSpecificMaxRootingDepth":1.3,
-					  "AssimilatePartitioningCoeff":[  
-						[  
-						  0.59999999999999998,
-						  0.29999999999999999,
-						  0.10000000000000001,
-						  0
+					],
+					"MaxAssimilationRate": 30.7,
+					"CropSpecificMaxRootingDepth": 1.3,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.59999999999999998,
+							0.29999999999999999,
+							0.10000000000000001,
+							0
 						],
-						[  
-						  0.55000000000000004,
-						  0.29999999999999999,
-						  0.14999999999999999,
-						  0
+						[
+							0.55000000000000004,
+							0.29999999999999999,
+							0.14999999999999999,
+							0
 						],
-						[  
-						  0.20000000000000001,
-						  0.20000000000000001,
-						  0.59999999999999998,
-						  0
+						[
+							0.20000000000000001,
+							0.20000000000000001,
+							0.59999999999999998,
+							0
 						],
-						[  
-						  0,
-						  0.37,
-						  0.59999999999999998,
-						  0.029999999999999999
+						[
+							0,
+							0.37,
+							0.59999999999999998,
+							0.029999999999999999
 						],
-						[  
-						  0,
-						  0.1,
-						  0.15,
-						  0.75
+						[
+							0,
+							0.1,
+							0.15,
+							0.75
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  1
+						[
+							0,
+							0,
+							0,
+							1
 						]
-					  ],
-					  "OrganIdsForPrimaryYield":[  
-						{  
-						  "organId":4,
-						  "type":"YieldComponent",
-						  "yieldDryMatter":0.85999999999999999,
-						  "yieldPercentage":0.72
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.85999999999999999,
+							"yieldPercentage": 0.72
 						}
-					  ],
-					  "SpecificLeafArea":[  
-						[  
-						  0.0028,
-						  0.0028,
-						  0.0026,
-						  0.002,
-						  0.0018,
-						  0.0018,
-						  0.0018
+					],
+					"SpecificLeafArea": [
+						[
+							0.0028,
+							0.0028,
+							0.0026,
+							0.002,
+							0.0018,
+							0.0018,
+							0.0018
 						],
 						"ha kg-1"
-					  ],
-					  "OrganSenescenceRate":[  
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0,
-						  0,
-						  0
+						[
+							0,
+							0,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.05,
-						  0,
-						  0
+						[
+							0,
+							0.05,
+							0,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						],
-						[  
-						  0,
-						  0.075,
-						  0.075,
-						  0
+						[
+							0,
+							0.075,
+							0.075,
+							0
 						]
-					  ]
+					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/soybean.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
+		},
+		"III": {
+			"cropParams": {
+				"species": [
+					"include-from-file",
+					"projects/soybean-EU/soybean.json"
+				],
+				"cultivar": {
+					"=": [
+						"include-from-file",
+						"crops/soybean/III.json"
+					],
+					"StageTemperatureSum": [
+						[
+							120,
+							50,
+							420,
+							240,
+							540,
+							840,
+							25
+						],
+						"°C d"
+					],
+					"DaylengthRequirement": [
+						[
+							0,
+							-12.7,
+							-12.7,
+							-12.7,
+							-12.7,
+							-12.7,
+							0
+						],
+						"h"
+					],
+					"BaseDaylength": [
+						[
+							0,
+							-16.2,
+							-16.2,
+							-16.2,
+							-16.2,
+							-16.2,
+							0
+						],
+						"h"
+					],
+					"MaxAssimilationRate": 30,
+					"CropSpecificMaxRootingDepth": 1.4,
+					"AssimilatePartitioningCoeff": [
+						[
+							0.8,
+							0.1,
+							0.1,
+							0
+						],
+						[
+							0.6,
+							0.25,
+							0.15,
+							0
+						],
+						[
+							0.3,
+							0.2,
+							0.5,
+							0
+						],
+						[
+							0,
+							3,
+							0.30,
+							0.25,
+							0.15
+						],
+						[
+							0,
+							0,
+							0,
+							1
+						],
+						[
+							0,
+							0,
+							0,
+							1
+						],
+						[
+							0,
+							0,
+							0,
+							1
+						]
+					],
+					"OrganIdsForPrimaryYield": [
+						{
+							"organId": 4,
+							"type": "YieldComponent",
+							"yieldDryMatter": 0.86,
+							"yieldPercentage": 0.79
+						}
+					],
+					"SpecificLeafArea": [
+						[
+							0.0032,
+							0.0032,
+							0.003,
+							0.0024,
+							0.002,
+							0.002,
+							0.0018
+						],
+						"ha kg-1"
+					],
+					"OrganSenescenceRate": [
+						[
+							0,
+							0,
+							0,
+							0
+						],
+						[
+							0,
+							0,
+							0,
+							0
+						],
+						[
+							0,
+							0,
+							0,
+							0
+						],
+						[
+							0,
+							0,
+							0,
+							0
+						],
+						[
+							0,
+							0.03,
+							0,
+							0
+						],
+						[
+							0,
+							0.05,
+							0.05,
+							0
+						],
+						[
+							0,
+							0.05,
+							0.05,
+							0
+						]
+					]
+				}
+			},
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/soybean.json"
+			]
 		}
 	},
-	
 	"maize": {
 		"SM": {
 			"cropParams": {
 				"species": {
-					"=": ["include-from-file", "projects/sustag/maize.json"],
+					"=": [
+						"include-from-file",
+						"projects/sustag/maize.json"
+					],
 					"MaximumTemperatureForAssimilation": 46
 				},
 				"cultivar": {
-					"=": ["include-from-file", "projects/sustag/silage-maize.json"],
+					"=": [
+						"include-from-file",
+						"projects/sustag/silage-maize.json"
+					],
 					"MaxAssimilationRate": 70,
 					"BeginSensitivePhaseHeatStress": 0,
 					"EndSensitivePhaseHeatStress": 0,
@@ -960,21 +1184,32 @@
 					]
 				}
 			},
-			"residueParams": ["include-from-file", "crop-residues/maize.json"]
+			"residueParams": [
+				"include-from-file",
+				"crop-residues/maize.json"
+			]
 		}
 	},
-
 	"fert-params": {
-		"AN": ["include-from-file", "mineral-fertilisers/AN.json"],
-		"CADLM": ["include-from-file", "organic-fertilisers/CADLM.json"]
-	}, 
-
+		"AN": [
+			"include-from-file",
+			"mineral-fertilisers/AN.json"
+		],
+		"CADLM": [
+			"include-from-file",
+			"organic-fertilisers/CADLM.json"
+		]
+	},
 	"cropRotation": [
 		{
 			"worksteps": [
-				{ 
-					"type": "AutomaticSowing", 
-					"crop": ["ref", "soybean", "my_crop"],
+				{
+					"type": "AutomaticSowing",
+					"crop": [
+						"ref",
+						"soybean",
+						"my_crop"
+					],
 					"earliest-date": "0000-03-15",
 					"latest-date": "0000-05-15",
 					"min-temp": 9.1,
@@ -992,21 +1227,25 @@
 					}
 				},
 				{
-					"max-3d-precip-sum": 999, 
-					"harvest-time": "maturity", 
-					"max-curr-day-precip": 999, 
-					"min-%-asw": -999, 
-					"max-%-asw": 999, 
-					"latest-date": "0000-10-31", 
+					"max-3d-precip-sum": 999,
+					"harvest-time": "maturity",
+					"max-curr-day-precip": 999,
+					"min-%-asw": -999,
+					"max-%-asw": 999,
+					"latest-date": "0000-10-31",
 					"type": "AutomaticHarvest"
 				}
 			]
 		},
 		{
 			"worksteps": [
-				{ 
-					"type": "AutomaticSowing", 
-					"crop": ["ref", "maize", "SM"],
+				{
+					"type": "AutomaticSowing",
+					"crop": [
+						"ref",
+						"maize",
+						"SM"
+					],
 					"earliest-date": "0000-03-15",
 					"latest-date": "0000-05-15",
 					"min-temp": 9.1,
@@ -1024,19 +1263,21 @@
 					}
 				},
 				{
-					"max-3d-precip-sum": 999, 
-					"harvest-time": "maturity", 
-					"max-curr-day-precip": 999, 
-					"min-%-asw": 0, 
-					"max-%-asw": 100, 
-					"latest-date": "0000-10-31", 
+					"max-3d-precip-sum": 999,
+					"harvest-time": "maturity",
+					"max-curr-day-precip": 999,
+					"min-%-asw": 0,
+					"max-%-asw": 100,
+					"latest-date": "0000-10-31",
 					"type": "AutomaticHarvest"
 				}
 			]
 		}
 	],
-
 	"CropParameters": {
-		"DEFAULT": ["include-from-file", "general/crop.json"]
-	}	
+		"DEFAULT": [
+			"include-from-file",
+			"general/crop.json"
+		]
+	}
 }
