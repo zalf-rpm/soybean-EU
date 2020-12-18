@@ -1010,10 +1010,12 @@ func (p *ProcessedData) setMaxWetHarvest(val int) {
 	}
 	p.mux.Unlock()
 }
-
+func isSeperator(r rune) bool {
+	return r == ';' || r == ','
+}
 func readHeader(line string) SimDataIndex {
 	//read header
-	tokens := strings.Split(line, ",")
+	tokens := strings.FieldsFunc(line, isSeperator)
 	indices := SimDataIndex{
 		treatNoIdx:        -1,
 		climateSenarioIdx: -1,
@@ -1062,7 +1064,7 @@ func readHeader(line string) SimDataIndex {
 
 func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
 	// read relevant content from line
-	tokens := strings.Split(line, ",")
+	tokens := strings.FieldsFunc(line, isSeperator)
 	var key SimKeyTuple
 	var content SimData
 	key.treatNo = tokens[header.treatNoIdx]
