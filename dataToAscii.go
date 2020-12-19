@@ -1043,6 +1043,8 @@ func readHeader(line string) SimDataIndex {
 			indices.commentIdx = i
 		case "TrtNo":
 			indices.treatNoIdx = i
+		case "TrNo":
+			indices.treatNoIdx = i
 		case "EmergDOY":
 			indices.emergDOYIdx = i
 		case "SowDOY":
@@ -1467,12 +1469,12 @@ func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup [][]int) {
 	//TODO: this func is bullshit
 	//line := ""
-
+	size := len(simGrid)
 	for row := 0; row < extRow; row++ {
 
 		for col := 0; col < extCol; col++ {
 			refID := gridSourceLookup[row][col]
-			if refID >= 0 {
+			if refID >= 0 && refID < size {
 				fout.Write(strconv.Itoa(simGrid[refID-1]))
 				fout.Write(" ")
 				//line += fmt.Sprintf("%d ", simGrid[refID-1])
