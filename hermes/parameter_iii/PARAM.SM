@@ -1,0 +1,110 @@
+Parameter crop model
+Frucht: Silage maize
+Fruchtnummer/ Abkurzung  .....................................   10 SM 
+AMAX: Max. CO2 Assimilationsrate (kg CO2/ha Blatt/h).....80.98   90
+Typ der Temperaturabhängigkeit (C3 = 1/ C4 = 2) ..............   2
+Minimumtemperatur Pflanzenwachstum (Grad C) ..................   6     
+maximale effektive Wurzeltiefe (dm) .......................8..   9
+Wurzeltiefenfunktion Nr. .....................................   1
+N-Gehaltsfunktion Nr. ........................................   2
+Oberidische Organe (Nummern der Kompartimente aufsteigend) ...   234
+organ no. for yield and fraction of organ.(organ 4 80% =4.80).   0.85  
+Anfangskonzentration N in oberird. Biomasse (% i. Trm.) ......   6.0
+Anfangskonzentration N in Wurzelmasse (% i. Trm.) ............   1.7
+Anzahl Pflanzenkompartimente..................................   4
+Kompartimente.................   Wurzel  Blatt   Spross  Kolben  ASPOO
+Anfangsgewichte kg TM/ha ....... 00012.. 00011.. 00000.. 00000.. 00000
+Maintainanceraten der Organe ... 0.010.. 0.030.. 0.010.. 0.010.. 0.000 
+kc factor for evapotranspiration at end of phase 5 ...........   0.65
+Anzahl Entwicklungsphasen.....................................   7
+-------- Entwicklungsphase 1: Aussaat bis Auflaufen ------------------
+Entwicklungsphase 1 Temperatursumme .....................68...   100
+Basistemperatur 1 .........................................9..   8
+Vernalisationsanspruch (Tage) ................................   0
+Tageslaengenanspruch (Stunden)................................   0
+Basistageslaenge 1(Stunden) ..................................   0 
+Trockenstress ab ETA/ETP-Quotient von ........................   0.7
+kritischer Luftgehalt im Oberboden ...........................   0.08 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0035        
+N-Gehalt Wurzel Ende 1. Phase ................................   0.02                                  
+Partitionierung Wachstumsbeginn  0.600.. 0.400.. 0.000.. 0.000.. 0.000
+Sterberaten Ende 1. Phase ...... 0.000.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 1 ...........   0.65
+-------- Entwicklungsphase 2: Auflaufen bis Schossen -----------------
+Entwicklungsphase 2 Temperatursumme ......................350.   300
+Basistemperatur 2 ............................................   6
+Vernalisationsanspruch 2 (Tage) ..........................34..   0
+Tageslaengenanspruch 2(Stunden) ..............................   0
+Basistageslaenge 2(Stunden) ..................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.6
+kritischer Luftgehalt im Oberboden ...........................   0.06 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0011
+N-Gehalt Wurzel Ende 2. Phase ................................   0.02 
+Partitionierung Ende 2. Phase... 0.400.. 0.300.. 0.300.. 0.000.. 0.000
+Sterberaten Ende 2. Phase ...... 0.000.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 2 ...........   0.95
+-------- Entwicklungsphase 3: Schossen bis Rispenschieben ------------
+Entwicklungsphase 3 Temperatursumme ......................250.   250
+Basistemperatur 3 ............................................   6
+Vernalisationsanspruch 3(Tage) ...............................   0
+Tageslaengenanspruch 3(Stunden) ..............................   0
+Basistageslaenge 3(Stunden) ..................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.6
+kritischer Luftgehalt im Oberboden ...........................   0.02 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0010
+N-Gehalt Wurzel Ende 3. Phase ................................   0.012 
+Partitionierung Ende 3. Phase... 0.100.. 0.200.. 0.700.. 0.000.. 0.000
+Sterberaten Ende 3. Phase ...... 0.000.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 3 ...........   1.2
+-------- Entwicklungsphase 4: Rispenschieben bis Blüte ---------------
+Entwicklungsphase 4 Temperatursumme ..............230...130...   150
+Basistemperatur 4 ............................................   6
+Vernalisationsanspruch 4(Tage) ...............................   0
+Tageslaengenanspruch 4 (Stunden) .............................   0
+Basistageslaenge 4 (Stunden) .................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.8
+kritischer Luftgehalt im Oberboden ...........................   0.02 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0010
+N-Gehalt Wurzel Ende 4. Phase ................................   0.010
+Partitionierung Ende 4. Phase... 0.000.. 0.000.. 0.300.. 0.700.. 0.000
+Sterberaten Ende 4. Phase ...... 0.001.. 0.000.. 0.000.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 4 ...........   1.25
+-------- Entwicklungsphase 5: Blüte-Kornfüllung ----------------------
+Entwicklungsphase 5 Temperatursumme ..................500..250   520
+Basistemperatur 5 ............................................   6
+Vernalisationsanspruch 5(Tage) ...............................   0
+Tageslaengenanspruch 5 (Stunden) .............................   0
+Basistageslaenge 5 (Stunden) .................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.8
+kritischer Luftgehalt im Oberboden ...........................   0.02 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0010
+N-Gehalt Wurzel Ende 5. Phase ................................   0.010
+Verteilung Ende 5. Phase........ 0.000.. 0.000.. 0.000.. 1.000.. 0.000
+Sterberaten Ende 5. Phase ...... 0.100.. 0.001.. 0.001.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 5 ...........   1.25
+-------- Entwicklungsphase 6: Kornfüllung ----------------------------
+Entwicklungsphase 6 Temperatursumme ..................350.400.   560
+Basistemperatur 6 ............................................   6
+Vernalisationsanspruch 6(Tage) ...............................   0
+Tageslaengenanspruch 6 (Stunden) .............................   0
+Basistageslaenge 6 (Stunden) .................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.8
+kritischer Luftgehalt im Oberboden ...........................   0.02 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0010
+N-Gehalt Wurzel Ende 6. Phase ................................   0.010
+Verteilung Ende 6. Phase........ 0.000.. 0.000.. 0.000.. 1.000.. 0.000
+Sterberaten Ende 6. Phase ...... 0.100.. 0.010.. 0.006.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 5 ...........   1.25
+-------- Entwicklungsphase 7: Seneszenz ------------------------------
+Entwicklungsphase 7 Temperatursumme ..........................   25
+Basistemperatur 7 ............................................   9
+Vernalisationsanspruch 7(Tage) ...............................   0
+Tageslaengenanspruch 7 (Stunden) .............................   0
+Basistageslaenge 7 (Stunden) .................................   0
+Trockenstress ab ETA/ETP-Quotient von ........................   0.8
+kritischer Luftgehalt im Oberboden ...........................   0.04 
+Umrechnung Blattgewicht in Blattflaeche (m2/m2/kg TM) ........   0.0010
+N-Gehalt Wurzel Ende 7. Phase ................................   0.010
+Verteilung Ende 7. Phase........ 0.000.. 0.000.. 0.000.. 1.000.. 0.000
+Sterberaten Ende 7. Phase ...... 0.000.. 0.010.. 0.010.. 0.000.. 0.000
+kc factor for evapotranspiration at end of phase 6 ...........   1.0
