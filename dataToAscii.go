@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -591,26 +590,15 @@ func main() {
 	matGroupGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	maxYieldDeviationGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	matGroupDeviationGrids := make(map[ScenarioKeyTuple][]int, numKeys)
-	matGroupIDGrids := make(map[string]int)
-	matIdcounter := 0
-	matGroupIDGrids["none"] = matIdcounter //# maturity group id for 'no yield'
-	matGroupIDSet := make(map[string]bool)
-	// set ids for each maturity group
-	for simKey := range p.allGrids {
-		if _, ok := matGroupIDSet[simKey.mGroup]; !ok {
-			matGroupIDSet[simKey.mGroup] = true
-		}
-	}
-	matList := make([]string, 0, len(matGroupIDSet))
-
-	for key := range matGroupIDSet {
-		matList = append(matList, key)
-	}
-	sort.Strings(matList)
-	for _, val := range matList {
-		matIdcounter++
-		matGroupIDGrids[val] = matIdcounter
-	}
+	matGroupIDGrids := map[string]int{
+		"none":         0,
+		"soybean/III":  1,
+		"soybean/II":   2,
+		"soybean/I":    3,
+		"soybean/0":    4,
+		"soybean/00":   5,
+		"soybean/000":  6,
+		"soybean/0000": 7}
 
 	for simKey, currGrid := range p.allGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
