@@ -303,6 +303,7 @@ var matGroupMapping = map[string]string{
 	"0":     "soybean/0",
 	"i":     "soybean/I",
 	"ii":    "soybean/II",
+	"iii":   "soybean/III",
 	"maize": "maize/silage maize",
 }
 var fistCrop = map[string]string{
