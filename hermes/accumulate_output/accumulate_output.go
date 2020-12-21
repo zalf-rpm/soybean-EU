@@ -31,7 +31,7 @@ func main() {
 	co2 := [...]string{"360", "499", "499", "499", "499", "499"}
 
 	irrigation := [...]string{"Ir", "noIr"}
-	matG := [...]string{"0", "00", "000", "0000", "i", "ii"}
+	matG := [...]string{"0", "00", "000", "0000", "i", "ii", "iii"}
 	cRotation := [...]string{"10001", "10002"}
 
 	folderLookup := make(map[int]string, len(scenarioFolder)*len(irrigation)*len(matG))
