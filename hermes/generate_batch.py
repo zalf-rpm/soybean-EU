@@ -1,7 +1,7 @@
-
-
 #!/usr/bin/python
 # -*- coding: UTF-8
+
+import sys
 
 project="soyeu" 
 WeatherFolder=["0/0_0", "2/GFDL-CM3_45", "2/GISS-E2-R_45","2/HadGEM2-ES_45","2/MIROC5_45","2/MPI-ESM-MR_45"]
@@ -16,15 +16,22 @@ CO2concentration=["360","499","499","499","499","499"]
 batchLine = "project={0} WeatherFolder={1} soilId={2} fcode={3} plotNr={4} Altitude={5} Latitude={6} poligonID={7} AutoIrrigation={8} CO2concentration={9} parameter={10} resultfolder={11}\n"
 
 
-pathOutBatchFile = "./soyeu_all_{0}_batch.txt" 
+pathOutBatchFile = "./soyeu_{0}_{1}_batch.txt" 
 pathoutLookupFile = "./stu_eu_hermes_batch_lookup.csv"
 
 def writeBatchFile() :
     
+    matGroup = "all"
+    if len(sys.argv) > 1 and __name__ == "__main__":
+        for arg in sys.argv[1:]:
+            k, v = arg.split("=")
+            if k == "mat":
+                matGroup = v
+
     outfiles = [""] * len(resultfolder)
     for resultID in range(len(resultfolder)) : 
         resultName = resultfolder[resultID]   
-        outfiles[resultID] = open(pathOutBatchFile.format(resultName), mode="wt", newline="")    
+        outfiles[resultID] = open(pathOutBatchFile.format(matGroup, resultName), mode="wt", newline="")    
 
     with open(pathoutLookupFile) as sourcefile:
         firstLine = True
@@ -48,9 +55,10 @@ def writeBatchFile() :
                 for plotNr in plotNrs :
                     for irri in range(len(AutoIrrigation)) :
                         for mat in maturityGroup :
-                            resultout = resultfolderTemplate.format(resultName,AutoIrrigationFolder[irri],mat)# climateScenario/irrigation/maturityGroup
-                            parameter = paramfolderTmpl.format(mat)
-                            createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, parameter, resultout)
+                            if matGroup == "all" or matGroup == mat : 
+                                resultout = resultfolderTemplate.format(resultName,AutoIrrigationFolder[irri],mat)# climateScenario/irrigation/maturityGroup
+                                parameter = paramfolderTmpl.format(mat)
+                                createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, parameter, resultout)
         
     for resultID in range(len(outfiles)) : 
         outfiles[resultID].close()
