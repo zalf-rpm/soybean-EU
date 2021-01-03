@@ -67,9 +67,8 @@ def build() :
     pngFolder = os.path.join(outputFolder, PATHS[pathId]["png-out"])
     pdfFolder = os.path.join(outputFolder,PATHS[pathId]["pdf-out"])
 
-
+    print(os.getcwd())
     # imageList, mergeList = readSetup(setupfile) 
-    
     for root, dirs, files in os.walk(sourceFolder):
         if len(files) > 0 :
             print("root", root)
@@ -187,9 +186,10 @@ def readSetup(filename, root, files) :
 
     def readMerge(doc) : 
         mergeContent = list()
-        for entry, entrydoc in doc.items() :
-            if entry == "file" :
-                mergeContent.append(readFile(entrydoc))
+        for entry in doc :
+            for f in entry:
+                if f == "file" :
+                    mergeContent.append(readFile(entry["file"]))
         return Merge(mergeContent)
 
     with open(filename, 'rt') as source:
@@ -423,6 +423,7 @@ class Meta:
     minValue: float
     minLoaded: bool
     showbars: bool
+    mintransparent: float
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -438,6 +439,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     minValue = ascii_nodata
     minLoaded = False
     showbars = showCBar
+    mintransparent = 1.0
 
     with open(meta_path, 'rt') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -463,6 +465,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 colormap = doc
             elif item == "minColor" :
                 minColor = doc
+            elif item == "mintransparent" :
+                mintransparent = float(doc)
             elif item == "colorlist" :
                 cMap = doc
             elif item == "cbarLabel" :
@@ -474,7 +478,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     maxValue *= factor
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
-                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, showbars)
+                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, showbars, mintransparent)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -553,9 +557,19 @@ def createSubPlot(image, out_path, pdf=None) :
         #     fig.suptitle(subtitles[idxRow-1])
         for idxCol in range(1,nplotCols+1) :
             ax = axs[idxRow-1][idxCol-1]
-            asciiHeader = asciiHeaderLs[(idxRow,idxCol)]
-            meta = metaLs[(idxRow,idxCol)]
-            if type(asciiHeader) is not list :
+            asciiHeaders = asciiHeaderLs[(idxRow,idxCol)]
+            metas = metaLs[(idxRow,idxCol)]
+            asciiHeadersLs = list()
+            matchMetaLs = list()
+            if type(asciiHeaders) is not list :
+                asciiHeadersLs.append(asciiHeaders)
+                matchMetaLs.append(metas)
+            else :
+                asciiHeadersLs = asciiHeaders
+                matchMetaLs = metas
+            for idxMerg in range(len(asciiHeadersLs)) :
+                asciiHeader = asciiHeadersLs[idxMerg]
+                meta = matchMetaLs[idxMerg]
                 # Read in the ascii data array
                 ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
         
@@ -567,9 +581,12 @@ def createSubPlot(image, out_path, pdf=None) :
 
                 # set min color if given
                 if len(meta.minColor) > 0 and not meta.cMap:
+                    alpha = None
+                    if meta.mintransparent < 1.0:
+                        alpha = meta.mintransparent
                     newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
                     newcolors = newColorMap(np.linspace(0, 1, 256))
-                    rgba = matplotlib.cm.colors.to_rgba(meta.minColor)
+                    rgba = matplotlib.cm.colors.to_rgba(meta.minColor, alpha=alpha)
                     minColorVal = np.array([rgba])
                     newcolors[:1, :] = minColorVal
                     colorM = ListedColormap(newcolors)
