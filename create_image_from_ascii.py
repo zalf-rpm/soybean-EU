@@ -18,6 +18,7 @@ import errno
 import gzip
 from ruamel_yaml import YAML
 from dataclasses import dataclass
+import typing
 
 PATHS = {
     "local": {
@@ -131,7 +132,7 @@ def build() :
 class Image:
     name: str
     title: str
-    size: (float, float) 
+    size: typing.Tuple[float, float]
     content: list
 
 @dataclass

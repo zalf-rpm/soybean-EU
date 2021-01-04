@@ -1651,10 +1651,13 @@ func IsDateInGrowSeason(startDOY, endDOY int, date time.Time) bool {
 	}
 	return false
 }
+func isSeperator(r rune) bool {
+	return r == ';' || r == ','
+}
 
 func readHeader(line string) SimDataIndex {
 	//read header
-	tokens := strings.Split(line, ",")
+	tokens := strings.FieldsFunc(line, isSeperator)
 	indices := SimDataIndex{
 		treatNoIdx:        -1,
 		climateSenarioIdx: -1,
@@ -1671,7 +1674,8 @@ func readHeader(line string) SimDataIndex {
 	}
 
 	for i, token := range tokens {
-		switch token {
+		t := strings.Trim(token, "\"")
+		switch t {
 		case "Crop":
 			indices.mGroupIdx = i
 		case "sce":
@@ -1775,7 +1779,13 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 
 func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
 	// read relevant content from line
-	tokens := strings.Split(line, ",")
+	rawTokens := strings.FieldsFunc(line, isSeperator)
+
+	tokens := make([]string, len(rawTokens))
+	for i, token := range rawTokens {
+		tokens[i] = strings.Trim(token, "\"")
+	}
+
 	var key SimKeyTuple
 	var content SimData
 	key.treatNo = tokens[header.treatNoIdx]

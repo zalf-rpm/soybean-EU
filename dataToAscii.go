@@ -1020,7 +1020,8 @@ func readHeader(line string) SimDataIndex {
 	}
 
 	for i, token := range tokens {
-		switch token {
+		t := strings.Trim(token, "\"")
+		switch t {
 		case "Crop":
 			indices.mGroupIdx = i
 		case "sce":
@@ -1054,7 +1055,13 @@ func readHeader(line string) SimDataIndex {
 
 func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
 	// read relevant content from line
-	tokens := strings.FieldsFunc(line, isSeperator)
+	rawTokens := strings.FieldsFunc(line, isSeperator)
+
+	tokens := make([]string, len(rawTokens))
+	for i, token := range rawTokens {
+		tokens[i] = strings.Trim(token, "\"")
+	}
+
 	var key SimKeyTuple
 	var content SimData
 	key.treatNo = tokens[header.treatNoIdx]
