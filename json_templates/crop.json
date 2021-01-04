@@ -1031,8 +1031,8 @@
 						],
 						"h"
 					],
-					"MaxAssimilationRate": 30,
-					"CropSpecificMaxRootingDepth": 1.4,
+					"MaxAssimilationRate": 26,
+					"CropSpecificMaxRootingDepth": 0.8,
 					"AssimilatePartitioningCoeff": [
 						[
 							0.8,
