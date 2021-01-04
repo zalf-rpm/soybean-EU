@@ -16,22 +16,44 @@ CO2concentration=["360","499","499","499","499","499"]
 batchLine = "project={0} WeatherFolder={1} soilId={2} fcode={3} plotNr={4} Altitude={5} Latitude={6} poligonID={7} AutoIrrigation={8} CO2concentration={9} parameter={10} resultfolder={11}\n"
 
 
-pathOutBatchFile = "./soyeu_{0}_{1}_batch.txt" 
+gridFile = "../stu_eu_layer_grid.csv"
+pathOutBatchFile = "./soyeu_{0}_{1}_{2}_batch.txt" 
 pathoutLookupFile = "./stu_eu_hermes_batch_lookup.csv"
+
 
 def writeBatchFile() :
     
     matGroup = "all"
+    region = ""
+    lat_up = 45.720844
+    lon_up = 7.017513
+    lat_down = 44.299458
+    lon_down = 12.268346
+
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
             k, v = arg.split("=")
             if k == "mat":
                 matGroup = v
+            if k == "region":
+                region = v
+            if k == "lat_up":
+                lat_up = float(v)
+            if k == "lon_up":
+                lon_up = float(v)
+            if k == "lat_down":
+                lat_down = float(v)
+            if k == "lon_down":
+                lon_down = float(v)
+
+    outSet = set()
+    if len(region) > 0 :
+        outSet = findAllSoilRef(gridFile, (lat_up, lon_up), (lat_down, lon_down)) 
 
     outfiles = [""] * len(resultfolder)
     for resultID in range(len(resultfolder)) : 
         resultName = resultfolder[resultID]   
-        outfiles[resultID] = open(pathOutBatchFile.format(matGroup, resultName), mode="wt", newline="")    
+        outfiles[resultID] = open(pathOutBatchFile.format(matGroup, resultName, region), mode="wt", newline="")    
 
     with open(pathoutLookupFile) as sourcefile:
         firstLine = True
@@ -58,7 +80,8 @@ def writeBatchFile() :
                             if matGroup == "all" or matGroup == mat : 
                                 resultout = resultfolderTemplate.format(resultName,AutoIrrigationFolder[irri],mat)# climateScenario/irrigation/maturityGroup
                                 parameter = paramfolderTmpl.format(mat)
-                                createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, parameter, resultout)
+                                if len(outSet) == 0 or soil_ref in outSet :
+                                    createLine(outfiles[resultID], project, wfolder, sid, fcode, plotNr, altitude, Lat, soil_ref, AutoIrrigation[irri], co2, parameter, resultout)
         
     for resultID in range(len(outfiles)) : 
         outfiles[resultID].close()
@@ -88,6 +111,29 @@ def ReadSoilHeader(line) :
         i = i+1
         colDic[token] = i
     return colDic
+
+
+def findAllSoilRef(gridFile, lat_lon_up, lat_lon_down) :
+    outSet = set()
+    with open(gridFile) as sourcefile:
+        #Column_,Row,Grid_Code,Location,elevation,latitude,longitude,soil_ref
+        firstLine = True
+        header = dict()
+        for line in sourcefile:
+            if firstLine :
+                firstLine = False
+                header = ReadSoilHeader(line)
+                continue
+
+            out = loadSoilLine(line)
+            latitude = float(out[header["latitude"]])
+            longitude = float(out[header["longitude"]])
+            soil_ref = out[header["soil_ref"]]
+
+            if latitude <= lat_lon_up[0] and latitude >= lat_lon_down[0] and longitude >= lat_lon_up[1] and longitude <= lat_lon_down[1] :
+                outSet.add(soil_ref)
+    return outSet
+
 
 if __name__ == "__main__":
     writeBatchFile()
