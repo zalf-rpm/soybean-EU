@@ -345,6 +345,7 @@ func main() {
 		nil, nil, nil, 1.0,
 		0, 1, minColor, outC)
 
+	colorListRainRisk := []string{"lightgrey", "green"}
 	waitForNum++
 	go drawMaps(gridSourceLookup,
 		p.harvestRainDeviationGridsSumAll,
@@ -355,8 +356,8 @@ func main() {
 		"(Dev) Rain during/before harvest: %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		colorListRainRisk, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	waitForNum++
 	go drawMaps(gridSourceLookup,
@@ -368,8 +369,8 @@ func main() {
 		"Rain during/before harvest: %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0, 0,
-		1, minColor, outC)
+		colorListRainRisk, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	// waitForNum++
 	// maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
@@ -478,7 +479,7 @@ func main() {
 	// 	nil, nil, nil, 1.0, -20,
 	// 	50, "", outC)
 
-	//colorListShortSeason := []string{"lightgrey", "cyan"}
+	colorListShortSeason := []string{"lightgrey", "cyan"}
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
 		p.shortSeasonGridAll,
@@ -489,7 +490,7 @@ func main() {
 		"Short season: %v %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0,
+		colorListShortSeason, nil, nil, 1.0,
 		0, 1, "", outC)
 
 	waitForNum++
@@ -502,7 +503,7 @@ func main() {
 		"(Dev) Short season: %v %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0,
+		colorListShortSeason, nil, nil, 1.0,
 		0, 1, "", outC)
 
 	waitForNum++
@@ -528,7 +529,7 @@ func main() {
 		"Short season: %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0, 0,
+		colorListShortSeason, nil, nil, 1.0, 0,
 		1, "", outC)
 
 	waitForNum++
@@ -700,12 +701,13 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.matGroupIDGrids = map[string]int{
 		"none":         0,
-		"soybean/II":   1,
-		"soybean/I":    2,
-		"soybean/0":    3,
-		"soybean/00":   4,
-		"soybean/000":  5,
-		"soybean/0000": 6}
+		"soybean/III":  1,
+		"soybean/II":   2,
+		"soybean/I":    3,
+		"soybean/0":    4,
+		"soybean/00":   5,
+		"soybean/000":  6,
+		"soybean/0000": 7}
 	p.maxYieldGrids = make(map[ScenarioKeyTuple][][]int)
 	p.matGroupGrids = make(map[ScenarioKeyTuple][][]int)
 	p.maxYieldDeviationGrids = make(map[ScenarioKeyTuple][][]int)
@@ -1005,8 +1007,9 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 					numTmin++
 				}
 			}
+
 			p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
-			p.coldSpellGrid[scenario][refIDIndex] = numTmin
+			p.coldSpellGrid[scenario][refIDIndex] = boolAsInt(numTmin >= 6)
 
 			for simKey := range simulations {
 				if simKey.climateSenario == scenario {
@@ -1315,6 +1318,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
 					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupKey][sourceID][ref]
 				} else {
+					// include regions that have no yield listed
 					p.shortSeasonGrid[scenarioKey][sourceID][ref] = lowestNoMaturityCount(scenarioKey, sourceID, ref)
 				}
 
