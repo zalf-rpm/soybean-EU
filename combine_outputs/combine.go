@@ -207,21 +207,21 @@ func main() {
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
 
-	waitForNum++
-	colorListIrrigArea := []string{"lightgrey", "maroon"}
-	go drawIrrigationMaps(&gridSourceLookup,
-		nil,
-		nil,
-		&irrLookup,
-		"irrg_%s.asc",
-		"irrigated_areas",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"irrigated areas",
-		"",
-		"jet",
-		colorListIrrigArea, nil, nil, 1, 0,
-		1, "", outC)
+	// waitForNum++
+	// colorListIrrigArea := []string{"lightgrey", "maroon"}
+	// go drawIrrigationMaps(&gridSourceLookup,
+	// 	nil,
+	// 	nil,
+	// 	&irrLookup,
+	// 	"irrg_%s.asc",
+	// 	"irrigated_areas",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"irrigated areas",
+	// 	"",
+	// 	"jet",
+	// 	colorListIrrigArea, nil, nil, 1, 0,
+	// 	1, "", outC)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -280,44 +280,44 @@ func main() {
 		nil, nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), minColor, outC)
 
-	waitForNum++
-	go drawScenarioPerModelMaps(gridSourceLookup,
-		p.maxYieldDeviationGrids,
-		asciiOutTemplateDebug,
-		"debug_dev_max_yield",
-		numSourceFolder, extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev )Max Yield: %v %v",
-		"Yield in t",
-		"jet",
-		nil, nil, nil, 0.001, NONEVALUE,
-		int(p.maxAllAvgYield), minColor, outC)
+	// waitForNum++
+	// go drawScenarioPerModelMaps(gridSourceLookup,
+	// 	p.maxYieldDeviationGrids,
+	// 	asciiOutTemplateDebug,
+	// 	"debug_dev_max_yield",
+	// 	numSourceFolder, extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev )Max Yield: %v %v",
+	// 	"Yield in t",
+	// 	"jet",
+	// 	nil, nil, nil, 0.001, NONEVALUE,
+	// 	int(p.maxAllAvgYield), minColor, outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.coolweatherDeathDeviationGridsAll,
-		asciiOutTemplate,
-		"dev_cool_weather_severity",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Cool weather severity: %v %v",
-		"counted occurrences with severity factor",
-		"rainbow",
-		nil, nil, nil, 0.0001, -1,
-		p.sumMaxDeathOccurrence, minColor, outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.coolweatherDeathDeviationGridsAll,
+	// 	asciiOutTemplate,
+	// 	"dev_cool_weather_severity",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) Cool weather severity: %v %v",
+	// 	"counted occurrences with severity factor",
+	// 	"rainbow",
+	// 	nil, nil, nil, 0.0001, -1,
+	// 	p.sumMaxDeathOccurrence, minColor, outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.coolweatherDeathGridsAll,
-		asciiOutTemplate,
-		"cool_weather_severity",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Cool weather severity: %v %v",
-		"counted occurrences with severity factor",
-		"rainbow",
-		nil, nil, nil, 0.0001, -1,
-		p.sumMaxDeathOccurrence, minColor, outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.coolweatherDeathGridsAll,
+	// 	asciiOutTemplate,
+	// 	"cool_weather_severity",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Cool weather severity: %v %v",
+	// 	"counted occurrences with severity factor",
+	// 	"rainbow",
+	// 	nil, nil, nil, 0.0001, -1,
+	// 	p.sumMaxDeathOccurrence, minColor, outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -346,57 +346,83 @@ func main() {
 		0, 1, minColor, outC)
 
 	waitForNum++
-	maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
 	go drawMaps(gridSourceLookup,
-		p.potentialWaterStressAll,
+		p.harvestRainDeviationGridsSumAll,
 		asciiOutCombinedTemplate,
-		"drought_stress",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"drought stress effect: %v",
-		"average yield loss to drought",
-		"plasma",
-		nil, nil, nil, 1.0, -1,
-		maxPot, minColor, outC)
-
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.potentialWaterStressDeviationGridsAll,
-		asciiOutCombinedTemplate,
-		"dev_drought_stress",
+		"dev_harvest_rain",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) drought stress effect: %v",
-		"average yield loss to drought",
+		"(Dev) Rain during/before harvest: %v",
+		"",
 		"plasma",
-		nil, nil, nil, 1.0, -1,
-		maxPot, minColor, outC)
+		nil, nil, nil, 1.0, 0,
+		1, minColor, outC)
 
 	waitForNum++
 	go drawMaps(gridSourceLookup,
-		p.signDroughtYieldLossDeviationGridsAll,
+		p.harvestRainGridsSumAll,
 		asciiOutCombinedTemplate,
-		"dev_yield_loss_drought",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) yield loss drought: %v",
-		"potential loss steps",
-		"plasma",
-		nil, nil, nil, 1.0,
-		-1, 2, minColor, outC)
-
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.signDroughtYieldLossGridsAll,
-		asciiOutCombinedTemplate,
-		"yield_loss_drought",
+		"harvest_rain",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "max"),
-		"yield loss drought: %v",
-		"potential loss steps",
+		"Rain during/before harvest: %v",
+		"",
 		"plasma",
-		nil, nil, nil, 1.0, -1,
-		2, minColor, outC)
+		nil, nil, nil, 1.0, 0,
+		1, minColor, outC)
+
+	// waitForNum++
+	// maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
+	// go drawMaps(gridSourceLookup,
+	// 	p.potentialWaterStressAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"drought_stress",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"drought stress effect: %v",
+	// 	"average yield loss to drought",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0, -1,
+	// 	maxPot, minColor, outC)
+
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.potentialWaterStressDeviationGridsAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"dev_drought_stress",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) drought stress effect: %v",
+	// 	"average yield loss to drought",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0, -1,
+	// 	maxPot, minColor, outC)
+
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.signDroughtYieldLossDeviationGridsAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"dev_yield_loss_drought",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) yield loss drought: %v",
+	// 	"potential loss steps",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0,
+	// 	-1, 2, minColor, outC)
+
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.signDroughtYieldLossGridsAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"yield_loss_drought",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"yield loss drought: %v",
+	// 	"potential loss steps",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0, -1,
+	// 	2, minColor, outC)
 
 	waitForNum++
 	colorListDroughtRisk := []string{"lightgrey", "orange"}
@@ -437,20 +463,20 @@ func main() {
 		"",
 		"jet",
 		colorListColdSpell, nil, nil, 1.0, 0,
-		30, "", outC)
+		1, "", outC)
 
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.coldTempGrid,
-		asciiOutCombinedTemplate,
-		"coldTemp",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Cold Temperature in Summer: %v",
-		"",
-		"jet",
-		nil, nil, nil, 1.0, -20,
-		50, "", outC)
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.coldTempGrid,
+	// 	asciiOutCombinedTemplate,
+	// 	"coldTemp",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"Cold Temperature in Summer: %v",
+	// 	"",
+	// 	"jet",
+	// 	nil, nil, nil, 1.0, -20,
+	// 	50, "", outC)
 
 	//colorListShortSeason := []string{"lightgrey", "cyan"}
 	waitForNum++
@@ -480,6 +506,32 @@ func main() {
 		0, 1, "", outC)
 
 	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.shortSeasonDeviationGridSumAll,
+		asciiOutCombinedTemplate,
+		"dev_short_season",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Short season: %v",
+		"",
+		"plasma",
+		nil, nil, nil, 1.0, 0,
+		1, "", outC)
+
+	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.shortSeasonGridSumAll,
+		asciiOutCombinedTemplate,
+		"short_season",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "max"),
+		"Short season: %v",
+		"",
+		"plasma",
+		nil, nil, nil, 1.0, 0,
+		1, "", outC)
+
+	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
@@ -493,6 +545,7 @@ func main() {
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
+
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
@@ -608,6 +661,10 @@ type ProcessedData struct {
 	signDroughtYieldLossDeviationGridsAll map[string][]int
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
+	harvestRainGridsSumAll                map[string][]int
+	harvestRainDeviationGridsSumAll       map[string][]int
+	shortSeasonGridSumAll                 map[string][]int
+	shortSeasonDeviationGridSumAll        map[string][]int
 
 	deviationClimateScenarios map[ScenarioKeyTuple][][]int
 
@@ -689,6 +746,10 @@ func (p *ProcessedData) initProcessedData() {
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
+	p.shortSeasonGridSumAll = make(map[string][]int)
+	p.shortSeasonDeviationGridSumAll = make(map[string][]int)
+	p.harvestRainDeviationGridsSumAll = make(map[string][]int)
+	p.harvestRainGridsSumAll = make(map[string][]int)
 }
 
 func findMaxValueInScenarioList(lists ...map[ScenarioKeyTuple][]int) int {
@@ -1332,8 +1393,12 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.harvestRainDeviationGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.harvestRainGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
+			p.shortSeasonGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.shortSeasonDeviationGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 		}
 		matGroupDistribution := make([]int, numSource)
 		matGroupDevDistribution := make([]int, numSource)
@@ -1433,6 +1498,36 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.shortSeasonDeviationGridAll[mergedKey][rIdx] = boolAsInt((p.shortSeasonDeviationGridAll[mergedKey][rIdx] / numSource) >= 6)
 		}
 	}
+	for scenarioKey, simValue := range p.harvestRainDeviationGridsAll {
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+			sumGrid := gridMaxVal(p.harvestRainDeviationGridsAll[otherKey], simValue, maxRefNo)
+			p.harvestRainDeviationGridsSumAll[scenarioKey.climateSenario] = sumGrid
+		}
+	}
+	for scenarioKey, simValue := range p.harvestRainGridsAll {
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+			sumGrid := gridMaxVal(p.harvestRainGridsAll[otherKey], simValue, maxRefNo)
+			p.harvestRainGridsSumAll[scenarioKey.climateSenario] = sumGrid
+		}
+	}
+
+	for scenarioKey, simValue := range p.shortSeasonGridAll {
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+			sumGrid := gridMinVal(p.shortSeasonGridAll[otherKey], simValue, maxRefNo)
+			p.shortSeasonGridSumAll[scenarioKey.climateSenario] = sumGrid
+		}
+	}
+	for scenarioKey, simValue := range p.shortSeasonDeviationGridAll {
+		if scenarioKey.treatNo == "T1" {
+			otherKey := ScenarioKeyTuple{"T2", scenarioKey.climateSenario, "Unlimited water"}
+			sumGrid := gridMinVal(p.shortSeasonDeviationGridAll[otherKey], simValue, maxRefNo)
+			p.shortSeasonDeviationGridSumAll[scenarioKey.climateSenario] = sumGrid
+		}
+	}
+
 	for scenarioKey, simValue := range p.maxYieldGridsAll {
 		// treatment number
 		if scenarioKey.treatNo == "T1" {
@@ -1775,6 +1870,41 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 	}
 
 	return newGridDiff
+}
+func gridMaxVal(gridT2, gridT1 []int, maxRef int) []int {
+	// calculate the difference between 2 grids, save it to new grid
+	newMaxGrid := newSmallGridLookup(maxRef, NONEVALUE)
+	for ref := 0; ref < maxRef; ref++ {
+		if gridT2[ref] != NONEVALUE && gridT1[ref] != NONEVALUE {
+			if gridT1[ref] > gridT2[ref] {
+				newMaxGrid[ref] = gridT1[ref]
+			} else {
+				newMaxGrid[ref] = gridT2[ref]
+			}
+		} else {
+			newMaxGrid[ref] = NONEVALUE
+		}
+	}
+
+	return newMaxGrid
+}
+
+func gridMinVal(gridT2, gridT1 []int, maxRef int) []int {
+	// calculate the difference between 2 grids, save it to new grid
+	gridMinVal := newSmallGridLookup(maxRef, NONEVALUE)
+	for ref := 0; ref < maxRef; ref++ {
+		if gridT2[ref] != NONEVALUE && gridT1[ref] != NONEVALUE {
+			if gridT1[ref] < gridT2[ref] {
+				gridMinVal[ref] = gridT1[ref]
+			} else {
+				gridMinVal[ref] = gridT2[ref]
+			}
+		} else {
+			gridMinVal[ref] = NONEVALUE
+		}
+	}
+
+	return gridMinVal
 }
 
 func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
