@@ -196,8 +196,7 @@ func main() {
 	for id := range p.matGroupIDGrids {
 		sidebarLabel[p.matGroupIDGrids[id]] = id
 	}
-	ticklist := []float64{0, 3, 7, 11}
-	ticklist = make([]float64, len(sidebarLabel))
+	ticklist := make([]float64, len(sidebarLabel))
 	for tick := 0; tick < len(ticklist); tick++ {
 		ticklist[tick] = float64(tick) + 0.5
 	}
@@ -561,6 +560,79 @@ func main() {
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
+
+	sidebarRiskLabel := []string{
+		"none",
+		"ss",
+		"cs",
+		"ss + sc",
+		"dr",
+		"dr + ss",
+		"dr + ss + cs",
+		"hr",
+		"hr + ss",
+		"hr + sc",
+		"hr + ss + cs",
+		"hr + dr",
+		"hr + ss + dr",
+		"hr + cs + dr",
+		"hr + ss + cs + dr",
+	}
+
+	riskColorList := []string{"lightgrey", //default
+		"cyan",           // shortSeason
+		"blueviolet",     // coldspell
+		"blue",           // shortSeason + coldspell
+		"orange",         // drought risk
+		"violet",         // drought risk + shortSeason
+		"deeopink",       // drought risk + shortSeason + coldspell
+		"forestgreen",    // harvest rain
+		"lightseagreen",  // harvest rain + shortSeason
+		"darkgreen",      // harvest rain + coldspell
+		"seagreen",       // harvest rain + shortSeason + coldspell
+		"olive",          // harvest rain + drought risk
+		"olivedrab",      // harvest rain + shortSeason + drought risk
+		"darkolivegreen", // harvest rain + coldspell + drought risk
+		"darkslategray",  // harvest rain + shortSeason + coldspell + drought risk
+	}
+
+	ristTicklist := make([]float64, len(sidebarRiskLabel))
+	for tick := 0; tick < len(ristTicklist); tick++ {
+		ristTicklist[tick] = float64(tick) + 0.5
+	}
+
+	waitForNum++
+	go drawMergedMaps(gridSourceLookup,
+		"%s_future.asc",
+		"dev_allRisks",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) All Risks: future",
+		"risk groups",
+		"",
+		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
+		15, "", outC,
+		p.shortSeasonDeviationGridSumAll["fut_avg"],
+		p.coldSpellGrid["fut_avg"],
+		p.droughtRiskDeviationGridsAll["fut_avg"],
+		p.harvestRainDeviationGridsSumAll["fut_avg"],
+	)
+	waitForNum++
+	go drawMergedMaps(gridSourceLookup,
+		"%s_historical.asc",
+		"dev_allRisks",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) All Risks: historical",
+		"risk groups",
+		"",
+		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
+		15, "", outC,
+		p.shortSeasonDeviationGridSumAll["0_0"],
+		p.coldSpellGrid["0_0"],
+		p.droughtRiskDeviationGridsAll["0_0"],
+		p.harvestRainDeviationGridsSumAll["0_0"],
+	)
 
 	for waitForNum > 0 {
 		select {
@@ -2300,6 +2372,28 @@ func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int,
 	outC <- filenameDescPart
 }
 
+func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
+
+	simValuesLen := len(simValues)
+	numRefs := len(simValues[0])
+	merged := make([]int, numRefs)
+	for ref := 0; ref < numRefs; ref++ {
+		for idSim := 0; idSim < simValuesLen; idSim++ {
+			merged[ref] = (simValues[idSim][ref] << idSim) + merged[ref]
+		}
+	}
+
+	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
+	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+	file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+	writeRows(file, extRow, extCol, merged, gridSourceLookup)
+	file.Close()
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
+	outC <- filenameDescPart
+}
+
 func drawScenarioPerModelMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][][]int, filenameFormat, filenameDescPart string, numsource, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 
 	for i := 0; i < numsource; i++ {
@@ -2432,6 +2526,7 @@ func writeIrrigatedRows(fout Fout, extRow, extCol int, irrSimGrid, noIrrSimGrid 
 		fout.Write("\n")
 	}
 }
+
 func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup [][]int) {
 	for row := 0; row < extRow; row++ {
 
