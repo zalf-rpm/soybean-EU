@@ -515,7 +515,7 @@ func main() {
 		"(Dev) Short season: %v",
 		"",
 		"plasma",
-		nil, nil, nil, 1.0, 0,
+		colorListShortSeason, nil, nil, 1.0, 0,
 		1, "", outC)
 
 	waitForNum++
@@ -565,18 +565,18 @@ func main() {
 		"none",
 		"ss",
 		"cs",
-		"ss + sc",
+		"ss&sc",
 		"dr",
-		"dr + ss",
-		"dr + ss + cs",
+		"dr&ss",
+		"dr&ss&cs",
 		"hr",
-		"hr + ss",
-		"hr + sc",
-		"hr + ss + cs",
-		"hr + dr",
-		"hr + ss + dr",
-		"hr + cs + dr",
-		"hr + ss + cs + dr",
+		"hr&ss",
+		"hr&sc",
+		"hr&ss&cs",
+		"hr&dr",
+		"hr&ss&dr",
+		"hr&cs&dr",
+		"hr&ss&cs&dr",
 	}
 
 	riskColorList := []string{"lightgrey", //default
@@ -585,7 +585,7 @@ func main() {
 		"blue",           // shortSeason + coldspell
 		"orange",         // drought risk
 		"violet",         // drought risk + shortSeason
-		"deeopink",       // drought risk + shortSeason + coldspell
+		"deeppink",       // drought risk + shortSeason + coldspell
 		"forestgreen",    // harvest rain
 		"lightseagreen",  // harvest rain + shortSeason
 		"darkgreen",      // harvest rain + coldspell
@@ -2379,7 +2379,17 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 	merged := make([]int, numRefs)
 	for ref := 0; ref < numRefs; ref++ {
 		for idSim := 0; idSim < simValuesLen; idSim++ {
-			merged[ref] = (simValues[idSim][ref] << idSim) + merged[ref]
+			val := simValues[idSim][ref]
+			if val != 0 && val != 1 {
+				fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+				if val < 0 {
+					val = 0
+				} else {
+					val = 1
+				}
+			}
+
+			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
 
