@@ -563,33 +563,36 @@ func main() {
 
 	sidebarRiskLabel := []string{
 		"none",
-		"ss",
-		"cs",
-		"ss&sc",
-		"dr",
-		"dr&ss",
-		"dr&ss&cs",
-		"hr",
-		"hr&ss",
-		"hr&sc",
-		"hr&ss&cs",
-		"hr&dr",
-		"hr&ss&dr",
-		"hr&cs&dr",
-		"hr&ss&cs&dr",
+		"short season (S)",
+		"cold snap (C)",
+		"S+C",
+		"drought risk (D)",
+		"D+S",
+		"D+C",
+		"D+S+C",
+		"harvest rain (R)",
+		"R+S",
+		"R+C",
+		"R+S+C",
+		"R+D",
+		"R+S+D",
+		"R+C+D",
+		"R+C+S+D",
 	}
 
-	riskColorList := []string{"lightgrey", //default
+	riskColorList := []string{
+		"lightgrey",      // default
 		"cyan",           // shortSeason
-		"blueviolet",     // coldspell
-		"blue",           // shortSeason + coldspell
+		"mediumpurple",   // coldspell
+		"rebeccapurple",  // shortSeason + coldspell
 		"orange",         // drought risk
 		"violet",         // drought risk + shortSeason
+		"pink",           // drought risk + coldspell
 		"deeppink",       // drought risk + shortSeason + coldspell
-		"forestgreen",    // harvest rain
+		"limegreen",      // harvest rain
 		"lightseagreen",  // harvest rain + shortSeason
-		"darkgreen",      // harvest rain + coldspell
-		"seagreen",       // harvest rain + shortSeason + coldspell
+		"seagreen",       // harvest rain + coldspell
+		"darkgreen",      // harvest rain + shortSeason + coldspell
 		"olive",          // harvest rain + drought risk
 		"olivedrab",      // harvest rain + shortSeason + drought risk
 		"darkolivegreen", // harvest rain + coldspell + drought risk
@@ -611,7 +614,7 @@ func main() {
 		"risk groups",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
-		15, "", outC,
+		16, "", outC,
 		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
@@ -627,7 +630,7 @@ func main() {
 		"risk groups",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
-		15, "", outC,
+		16, "", outC,
 		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
