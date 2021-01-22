@@ -50,6 +50,7 @@ def build() :
     pathId = USER
     sourceFolder = ""
     outputFolder = ""
+    generatePDF = True
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
             k, v = arg.split("=")
@@ -59,6 +60,8 @@ def build() :
                 sourceFolder = v
             if k == "out" :
                 outputFolder = v
+            if k == generatePDF :
+                generatePDF = bool(v)
             
     if not sourceFolder :
         sourceFolder = PATHS[pathId]["sourcepath"]
@@ -75,9 +78,11 @@ def build() :
             print("root", root)
             print("dirs", dirs)
             scenario = os.path.basename(root)
-            pdfpath = os.path.join(pdfFolder, "scenario_{0}.pdf".format(scenario))
-            makeDir(pdfpath)
-            pdf = PdfPages(pdfpath)        
+            pdf = None
+            if generatePDF :
+                pdfpath = os.path.join(pdfFolder, "scenario_{0}.pdf".format(scenario))
+                makeDir(pdfpath)
+                pdf = PdfPages(pdfpath)        
 
             useSetup = any(file == SETUP_FILENAME for file in files)      
             if useSetup :
@@ -92,7 +97,8 @@ def build() :
 
                     outpath = os.path.join(pngFolder, scenario, pngfilename)  
                     createSubPlot(image, outpath, pdf=pdf)
-                pdf.close()
+                if generatePDF :
+                    pdf.close()
             else :
                 files.sort()
                 for file in files:
@@ -109,7 +115,8 @@ def build() :
                         metapath = os.path.join(root, metafilename)
                         out_path = os.path.join(pngFolder, scenario, pngfilename)    
                         createImgFromMeta( filepath, metapath, out_path, pdf=pdf)
-                pdf.close()
+                if generatePDF :
+                    pdf.close()
 
 # image: 
 #  name: image filename
@@ -143,6 +150,8 @@ class Row:
 
 @dataclass
 class Merge:
+    mintransparency: list
+    transparencyfactor: list
     content: list
 
 @dataclass
@@ -187,11 +196,21 @@ def readSetup(filename, root, files) :
 
     def readMerge(doc) : 
         mergeContent = list()
+        mintransparency = list()
+        transparencyfactorList = list()
         for entry in doc :
             for f in entry:
                 if f == "file" :
                     mergeContent.append(readFile(entry["file"]))
-        return Merge(mergeContent)
+                    mintransparency.append(1.0)
+                    transparencyfactorList.append(1.0)
+                if f == "mintransparent" :
+                    val = float(entry["mintransparent"])
+                    mintransparency[len(mintransparency) - 1] = val
+                if f == "transparencyfactor" :
+                    val = float(entry["transparencyfactor"])
+                    transparencyfactorList[len(transparencyfactorList) - 1] = val
+        return Merge(mintransparency, transparencyfactorList, mergeContent)
 
     with open(filename, 'rt') as source:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -425,6 +444,8 @@ class Meta:
     minLoaded: bool
     showbars: bool
     mintransparent: float
+    renderAs: str
+    transparencyfactor: float
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -441,6 +462,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     minLoaded = False
     showbars = showCBar
     mintransparent = 1.0
+    renderAs = "heatmap"
+    transparencyfactor = 1.0
 
     with open(meta_path, 'rt') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -468,8 +491,12 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 minColor = doc
             elif item == "mintransparent" :
                 mintransparent = float(doc)
+            elif item == "transparencyfactor" :
+                transparencyfactor = float(doc)
             elif item == "colorlist" :
                 cMap = doc
+            elif item == "renderAs" :
+                renderAs = doc
             elif item == "cbarLabel" :
                 cbarLabel = doc
             elif item == "ticklist" :
@@ -479,7 +506,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     maxValue *= factor
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
-                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, showbars, mintransparent)
+                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, showbars, mintransparent, renderAs, transparencyfactor)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -517,11 +544,17 @@ def createSubPlot(image, out_path, pdf=None) :
                 elif type(col) is Merge :
                     mergeHeaderList = list()
                     mergeMetaList = list()
+                    transparencyList = col.mintransparency
+                    transparencyfactorList = col.transparencyfactor
+                    idxT = 0
                     for f in col.content :
                         asciiHeader = readAsciiHeader(f.name)         
                         meta = readMeta(f.meta, asciiHeader.ascii_nodata, showBar) 
+                        meta.mintransparent = min(transparencyList[idxT], meta.mintransparent)
+                        meta.transparencyfactor = transparencyfactorList[idxT]
                         mergeHeaderList.append(asciiHeader)
                         mergeMetaList.append(meta)
+                        idxT += 1
                     asciiHeaderLs[(nplotRows, numCol)] = mergeHeaderList
                     metaLs[(nplotRows, numCol)] = mergeMetaList
 
@@ -531,11 +564,17 @@ def createSubPlot(image, out_path, pdf=None) :
         elif type(content) is Merge:
             mergeHeaderList = list()
             mergeMetaList = list()
+            transparencyList = content.mintransparency
+            transparencyfactorList = content.transparencyfactor
+            idxT = 0
             for f in content.content :
                 asciiHeader = readAsciiHeader(f.name)         
                 meta = readMeta(f.meta, asciiHeader.ascii_nodata, True) 
+                meta.mintransparent = min(transparencyList[idxT], meta.mintransparent)
+                meta.transparencyfactor = transparencyfactorList[idxT]
                 mergeHeaderList.append(asciiHeader)
                 mergeMetaList.append(meta)
+                idxT += 1
             nplotRows += 1
             nplotCols += 1 
             asciiHeaderLs[(nplotRows, nplotCols)] = mergeHeaderList
@@ -573,36 +612,52 @@ def createSubPlot(image, out_path, pdf=None) :
                 meta = matchMetaLs[idxMerg]
                 # Read in the ascii data array
                 ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
-        
-                # Set the nodata values to nan
-                ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-
-                # data is stored as an integer but scaled by a factor
-                ascii_data_array *= meta.factor
-
+                
+                colorM = None
                 # set min color if given
                 if len(meta.minColor) > 0 and not meta.cMap:
-                    alpha = None
-                    if meta.mintransparent < 1.0:
-                        alpha = meta.mintransparent
                     newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
                     newcolors = newColorMap(np.linspace(0, 1, 256))
-                    rgba = matplotlib.cm.colors.to_rgba(meta.minColor, alpha=alpha)
-                    minColorVal = np.array([rgba])
-                    newcolors[:1, :] = minColorVal
+                    for idC in range(256) :
+                        if idC == 0 :
+                            alpha = meta.mintransparent * meta.transparencyfactor
+                            rgba = matplotlib.cm.colors.to_rgba(meta.minColor, alpha=alpha)
+                            minColorVal = np.array([rgba])
+                            newcolors[:1, :] = minColorVal
+                        else :
+                            newcolors[idC:idC+1, 3:4] = meta.transparencyfactor
                     colorM = ListedColormap(newcolors)
-                    if meta.minLoaded and meta.maxLoaded:
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
-                    elif meta.minLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
-                    elif meta.maxLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
-                    else :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
-
                 # Get the img object in order to pass it to the colorbar function
                 elif meta.cMap :
-                    colorM = ListedColormap(meta.cMap)
+                    if meta.transparencyfactor < 1.0 or meta.mintransparent < 1.0:
+                        newColorMap = ListedColormap(meta.cMap)
+                        newcolors = newColorMap(np.linspace(0, 1, len(meta.cMap)))
+                        for idC in range(len(meta.cMap)) :
+                            alpha = meta.transparencyfactor
+                            if idC == 0 :
+                                alpha = meta.mintransparent * meta.transparencyfactor
+                            rgba = matplotlib.cm.colors.to_rgba(meta.cMap[idC], alpha=alpha)
+                            newcolors[idC:idC+1, :] = np.array([rgba])
+                        colorM = ListedColormap(newcolors)
+                    else :
+                        colorM = ListedColormap(meta.cMap)
+                else :
+                # use color map name 
+                    newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
+                    newcolors = newColorMap(np.linspace(0, 1, 256))
+                    for idC in range(256) :
+                        alpha = meta.transparencyfactor
+                        if idC == 0 :
+                            alpha = meta.mintransparent * meta.transparencyfactor
+                        newcolors[idC:idC+1, 3:4] = alpha
+                    colorM = ListedColormap(newcolors)
+
+                if meta.renderAs == "heatmap" :
+                    # Set the nodata values to nan
+                    ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+                    # data is stored as an integer but scaled by a factor
+                    ascii_data_array *= meta.factor
+
                     if meta.minLoaded and meta.maxLoaded:
                         img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
                     elif meta.minLoaded :
@@ -611,31 +666,22 @@ def createSubPlot(image, out_path, pdf=None) :
                         img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
                     else :
                         img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
-                else :
-                    if meta.minLoaded and meta.maxLoaded:
-                        img_plot = ax.imshow(ascii_data_array, cmap=meta.colormap, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
-                    elif meta.minLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=meta.colormap, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
-                    elif meta.maxLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=meta.colormap, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
-                    else :
-                        img_plot = ax.imshow(ascii_data_array, cmap=meta.colormap, extent=asciiHeader.image_extent, interpolation='none')
 
-                if meta.showbars :
-                    ax_divider = make_axes_locatable(ax)
-                    cax = ax_divider.append_axes("right", size="7%", pad="2%")
-                    if meta.ticklist :
-                        # Place a colorbar next to the map
-                        cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
-                    else :
-                        # Place a colorbar next to the map
-                        cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
-                    cbar.set_label(meta.label)
-                    if meta.cbarLabel :
-                        cbar.ax.set_yticklabels(meta.cbarLabel) 
+                    if meta.showbars :
+                        ax_divider = make_axes_locatable(ax)
+                        cax = ax_divider.append_axes("right", size="7%", pad="2%")
+                        if meta.ticklist :
+                            # Place a colorbar next to the map
+                            cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
+                        else :
+                            # Place a colorbar next to the map
+                            cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
+                        cbar.ax.set_label(meta.label)
+                        if meta.cbarLabel :
+                            cbar.ax.set_yticklabels(meta.cbarLabel) 
 
-                    if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
-                        ax.set_title(subtitles[idxRow-1])                        
+                        if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
+                            ax.set_title(subtitles[idxRow-1])                        
                 ax.set_axis_off()
                 ax.grid(True, alpha=0.5)
     
@@ -645,7 +691,7 @@ def createSubPlot(image, out_path, pdf=None) :
     makeDir(out_path)
     if pdf :
         pdf.savefig(dpi=150)
-    plt.savefig(out_path, dpi=150)
+    plt.savefig(out_path, dpi=250)
     plt.close(fig)
 
 
