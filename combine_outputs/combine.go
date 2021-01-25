@@ -203,12 +203,12 @@ func main() {
 	minColor := "lightgrey"
 
 	// recalulate max values
-	maxHist := maxFromIrrigationGrid(extCol, extRow,
+	maxHist := maxFromIrrigationGrid(extRow, extCol,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup)
-	maxFuture := maxFromIrrigationGrid(extCol, extRow,
+	maxFuture := maxFromIrrigationGrid(extRow, extCol,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
