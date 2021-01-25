@@ -201,7 +201,23 @@ func main() {
 		ticklist[tick] = float64(tick) + 0.5
 	}
 	minColor := "lightgrey"
+
 	// recalulate max values
+	maxHist := maxFromIrrigationGrid(extCol, extRow,
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxFuture := maxFromIrrigationGrid(extCol, extRow,
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxMerged := maxFuture
+	if maxHist > maxFuture {
+		maxMerged = maxHist
+	}
+
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
@@ -235,7 +251,7 @@ func main() {
 		"Yield in t",
 		"jet",
 		nil, nil, nil, 0.001, 0,
-		int(p.maxAllAvgYield), minColor, outC)
+		maxMerged, minColor, outC)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -250,7 +266,7 @@ func main() {
 		"Yield in t",
 		"jet",
 		nil, nil, nil, 0.001, 0,
-		int(p.maxAllAvgYield), minColor, outC)
+		maxMerged, minColor, outC)
 
 	waitForNum++
 	go drawScenarioMaps(gridSourceLookup,
@@ -2361,13 +2377,13 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 }
 
 func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
-
 	//simkey = treatmentNo, climateSenario, maturityGroup, comment
 	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
 	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 	file := writeAGridHeader(gridFilePath, extCol, extRow)
 
 	writeIrrigatedRows(file, extRow, extCol, irrSimVal, noIrrSimVal, gridSourceLookup, irrLookup)
+
 	file.Close()
 	title := titleFormat
 	writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
@@ -2512,9 +2528,28 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 }
 
+func maxFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) (max int) {
+	for row := 0; row < extRow; row++ {
+		for col := 0; col < extCol; col++ {
+			refID := (*gridSourceLookup)[row][col]
+			if refID > 0 {
+				if _, ok := (*irrLookup)[GridCoord{row, col}]; ok {
+					if irrSimGrid[refID-1] > max {
+						max = irrSimGrid[refID-1]
+					}
+				} else {
+					if noIrrSimGrid[refID-1] > max {
+						max = noIrrSimGrid[refID-1]
+					}
+				}
+			}
+		}
+	}
+	return max
+}
+
 func writeIrrigatedRows(fout Fout, extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) {
 	for row := 0; row < extRow; row++ {
-
 		for col := 0; col < extCol; col++ {
 			refID := (*gridSourceLookup)[row][col]
 			if refID > 0 {
