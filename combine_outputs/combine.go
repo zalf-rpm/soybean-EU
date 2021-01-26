@@ -35,6 +35,9 @@ const asciiOutTemplate = "%s_%s_trno%s.asc"               // <descriptio>_<scena
 const asciiOutCombinedTemplate = "%s_%s.asc"              // <descriptio>_<scenario>
 const asciiOutTemplateDebug = "%s_%s_trno%s_source%d.asc" // <descriptio>_<scenario>_<treatmentnumber>
 
+const ignoreSzenario = "0_0"
+const ignoreMaturityGroup = "soybean/III"
+
 func main() {
 
 	PATHS := map[string]map[string]string{
@@ -952,6 +955,10 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 	p.setOutputGridsGenerated(simulations, numSourceFolder, maxRefNoOverAll)
 	for simKey := range simulations {
 		pixelValue := CalculatePixel(simulations[simKey])
+		// HACK: ignore MG III in 0_0
+		if simKey.climateSenario == ignoreSzenario && simKey.mGroup == ignoreMaturityGroup {
+			pixelValue = 0
+		}
 		p.setMaxAllAvgYield(pixelValue)
 		stdDeviation := stat.StdDev(simulations[simKey], nil)
 		p.setMaxSdtDeviation(stdDeviation)
