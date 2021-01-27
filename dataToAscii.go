@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -36,6 +37,7 @@ const asciiOutFilenameCoolWeatherWeight = "coolweather_weights_%s_trno%s.asc" //
 const asciiOutFilenameWetHarvest = "harvest_wet_%s_trno%s.asc"                // mGroup_treatmentnumber
 const asciiOutFilenameLateHarvest = "harvest_late_%s_trno%s.asc"              // mGroup_treatmentnumber
 const asciiOutFilenameMatIsHarvest = "harvest_before_maturity_%s_trno%s.asc"  // mGroup_treatmentnumber
+const asciiOutCombinedTemplate = "%s_%s.asc"                                  // <descriptio>_<scenario>
 
 const climateFilePattern = "%s_v3test.csv"
 
@@ -315,6 +317,8 @@ func main() {
 					numOccurrenceMedium := make(map[SimKeyTuple]int)
 					numOccurrenceLow := make(map[SimKeyTuple]int)
 					numWetHarvest := make(map[SimKeyTuple]int)
+					tempSum := make(map[SimKeyTuple]float64)
+
 					var header ClimateHeader
 					precipPrevDays := newDataLastDays(5)
 					scanner := bufio.NewScanner(climatefile)
@@ -331,6 +335,7 @@ func main() {
 							lineContent := loadClimateLine(line, header)
 							date := lineContent.isodate
 							tmin := lineContent.tmin
+							tavg := lineContent.tavg
 							precip := lineContent.precip
 							precipPrevDays.addDay(precip)
 							dateYear := date.Year()
@@ -364,6 +369,10 @@ func main() {
 											}
 										}
 									}
+									if tavg > 6 {
+										tempSum[simKey] = tempSum[simKey] + tavg
+									}
+
 									// check if this date is harvest
 									harvestDOY := simDoyHarvest[simKey][yearIndex]
 									if harvestDOY > 0 && IsDateInGrowSeason(harvestDOY, harvestDOY, date) {
@@ -442,6 +451,10 @@ func main() {
 								p.coolWeatherImpactWeightGrid[simKey][refIDIndex] = -1
 								p.wetHarvestGrid[simKey][refIDIndex] = -1
 							}
+
+							if p.annualTemperatureSumAvg[scenario][refIDIndex] < 0 {
+								p.annualTemperatureSumAvg[scenario][refIDIndex] = int(math.Round(tempSum[simKey] / 30))
+							}
 						}
 					}
 				}
@@ -470,6 +483,19 @@ func main() {
 
 	outC := make(chan string)
 	waitForNum := 1
+	go drawMaps(gridSourceLookup,
+		p.annualTemperatureSumAvg,
+		asciiOutCombinedTemplate,
+		"temp_sums",
+		extCol, extRow,
+		asciiOutFolder,
+		"Climate Scenario Temp Sum: %v",
+		"",
+		"plasma",
+		nil, nil, nil, 1.0, 0,
+		1, "lightgrey", outC)
+
+	waitForNum++
 	go drawDateMaps(gridSourceLookup,
 		p.matIsHavestGrid,
 		asciiOutFilenameMatIsHarvest,
@@ -665,7 +691,7 @@ func main() {
 		title := fmt.Sprintf("Max avg yield minus std deviation - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		labelText := "Yield in t"
 		colormap := "jet"
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0, "")
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -687,7 +713,7 @@ func main() {
 		title := fmt.Sprintf("Max average yield - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		labelText := "Yield in t"
 		colormap := "jet"
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0, "")
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -724,7 +750,7 @@ func main() {
 		file.Close()
 		// create png
 		title := fmt.Sprintf("Maturity groups for max average yield - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
-		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
+		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -747,7 +773,7 @@ func main() {
 		file.Close()
 
 		title := fmt.Sprintf("Maturity groups - max avg yield minus deviation  - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
-		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0)
+		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
 		currentInput++
 		if showBar {
 			progressBar(currentInput)
@@ -776,7 +802,7 @@ func main() {
 			title := fmt.Sprintf("Water stress effect on potential yield - Scn: %s %s", simKey.climateSenario, simKey.mGroup)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE, "")
 			currentInput++
 			if showBar {
 				progressBar(currentInput)
@@ -802,7 +828,7 @@ func main() {
 			title := fmt.Sprintf("Water stress effect on potential max yield - Scn: %s", scenarioKey.climateSenario)
 			labelText := "Difference yield in t"
 			colormap := "Wistia"
-			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE)
+			writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), NONEVALUE, "")
 		}
 		currentInput++
 		if showBar {
@@ -888,6 +914,7 @@ type ProcessedData struct {
 	sumMediumOccurrence         int
 	sumHighOccurrence           int
 	sowingDates                 map[SimKeyTuple][][]int
+	annualTemperatureSumAvg     map[string][]int
 	outputGridsGenerated        bool
 	mux                         sync.Mutex
 	currentInput                int
@@ -911,6 +938,9 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.coolWeatherDeathGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
 			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
 			p.wetHarvestGrid[simKey] = newGridLookup(maxRefNo, NONEVALUE)
+			if _, ok := p.annualTemperatureSumAvg[simKey.climateSenario]; !ok {
+				p.annualTemperatureSumAvg[simKey.climateSenario] = newGridLookup(maxRefNo, NONEVALUE)
+			}
 		}
 	}
 	p.mux.Unlock()
@@ -1097,18 +1127,20 @@ type ClimateHeader struct {
 	isodateIdx int
 	tminIdx    int
 	precipIdx  int
+	tavgIdx    int
 }
 
 //ClimateContent ..
 type ClimateContent struct {
 	isodate time.Time
 	tmin    float64
+	tavg    float64
 	precip  float64
 }
 
 //ReadClimateHeader ..
 func ReadClimateHeader(line string) ClimateHeader {
-	header := ClimateHeader{-1, -1, -1}
+	header := ClimateHeader{-1, -1, -1, -1}
 	//read header
 	tokens := strings.Split(line, ",")
 	for i, token := range tokens {
@@ -1121,6 +1153,9 @@ func ReadClimateHeader(line string) ClimateHeader {
 		if token == "precip" {
 			header.precipIdx = i
 		}
+		if token == "tavg" {
+			header.tavgIdx = i
+		}
 	}
 	return header
 }
@@ -1131,6 +1166,7 @@ func loadClimateLine(line string, header ClimateHeader) ClimateContent {
 	cC.isodate, _ = time.Parse("2006-01-02", tokens[header.isodateIdx])
 	cC.tmin, _ = strconv.ParseFloat(tokens[header.tminIdx], 64)
 	cC.precip, _ = strconv.ParseFloat(tokens[header.precipIdx], 64)
+	cC.tavg, _ = strconv.ParseFloat(tokens[header.tavgIdx], 64)
 	return cC
 }
 
@@ -1426,7 +1462,7 @@ func drawDateMaps(gridSourceLookup [][]int, grids map[SimKeyTuple][]int, filenam
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
 		title := fmt.Sprintf(titleFormat, simKey.climateSenario, simKey.mGroup, simKey.comment)
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal)
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, cbarLabel, ticklist, factor, maxVal, minVal, "")
 
 		if showBar {
 			currentInput++
@@ -1435,6 +1471,35 @@ func drawDateMaps(gridSourceLookup [][]int, grids map[SimKeyTuple][]int, filenam
 	}
 	outC <- progessStatus
 }
+
+func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+
+	for simKey, simVal := range grids {
+		//simkey = treatmentNo, climateSenario, maturityGroup, comment
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, climateScenarioShortToName(simKey))
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
+		file.Close()
+		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey))
+		writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
+	}
+	outC <- filenameDescPart
+}
+
+func climateScenarioShortToName(climateScenarioShort string) string {
+	if climateScenarioShort == "0_0" {
+		return "historical"
+	}
+	if climateScenarioShort == "fut_avg" {
+		return "future"
+	}
+	// return original by default
+	return climateScenarioShort
+}
+
 func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 	cornerX := 0.0
 	cornery := 0.0
@@ -1504,7 +1569,7 @@ func (f Fout) Close() {
 	f.file.Close()
 }
 
-func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int) {
+func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int, minColor string) {
 	metaFilePath := gridFilePath + ".meta"
 	makeDir(metaFilePath)
 	file, err := os.OpenFile(metaFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
@@ -1541,6 +1606,9 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 	if minValue != NONEVALUE {
 		file.WriteString(fmt.Sprintf("minValue: %d\n", minValue))
+	}
+	if len(minColor) > 0 {
+		file.WriteString(fmt.Sprintf("minColor: %s\n", minColor))
 	}
 }
 
