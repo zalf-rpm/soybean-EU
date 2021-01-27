@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
+import errno
 
 NONEVALUE=-9999
 
@@ -207,7 +208,7 @@ def writeAGridHeader(name, nCol, nRow, cornerX=0.0, cornery=0.0, novalue=-9999, 
     file.write("{0} ".format(maxValue))
     for i in range(1,nCol) :
         file.write(" {0}".format(novalue))
-    file.write("\n".format(novalue))
+    file.write("\n")
     return file
 
 def createImg(prism_path, out_path, title, label='Yield in t', colormap='viridis', factor=0.001, cbarLabel=None, pdf=None) :
