@@ -158,6 +158,7 @@ func main() {
 	p.coolWeatherDeathGrid = make(map[SimKeyTuple][]int)
 	p.coolWeatherImpactWeightGrid = make(map[SimKeyTuple][]int)
 	p.wetHarvestGrid = make(map[SimKeyTuple][]int)
+	p.annualTemperatureSumAvg = make(map[string][]int)
 	p.sumMaxOccurrence = 0
 	p.sumMaxDeathOccurrence = 0
 	p.maxLateHarvest = 0
