@@ -84,7 +84,7 @@ def extractGridData() :
                             "00",                           #lamda 
                             " 20 ",                         #DraiT  
                             " 00",                          #Drai% 
-                            " 99",                          #GW 
+                            "99",                           #GW 
                             "01",                           #LBG 
                             ]
                         outSoilfile.writelines(" ".join(outlineSoil) + "\n")
