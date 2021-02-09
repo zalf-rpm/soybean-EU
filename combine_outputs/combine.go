@@ -247,11 +247,11 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
 		"%s_historical.asc",
-		"dev_max_yield",
+		"A",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev )Max Yield: historical",
-		"Yield in t",
+		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
@@ -262,41 +262,41 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&irrLookup,
 		"%s_future.asc",
-		"dev_max_yield",
+		"B",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Max Yield: future",
-		"Yield in t",
+		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.maxYieldGridsAll,
-		asciiOutTemplate,
-		"max_yield",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Max Yield: %v %v",
-		"Yield in t",
-		"jet",
-		nil, nil, nil, 0.001, NONEVALUE,
-		int(p.maxAllAvgYield), minColor, outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.maxYieldGridsAll,
+	// 	asciiOutTemplate,
+	// 	"max_yield",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Max Yield: %v %v",
+	// 	"Yield in t",
+	// 	"jet",
+	// 	nil, nil, nil, 0.001, NONEVALUE,
+	// 	int(p.maxAllAvgYield), minColor, outC)
 
-	// map of max yield average(30y) over all models and maturity groups with acceptable variation
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.maxYieldDeviationGridsAll,
-		asciiOutTemplate,
-		"dev_max_yield",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev )Max Yield: %v %v",
-		"Yield in t",
-		"jet",
-		nil, nil, nil, 0.001, NONEVALUE,
-		int(p.maxAllAvgYield), minColor, outC)
+	// // map of max yield average(30y) over all models and maturity groups with acceptable variation
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.maxYieldDeviationGridsAll,
+	// 	asciiOutTemplate,
+	// 	"dev_max_yield",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev )Max Yield: %v %v",
+	// 	"Yield in t",
+	// 	"jet",
+	// 	nil, nil, nil, 0.001, NONEVALUE,
+	// 	int(p.maxAllAvgYield), minColor, outC)
 
 	// waitForNum++
 	// go drawScenarioPerModelMaps(gridSourceLookup,
@@ -337,58 +337,58 @@ func main() {
 	// 	nil, nil, nil, 0.0001, -1,
 	// 	p.sumMaxDeathOccurrence, minColor, outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.harvestRainGridsAll,
-		asciiOutTemplate,
-		"harvest_rain",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Rain during/before harvest: %v %v",
-		"",
-		"plasma",
-		nil, nil, nil, 1.0,
-		0, 1, minColor, outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.harvestRainGridsAll,
+	// 	asciiOutTemplate,
+	// 	"harvest_rain",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Rain during/before harvest: %v %v",
+	// 	"",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0,
+	// 	0, 1, minColor, outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.harvestRainDeviationGridsAll,
-		asciiOutTemplate,
-		"dev_harvest_rain",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Rain during/before harvest: %v %v",
-		"",
-		"plasma",
-		nil, nil, nil, 1.0,
-		0, 1, minColor, outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.harvestRainDeviationGridsAll,
+	// 	asciiOutTemplate,
+	// 	"dev_harvest_rain",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) Rain during/before harvest: %v %v",
+	// 	"",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0,
+	// 	0, 1, minColor, outC)
 
-	colorListRainRisk := []string{"lightgrey", "green"}
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.harvestRainDeviationGridsSumAll,
-		asciiOutCombinedTemplate,
-		"dev_harvest_rain",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Rain during/before harvest: %v",
-		"",
-		"plasma",
-		colorListRainRisk, nil, nil, 1.0, 0,
-		1, "", outC)
+	// colorListRainRisk := []string{"lightgrey", "green"}
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.harvestRainDeviationGridsSumAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"dev_harvest_rain",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) Rain during/before harvest: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListRainRisk, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.harvestRainGridsSumAll,
-		asciiOutCombinedTemplate,
-		"harvest_rain",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Rain during/before harvest: %v",
-		"",
-		"plasma",
-		colorListRainRisk, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.harvestRainGridsSumAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"harvest_rain",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Rain during/before harvest: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListRainRisk, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
 	// waitForNum++
 	// maxPot := findMaxValueInDic(p.potentialWaterStressAll, p.potentialWaterStressDeviationGridsAll)
@@ -443,46 +443,46 @@ func main() {
 	// 	nil, nil, nil, 1.0, -1,
 	// 	2, minColor, outC)
 
-	waitForNum++
-	colorListDroughtRisk := []string{"lightgrey", "orange"}
-	go drawMaps(gridSourceLookup,
-		p.droughtRiskGridsAll,
-		asciiOutCombinedTemplate,
-		"drought_risk",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"drought risk: %v",
-		"",
-		"plasma",
-		colorListDroughtRisk, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// colorListDroughtRisk := []string{"lightgrey", "orange"}
+	// go drawMaps(gridSourceLookup,
+	// 	p.droughtRiskGridsAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"drought_risk",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"drought risk: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListDroughtRisk, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.droughtRiskDeviationGridsAll,
-		asciiOutCombinedTemplate,
-		"dev_drought_risk",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(dev) drought risk: %v",
-		"",
-		"plasma",
-		colorListDroughtRisk, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.droughtRiskDeviationGridsAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"dev_drought_risk",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(dev) drought risk: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListDroughtRisk, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
-	waitForNum++
-	colorListColdSpell := []string{"lightgrey", "blueviolet"}
-	go drawMaps(gridSourceLookup,
-		p.coldSpellGrid,
-		asciiOutCombinedTemplate,
-		"coldSpell",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Cold snap in Summer: %v",
-		"",
-		"jet",
-		colorListColdSpell, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	// go drawMaps(gridSourceLookup,
+	// 	p.coldSpellGrid,
+	// 	asciiOutCombinedTemplate,
+	// 	"coldSpell",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"Cold snap in Summer: %v",
+	// 	"",
+	// 	"jet",
+	// 	colorListColdSpell, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
@@ -497,58 +497,58 @@ func main() {
 	// 	nil, nil, nil, 1.0, -20,
 	// 	50, "", outC)
 
-	colorListShortSeason := []string{"lightgrey", "cyan"}
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.shortSeasonGridAll,
-		asciiOutTemplate,
-		"short_season",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Short season: %v %v",
-		"",
-		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
-		0, 1, "", outC)
+	// colorListShortSeason := []string{"lightgrey", "cyan"}
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.shortSeasonGridAll,
+	// 	asciiOutTemplate,
+	// 	"short_season",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Short season: %v %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListShortSeason, nil, nil, 1.0,
+	// 	0, 1, "", outC)
 
-	waitForNum++
-	go drawScenarioMaps(gridSourceLookup,
-		p.shortSeasonDeviationGridAll,
-		asciiOutTemplate,
-		"dev_short_season",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Short season: %v %v",
-		"",
-		"plasma",
-		colorListShortSeason, nil, nil, 1.0,
-		0, 1, "", outC)
+	// waitForNum++
+	// go drawScenarioMaps(gridSourceLookup,
+	// 	p.shortSeasonDeviationGridAll,
+	// 	asciiOutTemplate,
+	// 	"dev_short_season",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) Short season: %v %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListShortSeason, nil, nil, 1.0,
+	// 	0, 1, "", outC)
 
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.shortSeasonDeviationGridSumAll,
-		asciiOutCombinedTemplate,
-		"dev_short_season",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Short season: %v",
-		"",
-		"plasma",
-		colorListShortSeason, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.shortSeasonDeviationGridSumAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"dev_short_season",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"(Dev) Short season: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListShortSeason, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
-	waitForNum++
-	go drawMaps(gridSourceLookup,
-		p.shortSeasonGridSumAll,
-		asciiOutCombinedTemplate,
-		"short_season",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "max"),
-		"Short season: %v",
-		"",
-		"plasma",
-		colorListShortSeason, nil, nil, 1.0, 0,
-		1, "", outC)
+	// waitForNum++
+	// go drawMaps(gridSourceLookup,
+	// 	p.shortSeasonGridSumAll,
+	// 	asciiOutCombinedTemplate,
+	// 	"short_season",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "max"),
+	// 	"Short season: %v",
+	// 	"",
+	// 	"plasma",
+	// 	colorListShortSeason, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -556,7 +556,7 @@ func main() {
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
 		"%s_historical.asc",
-		"dev_maturity_groups",
+		"C",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Maturity Groups: historical",
@@ -571,7 +571,7 @@ func main() {
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&irrLookup,
 		"%s_future.asc",
-		"dev_maturity_groups",
+		"D",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Maturity Groups: future",
@@ -629,7 +629,7 @@ func main() {
 		"dev_allRisks",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) All Risks: future",
+		"F",
 		"risk groups",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
@@ -645,7 +645,7 @@ func main() {
 		"dev_allRisks",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) All Risks: historical",
+		"E",
 		"risk groups",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
@@ -664,32 +664,32 @@ func main() {
 		}
 	}
 
-	// generate pictures with maturity groups
-	for scenarioKey, scenarioVal := range p.matGroupGridsAll {
-		gridFileName := fmt.Sprintf(asciiOutTemplate, "maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, "max", gridFileName)
+	// // generate pictures with maturity groups
+	// for scenarioKey, scenarioVal := range p.matGroupGridsAll {
+	// 	gridFileName := fmt.Sprintf(asciiOutTemplate, "maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
+	// 	gridFilePath := filepath.Join(asciiOutFolder, "max", gridFileName)
 
-		// create ascii file
-		file := writeAGridHeader(gridFilePath, extCol, extRow)
-		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
-		file.Close()
-		// create meta description
-		title := fmt.Sprintf("Maturity groups for max average yield: %s %s", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.comment)
-		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
-	}
+	// 	// create ascii file
+	// 	file := writeAGridHeader(gridFilePath, extCol, extRow)
+	// 	writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+	// 	file.Close()
+	// 	// create meta description
+	// 	title := fmt.Sprintf("Maturity groups for max average yield: %s %s", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.comment)
+	// 	writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
+	// }
 
-	for scenarioKey, scenarioVal := range p.matGroupDeviationGridsAll {
-		gridFileName := fmt.Sprintf(asciiOutTemplate, "dev_maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
-		gridFilePath := filepath.Join(asciiOutFolder, "dev", gridFileName)
+	// for scenarioKey, scenarioVal := range p.matGroupDeviationGridsAll {
+	// 	gridFileName := fmt.Sprintf(asciiOutTemplate, "dev_maturity_groups", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.treatNo)
+	// 	gridFilePath := filepath.Join(asciiOutFolder, "dev", gridFileName)
 
-		// create ascii file
-		file := writeAGridHeader(gridFilePath, extCol, extRow)
-		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
-		file.Close()
-		// create meta description
-		title := fmt.Sprintf("(Dev)Maturity groups for max average yield: %s %s", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.comment)
-		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
-	}
+	// 	// create ascii file
+	// 	file := writeAGridHeader(gridFilePath, extCol, extRow)
+	// 	writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+	// 	file.Close()
+	// 	// create meta description
+	// 	title := fmt.Sprintf("(Dev)Maturity groups for max average yield: %s %s", climateScenarioShortToName(scenarioKey.climateSenario), scenarioKey.comment)
+	// 	writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
+	// }
 }
 
 // ProcessedData combined data from results
