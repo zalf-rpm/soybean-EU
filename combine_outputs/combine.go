@@ -197,7 +197,7 @@ func main() {
 	}
 
 	for id := range p.matGroupIDGrids {
-		sidebarLabel[p.matGroupIDGrids[id]] = id
+		sidebarLabel[p.matGroupIDGrids[id]] = strings.TrimPrefix(id, "soybean/")
 	}
 	ticklist := make([]float64, len(sidebarLabel))
 	for tick := 0; tick < len(ticklist); tick++ {
@@ -582,14 +582,14 @@ func main() {
 
 	sidebarRiskLabel := []string{
 		"none",
-		"short season (S)",
-		"cold snap (C)",
+		"Short season (S)",
+		"Cold snap (C)",
 		"S+C",
-		"drought risk (D)",
+		"Drought (D)",
 		"D+S",
 		"D+C",
 		"D+S+C",
-		"harvest rain (R)",
+		"Harvest rain (R)",
 		"R+S",
 		"R+C",
 		"R+S+C",
