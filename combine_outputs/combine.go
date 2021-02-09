@@ -98,7 +98,7 @@ func main() {
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 	irrgigationSource := filepath.Join(projectpath, "stu_eu_layer_grid_irrigation.csv")
 
-	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource)
+	extRow, extCol, minRow, minCol, gridSourceLookup := GetGridLookup(gridSource)
 	climateRef := GetClimateReference(refSource)
 	irrLookup := getIrrigationGridLookup(irrgigationSource)
 
@@ -248,7 +248,7 @@ func main() {
 		&irrLookup,
 		"%s_historical.asc",
 		"A",
-		extCol, extRow,
+		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev )Max Yield: historical",
 		"[t ha–1]",
@@ -263,7 +263,7 @@ func main() {
 		&irrLookup,
 		"%s_future.asc",
 		"B",
-		extCol, extRow,
+		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Max Yield: future",
 		"[t ha–1]",
@@ -557,7 +557,7 @@ func main() {
 		&irrLookup,
 		"%s_historical.asc",
 		"C",
-		extCol, extRow,
+		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Maturity Groups: historical",
 		"maturity groups",
@@ -572,7 +572,7 @@ func main() {
 		&irrLookup,
 		"%s_future.asc",
 		"D",
-		extCol, extRow,
+		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(Dev) Maturity Groups: future",
 		"maturity groups",
@@ -2165,7 +2165,7 @@ func newSmallGridLookup(maxRef, defaultVal int) []int {
 }
 
 // GetGridLookup ..
-func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]int) {
+func GetGridLookup(gridsource string) (rowExt, colExt, rowMin, colMin int, lookupGrid [][]int) {
 	colExt = 0
 	rowExt = 0
 	lookup := make(map[int64][]GridCoord)
@@ -2213,13 +2213,21 @@ func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]in
 		}
 	}
 	lookupGrid = newGrid(rowExt, colExt, NONEVALUE)
+	colMin = colExt
+	rowMin = rowExt
 	for ref, coord := range lookup {
 		for _, rowCol := range coord {
 			lookupGrid[rowCol.row-1][rowCol.col-1] = int(ref)
+			if rowCol.col < colMin {
+				colMin = rowCol.col
+			}
+			if rowCol.row < rowMin {
+				rowMin = rowCol.row
+			}
 		}
 	}
 
-	return rowExt, colExt, lookupGrid
+	return rowExt, colExt, rowMin, colMin, lookupGrid
 }
 
 func getIrrigationGridLookup(gridsource string) map[GridCoord]bool {
@@ -2383,7 +2391,7 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 	outC <- filenameDescPart
 }
 
-func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow, minRow, minCol int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 	//simkey = treatmentNo, climateSenario, maturityGroup, comment
 	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
 	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)

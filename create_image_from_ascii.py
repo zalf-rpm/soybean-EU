@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from datetime import datetime
 import collections
 import errno
@@ -50,7 +51,7 @@ def build() :
     pathId = USER
     sourceFolder = ""
     outputFolder = ""
-    generatePDF = True
+    generatePDF = False
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
             k, v = arg.split("=")
@@ -465,7 +466,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     renderAs = "heatmap"
     transparencyfactor = 1.0
 
-    with open(meta_path, 'rt') as meta:
+    with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
         yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
         documents = yaml.load(meta)
@@ -506,7 +507,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     maxValue *= factor
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
-                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, showbars, mintransparent, renderAs, transparencyfactor)
+                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, 
+                showbars, mintransparent, renderAs, transparencyfactor)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -585,7 +587,8 @@ def createSubPlot(image, out_path, pdf=None) :
     # ax.set_title(title)
     
     fig, axs = plt.subplots(nrows=nplotRows, ncols=nplotCols, squeeze=False, sharex=True, sharey=True, figsize=image.size)
-    fig.subplots_adjust(top=0.95, bottom=0.01, left=0.2, right=0.99, wspace=0.05)
+
+    fig.subplots_adjust(top=0.99, bottom=0.01, left=0.1, right=0.80, wspace=0.02, hspace=-0.3)
     
     if image.title :
         fig.suptitle(image.title, fontsize='xx-large')
@@ -593,8 +596,6 @@ def createSubPlot(image, out_path, pdf=None) :
     #fig.suptitle('historical     future', fontsize=14, y=1.0, x=0.6)
 
     for idxRow in range(1,nplotRows+1) :
-        # if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0:
-        #     fig.suptitle(subtitles[idxRow-1])
         for idxCol in range(1,nplotCols+1) :
             ax = axs[idxRow-1][idxCol-1]
             asciiHeaders = asciiHeaderLs[(idxRow,idxCol)]
@@ -668,24 +669,35 @@ def createSubPlot(image, out_path, pdf=None) :
                         img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
 
                     if meta.showbars :
-                        ax_divider = make_axes_locatable(ax)
-                        cax = ax_divider.append_axes("right", size="7%", pad="2%")
+                        axins = inset_axes(ax,
+                        width="5%",  # width = 5% of parent_bbox width
+                        height="90%",  # height : 50%
+                        loc='lower left',
+                        bbox_to_anchor=(1.05, 0., 1, 1),
+                        bbox_transform=ax.transAxes,
+                        borderpad=0,
+                        )
                         if meta.ticklist :
                             # Place a colorbar next to the map
-                            cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
+                            cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
                         else :
                             # Place a colorbar next to the map
-                            cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=cax)
-                        cbar.ax.set_label(meta.label)
+                            cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
+                        if len(meta.label) > 0 :
+                            #cbar.ax.set_label(meta.label)
+                            cbar.ax.set_title(meta.label, loc='left') 
                         if meta.cbarLabel :
                             cbar.ax.set_yticklabels(meta.cbarLabel) 
 
-                        if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
-                            ax.set_title(subtitles[idxRow-1])                        
-                ax.set_axis_off()
+                    if len(meta.title) > 0 :
+                        ax.set_title(meta.title, y=0.90, x=0.05)   
+                    if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
+                        ax.set_title(subtitles[idxRow-1])    
+                
+                #ax.set_axis_off()
                 ax.grid(True, alpha=0.5)
-    
-    plt.tight_layout()
+                ax.axes.xaxis.set_visible(False)
+                ax.axes.yaxis.set_visible(False)
     
     # save image and pdf 
     makeDir(out_path)
