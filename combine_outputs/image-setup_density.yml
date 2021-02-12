@@ -1,0 +1,13 @@
+- image: 
+    name: density_spread
+    sizeX: 4.5
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.95
+    adLeft: 0.15
+    adhspace: 0.0
+    adwspace: 0.0
+    merge: 
+       - file: 'density_max_yield_historical.asc.gz'
+       - file: 'density_max_yield_future.asc.gz'

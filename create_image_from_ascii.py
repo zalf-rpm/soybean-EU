@@ -13,6 +13,8 @@ from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import matplotlib.ticker as mticker
+from scipy import interpolate as spy
 from datetime import datetime
 import collections
 import errno
@@ -141,6 +143,12 @@ class Image:
     name: str
     title: str
     size: typing.Tuple[float, float]
+    adjBottom: float
+    adjTop: float
+    adRight: float
+    adLeft: float
+    adhspace: float
+    adwspace: float
     content: list
 
 @dataclass
@@ -227,6 +235,12 @@ def readSetup(filename, root, files) :
                 imgSize = None
                 sizeX = 0
                 sizeY = 0
+                adjBottom = 0.15
+                adjTop = 0.95
+                adRight = 0.95
+                adLeft = 0.15
+                adhspace = 0.0
+                adwspace = 0.0
                 imageContent = list()
                 for entry in item["image"] :
                     if entry == "name"  :
@@ -237,6 +251,18 @@ def readSetup(filename, root, files) :
                         sizeX = float(item["image"][entry])
                     if entry == "sizeY"  :
                         sizeY = float(item["image"][entry])
+                    if entry == "adjBottom" :
+                        adjBottom = float(item["image"][entry])
+                    if entry == "adjTop" :
+                        adjTop = float(item["image"][entry])
+                    if entry == "adRight" :
+                        adRight = float(item["image"][entry])
+                    if entry == "adLeft" :
+                        adLeft = float(item["image"][entry])
+                    if entry == "adhspace" :
+                        adhspace = float(item["image"][entry])
+                    if entry == "adwspace" :
+                        adwspace = float(item["image"][entry])
                     elif entry == "file" :
                         imageContent.append(readFile(item["image"][entry]))
                     elif entry == "rows" :
@@ -245,7 +271,8 @@ def readSetup(filename, root, files) :
                         imageContent.append(readMerge(item["image"][entry]))
                 if sizeX > 0 and sizeY > 0 :
                     imgSize = (sizeX, sizeY)
-                imageList.append(Image(imagename, title, imgSize, imageContent))
+                imageList.append(Image(imagename, title, imgSize,
+                                adjBottom, adjTop, adRight, adLeft, adhspace, adwspace, imageContent))
     return imageList
 
 
@@ -439,6 +466,8 @@ class Meta:
     cbarLabel: str
     factor: float
     ticklist: list
+    yTicklist: list
+    xTicklist: list
     maxValue: float
     maxLoaded: bool
     minValue: float
@@ -447,6 +476,17 @@ class Meta:
     mintransparent: float
     renderAs: str
     transparencyfactor: float
+    lineLabel: str
+    xLabel: str
+    yLabel: str
+    YaxisMappingFile: str
+    YaxisMappingRefColumn: str
+    YaxisMappingTarColumn: str
+    YaxisMappingFormat: str
+    XaxisMappingFile: str
+    XaxisMappingRefColumn: str
+    XaxisMappingTarColumn: str
+    XaxisMappingFormat: str
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -457,6 +497,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     cbarLabel = None
     factor = 0.001
     ticklist = None
+    xTicklist = None
+    yTicklist = None
     maxValue = ascii_nodata
     maxLoaded = False
     minValue = ascii_nodata
@@ -465,6 +507,17 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     mintransparent = 1.0
     renderAs = "heatmap"
     transparencyfactor = 1.0
+    lineLabel = ""
+    xLabel = ""
+    yLabel = ""
+    YaxisMappingFile = ""
+    YaxisMappingRefColumn = ""
+    YaxisMappingTarColumn = ""
+    YaxisMappingFormat = ""
+    XaxisMappingFile = ""
+    XaxisMappingRefColumn = ""
+    XaxisMappingTarColumn = ""
+    XaxisMappingFormat = ""
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -500,15 +553,47 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 renderAs = doc
             elif item == "cbarLabel" :
                 cbarLabel = doc
+            elif item == "lineLabel" :
+                lineLabel = doc
+            elif item == "xLabel" :
+                xLabel = doc
+            elif item == "yLabel" :
+                yLabel = doc
+            elif item == "YaxisMappingFile" :
+                YaxisMappingFile = doc
+            elif item == "YaxisMappingRefColumn" :
+                YaxisMappingRefColumn = doc
+            elif item == "YaxisMappingTarColumn" :
+                YaxisMappingTarColumn = doc
+            elif item == "YaxisMappingFormat" :
+                YaxisMappingFormat = doc
+            elif item == "XaxisMappingFile" :
+                XaxisMappingFile = doc
+            elif item == "XaxisMappingRefColumn" :
+                XaxisMappingRefColumn = doc
+            elif item == "XaxisMappingTarColumn" :
+                XaxisMappingTarColumn = doc
+            elif item == "XaxisMappingFormat" :
+                YaxisMappingFormat = doc
             elif item == "ticklist" :
                 ticklist = list()
                 for i in doc :
                     ticklist.append(float(i))
+            elif item == "yTicklist" :
+                yTicklist = list()
+                for i in doc :
+                    yTicklist.append(float(i))
+            elif item == "xTicklist" :
+                xTicklist = list()
+                for i in doc :
+                    xTicklist.append(float(i))
     maxValue *= factor
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
-                cbarLabel, factor, ticklist, maxValue, maxLoaded, minValue, minLoaded, 
-                showbars, mintransparent, renderAs, transparencyfactor)
+                cbarLabel, factor, ticklist,yTicklist,xTicklist, maxValue, maxLoaded, minValue, minLoaded, 
+                showbars, mintransparent, renderAs, transparencyfactor, lineLabel, xLabel, yLabel,
+                YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
+                XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -587,8 +672,14 @@ def createSubPlot(image, out_path, pdf=None) :
     # ax.set_title(title)
     
     fig, axs = plt.subplots(nrows=nplotRows, ncols=nplotCols, squeeze=False, sharex=True, sharey=True, figsize=image.size)
-
-    fig.subplots_adjust(top=0.99, bottom=0.01, left=0.1, right=0.80, wspace=0.02, hspace=-0.3)
+    # defaults
+    # image.adjBottom = 0.15
+    # image.adjTop = 0.95
+    # image.adRight = 0.95
+    # image.adLeft = 0.15
+    # image.adhspace = 0.0
+    # image.adwspace = 0.0
+    fig.subplots_adjust(top=image.adjTop, bottom=image.adjBottom, left=image.adLeft, right=image.adRight, wspace=image.adwspace, hspace=image.adhspace)
     
     if image.title :
         fig.suptitle(image.title, fontsize='xx-large')
@@ -694,11 +785,69 @@ def createSubPlot(image, out_path, pdf=None) :
                     if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
                         ax.set_title(subtitles[idxRow-1])    
                 
-                #ax.set_axis_off()
-                ax.grid(True, alpha=0.5)
-                ax.axes.xaxis.set_visible(False)
-                ax.axes.yaxis.set_visible(False)
-    
+                    #ax.set_axis_off()
+                    ax.grid(True, alpha=0.5)
+                    ax.axes.xaxis.set_visible(False)
+                    ax.axes.yaxis.set_visible(False)
+                
+                if meta.renderAs == "densitySpread" : 
+                    ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+                    arithemticMean = np.nanmean(ascii_data_array, axis=1)
+                    arithemticMean = np.nan_to_num(arithemticMean)
+                    x = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+                    spl = spy.UnivariateSpline(x, arithemticMean)
+                    xs = np.linspace(0, len(arithemticMean), 20)
+
+                    x_new = np.linspace(0, len(arithemticMean), 500)
+                    a_BSpline = spy.interpolate.make_interp_spline(xs, spl(xs))
+                    if idxMerg == len(asciiHeadersLs)-1 :
+                        ax.axes.invert_yaxis()
+                    ax.plot(a_BSpline(x_new),x_new, label=meta.lineLabel)
+                    if len(meta.lineLabel) > 0 :
+                        ax.legend()
+                    
+                    if idxMerg == len(asciiHeadersLs)-1 :
+                        # do this only once
+
+                        def update_ticks(val, pos):
+                            val *= meta.factor
+                            return str(val)
+                        ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+                        if meta.yTicklist :
+                            ax.set_yticks(meta.yTicklist)
+                        if meta.xTicklist :
+                            ax.set_xticks(meta.xTicklist)
+
+                        def applyTickLabelMapping(file, ref, tar, textformat, axis):
+                            if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+                                lookup = readAxisLookup(file, ref, tar)
+                                def update_ticks_fromLookup(val, pos):
+                                    if val in lookup :
+                                        if len(textformat) > 0 :
+                                            newVal = lookup[val]
+                                            return textformat.format(newVal)
+                                        return str(lookup[val])
+                                    return ''
+                                axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+
+                        applyTickLabelMapping(meta.YaxisMappingFile,
+                                            meta.YaxisMappingRefColumn, 
+                                            meta.YaxisMappingTarColumn, 
+                                            meta.YaxisMappingFormat, 
+                                            ax.yaxis)
+                        applyTickLabelMapping(meta.XaxisMappingFile,
+                                            meta.XaxisMappingRefColumn, 
+                                            meta.XaxisMappingTarColumn, 
+                                            meta.XaxisMappingFormat, 
+                                            ax.xaxis)
+                        if len(meta.yLabel) > 0 :
+                            ax.set_ylabel(meta.yLabel) 
+                        if len(meta.xLabel) > 0 :
+                            ax.set_xlabel(meta.xLabel) 
+                        if len(meta.title) > 0 :
+                            ax.set_title(meta.title)   
+
     # save image and pdf 
     makeDir(out_path)
     if pdf :
@@ -706,6 +855,39 @@ def createSubPlot(image, out_path, pdf=None) :
     plt.savefig(out_path, dpi=250)
     plt.close(fig)
 
+def readAxisLookup(filename, refCol, tarCol) :
+    lookup = dict()
+    with open(filename) as sourcefile:
+        firstLine = True
+        refColIdx = -1
+        tarColIdx = -1
+        for line in sourcefile:
+            if firstLine :
+                firstLine = False
+                header = ReadHeader(line)
+                refColIdx = header[refCol]
+                tarColIdx = header[tarCol]
+                continue
+            out = loadLine(line,refColIdx,tarColIdx )
+            lookup[float(out[0])] = float(out[1])
+    return lookup
+
+def loadLine(line, refColIdx, tarColIdx) :
+    tokens = line.split(",")
+    out = [""] * 2
+    out[0] = tokens[refColIdx].strip()
+    out[1] = tokens[tarColIdx].strip()
+    return out
+
+def ReadHeader(line) : 
+    colDic = dict()
+    tokens = line.split(",")
+    i = -1
+    for token in tokens :
+        token = token.strip()
+        i = i+1
+        colDic[token] = i
+    return colDic
 
 def makeDir(out_path) :
     if not os.path.exists(os.path.dirname(out_path)):

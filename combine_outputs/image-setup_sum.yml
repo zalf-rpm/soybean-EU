@@ -1,0 +1,25 @@
+- image: 
+    name: summary_final
+    sizeX: 10
+    sizeY: 11
+    adjBottom: 0.01
+    adjTop: 0.99
+    adRight: 0.80
+    adLeft: 0.1
+    adhspace: -0.3
+    adwspace: 0.02
+    rows:
+        - row:
+            - sharedColorBar : True
+            - file: dev_max_yield_historical.asc.gz 
+            - file: dev_max_yield_future.asc.gz
+        - row:
+            - sharedColorBar : True
+            - file: dev_maturity_groups_historical.asc.gz
+            - file: dev_maturity_groups_future.asc.gz
+        - row:
+            - sharedColorBar : True
+            - file: dev_allRisks_historical.asc.gz
+            - file: dev_allRisks_future.asc.gz
+
+
