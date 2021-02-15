@@ -487,6 +487,8 @@ class Meta:
     XaxisMappingRefColumn: str
     XaxisMappingTarColumn: str
     XaxisMappingFormat: str
+    densityReduction: int
+    densityFactor: float
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -518,6 +520,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     XaxisMappingRefColumn = ""
     XaxisMappingTarColumn = ""
     XaxisMappingFormat = ""
+    densityReduction = -1
+    densityFactor = 1.0
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -543,6 +547,10 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 colormap = doc
             elif item == "minColor" :
                 minColor = doc
+            elif item == "densityReduction" :
+                densityReduction = int(doc)
+            elif item == "densityFactor" :
+                densityFactor = float(doc)
             elif item == "mintransparent" :
                 mintransparent = float(doc)
             elif item == "transparencyfactor" :
@@ -593,7 +601,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 cbarLabel, factor, ticklist,yTicklist,xTicklist, maxValue, maxLoaded, minValue, minLoaded, 
                 showbars, mintransparent, renderAs, transparencyfactor, lineLabel, xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
-                XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat)
+                XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
+                densityReduction, densityFactor)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -791,18 +800,23 @@ def createSubPlot(image, out_path, pdf=None) :
                     ax.axes.yaxis.set_visible(False)
                 
                 if meta.renderAs == "densitySpread" : 
+                    if idxMerg == len(asciiHeadersLs)-1 :
+                        ax.axes.invert_yaxis()                    
                     ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
                     arithemticMean = np.nanmean(ascii_data_array, axis=1)
                     arithemticMean = np.nan_to_num(arithemticMean)
-                    x = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
-                    spl = spy.UnivariateSpline(x, arithemticMean)
-                    xs = np.linspace(0, len(arithemticMean), 20)
+                    arithemticMean *= meta.densityFactor
+                    if meta.densityReduction > 0 :
+                        y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+                        spl = spy.UnivariateSpline(y, arithemticMean)    
+                        ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
+                        y_new = np.linspace(0, len(arithemticMean), 500)
+                        a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
+                        ax.plot(a_BSpline(y_new),y_new, label=meta.lineLabel)
+                    else :
+                        y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+                        ax.plot(arithemticMean, y, label=meta.lineLabel)
 
-                    x_new = np.linspace(0, len(arithemticMean), 500)
-                    a_BSpline = spy.interpolate.make_interp_spline(xs, spl(xs))
-                    if idxMerg == len(asciiHeadersLs)-1 :
-                        ax.axes.invert_yaxis()
-                    ax.plot(a_BSpline(x_new),x_new, label=meta.lineLabel)
                     if len(meta.lineLabel) > 0 :
                         ax.legend()
                     
@@ -810,6 +824,7 @@ def createSubPlot(image, out_path, pdf=None) :
                         # do this only once
 
                         def update_ticks(val, pos):
+                            val *= (1/meta.densityFactor)
                             val *= meta.factor
                             return str(val)
                         ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
