@@ -497,7 +497,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     minColor = ""
     cMap = None
     cbarLabel = None
-    factor = 0.001
+    factor = 1.0
     ticklist = None
     xTicklist = None
     yTicklist = None
@@ -806,13 +806,18 @@ def createSubPlot(image, out_path, pdf=None) :
                     arithemticMean = np.nanmean(ascii_data_array, axis=1)
                     arithemticMean = np.nan_to_num(arithemticMean)
                     arithemticMean *= meta.densityFactor
+                    maxV = np.max(arithemticMean)
+                    minV = np.min(arithemticMean)
                     if meta.densityReduction > 0 :
                         y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
                         spl = spy.UnivariateSpline(y, arithemticMean)    
                         ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
                         y_new = np.linspace(0, len(arithemticMean), 500)
                         a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
-                        ax.plot(a_BSpline(y_new),y_new, label=meta.lineLabel)
+                        x_new = a_BSpline(y_new)
+                        x_new[x_new < minV] = minV
+                        x_new[x_new > maxV] = maxV
+                        ax.plot(x_new,y_new, label=meta.lineLabel)
                     else :
                         y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
                         ax.plot(arithemticMean, y, label=meta.lineLabel)
