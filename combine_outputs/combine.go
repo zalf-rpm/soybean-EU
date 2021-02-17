@@ -216,10 +216,14 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup)
-	maxMerged := maxFuture
-	if maxHist > maxFuture {
-		maxMerged = maxHist
+	max := func(v1, v2 int) (out int) {
+		out = v1
+		if v2 > v1 {
+			out = v2
+		}
+		return out
 	}
+	maxMerged := max(maxHist, maxFuture)
 
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
@@ -247,10 +251,10 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
 		"%s_historical.asc",
-		"A",
+		"dev_max_yield",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev )Max Yield: historical",
+		"A",
 		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
@@ -262,10 +266,10 @@ func main() {
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&irrLookup,
 		"%s_future.asc",
-		"B",
+		"dev_max_yield",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Max Yield: future",
+		"B",
 		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
@@ -556,10 +560,10 @@ func main() {
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
 		"%s_historical.asc",
-		"C",
+		"dev_maturity_groups",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Maturity Groups: historical",
+		"C",
 		"Maturity groups",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
@@ -571,14 +575,96 @@ func main() {
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&irrLookup,
 		"%s_future.asc",
-		"D",
+		"dev_maturity_groups",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(Dev) Maturity Groups: future",
+		"D",
 		"Maturity groups",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
+
+	maxHist000 := maxFromIrrigationGrid(extRow, extCol,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxFuture000 := maxFromIrrigationGrid(extRow, extCol,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxMerged000 := max(maxHist000, maxFuture000)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"mg_000",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"000 future",
+		"[t ha–1]",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		maxMerged000, minColor, outC)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}],
+		&irrLookup,
+		"%s_historical.asc",
+		"mg_000",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"000 historical",
+		"[t ha–1]",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		maxMerged000, minColor, outC)
+
+	maxHistII := maxFromIrrigationGrid(extRow, extCol,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxFutureII := maxFromIrrigationGrid(extRow, extCol,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxMergedII := max(maxFutureII, maxHistII)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"mg_II",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"II future",
+		"[t ha–1]",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		maxMergedII, minColor, outC)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}],
+		p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}],
+		&irrLookup,
+		"%s_historical.asc",
+		"mg_II",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"II historical",
+		"[t ha–1]",
+		"jet",
+		nil, nil, nil, 0.001, 0,
+		maxMergedII, minColor, outC)
 
 	sidebarRiskLabel := []string{
 		"none",
@@ -738,6 +824,8 @@ type ProcessedData struct {
 	// droughtRiskGrids                   map[string][][]int
 	// droughtRiskDeviationGrids          map[string][][]int
 
+	allYieldGridsMergedModels map[SimKeyTuple][]int
+
 	maxYieldGridsAll                      map[ScenarioKeyTuple][]int
 	matGroupGridsAll                      map[ScenarioKeyTuple][]int
 	maxYieldDeviationGridsAll             map[ScenarioKeyTuple][]int
@@ -783,6 +871,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.wetHarvestGrid = make(map[SimKeyTuple][][]int)
 	p.coldSpellGrid = make(map[string][]int)
 	p.coldTempGrid = make(map[string][]int)
+	p.allYieldGridsMergedModels = make(map[SimKeyTuple][]int)
 	p.sumMaxOccurrence = 0
 	p.sumMaxDeathOccurrence = 0
 	p.maxLateHarvest = 0
@@ -1172,13 +1261,13 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 	// create a new key for summarized future events
 	futureScenarioAvgKey := "fut_avg"
-	isFuture := func(simKey ScenarioKeyTuple) bool {
-		return simKey.climateSenario != "0_0"
+	isFuture := func(climateSenario string) bool {
+		return climateSenario != "0_0"
 	}
 	futureKeys := make(map[TreatmentKeyTuple][]ScenarioKeyTuple, 2)
 	futureScenarios := make(map[string]bool)
 	for simKey := range p.maxYieldGrids {
-		if isFuture(simKey) {
+		if isFuture(simKey.climateSenario) {
 			fKey := TreatmentKeyTuple{comment: simKey.comment,
 				treatNo: simKey.treatNo}
 
@@ -1200,6 +1289,34 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 
 	p.coldSpellGrid[futureScenarioAvgKey] = newSmallGridLookup(maxRefNo, 0)
 	p.coldTempGrid[futureScenarioAvgKey] = newSmallGridLookup(maxRefNo, 0)
+
+	// create new simKeys for future scenarios
+	futureSimKeys := make(map[SimKeyTuple][]SimKeyTuple)
+	for simKey := range p.allYieldGrids {
+		if isFuture(simKey.climateSenario) {
+			fKey := SimKeyTuple{comment: simKey.comment,
+				treatNo: simKey.treatNo, climateSenario: futureScenarioAvgKey, mGroup: simKey.mGroup}
+			if _, ok := futureSimKeys[fKey]; !ok {
+				futureSimKeys[fKey] = make([]SimKeyTuple, 0, 5)
+			}
+			futureSimKeys[fKey] = append(futureSimKeys[fKey], simKey)
+		}
+
+	}
+	// create lookup for merged future scenarios
+	for futureSimKey, simKeys := range futureSimKeys {
+		p.allYieldGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, 0)
+		// merge future with the same matGroup and treatment
+		for sIdx := 0; sIdx < numSource; sIdx++ {
+			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+				numSimKeys := len((simKeys))
+				for _, simKey := range simKeys {
+					p.allYieldGrids[futureSimKey][sIdx][rIdx] = p.allYieldGrids[futureSimKey][sIdx][rIdx] + p.allYieldGrids[simKey][sIdx][rIdx]
+				}
+				p.allYieldGrids[futureSimKey][sIdx][rIdx] = p.allYieldGrids[futureSimKey][sIdx][rIdx] / numSimKeys
+			}
+		}
+	}
 
 	numScenKey := len(p.potentialWaterStress)
 	for sIdx := 0; sIdx < numSource; sIdx++ {
@@ -1465,15 +1582,15 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 
 func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 	// create a new key for summarized future events
-	isFuture := func(simKey ScenarioKeyTuple) bool {
-		return simKey.climateSenario == "fut_avg"
+	isFuture := func(climateSenario string) bool {
+		return climateSenario == "fut_avg"
 	}
-	isHistorical := func(simKey ScenarioKeyTuple) bool {
-		return simKey.climateSenario == "0_0"
+	isHistorical := func(climateSenario string) bool {
+		return climateSenario == "0_0"
 	}
 	mergedKeys := make([]ScenarioKeyTuple, 0, 4)
 	for simKey := range p.maxYieldGrids {
-		if isFuture(simKey) || isHistorical(simKey) {
+		if isFuture(simKey.climateSenario) || isHistorical(simKey.climateSenario) {
 			mergedKeys = append(mergedKeys, simKey)
 		}
 	}
@@ -1502,6 +1619,19 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.shortSeasonGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 		}
+
+		for simKey := range p.allYieldGrids {
+			if isFuture(simKey.climateSenario) || isHistorical(simKey.climateSenario) {
+				p.allYieldGridsMergedModels[simKey] = newSmallGridLookup(maxRefNo, 0)
+				for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+					for sIdx := 0; sIdx < numSource; sIdx++ {
+						p.allYieldGridsMergedModels[simKey][rIdx] = p.allYieldGridsMergedModels[simKey][rIdx] + p.allYieldGrids[simKey][sIdx][rIdx]
+					}
+					p.allYieldGridsMergedModels[simKey][rIdx] = p.allYieldGridsMergedModels[simKey][rIdx] / numSource
+				}
+			}
+		}
+
 		matGroupDistribution := make([]int, numSource)
 		matGroupDevDistribution := make([]int, numSource)
 
