@@ -474,19 +474,19 @@ func main() {
 	// 	colorListDroughtRisk, nil, nil, 1.0, 0,
 	// 	1, "", outC)
 
-	// waitForNum++
-	// colorListColdSpell := []string{"lightgrey", "blueviolet"}
-	// go drawMaps(gridSourceLookup,
-	// 	p.coldSpellGrid,
-	// 	asciiOutCombinedTemplate,
-	// 	"coldSpell",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"Cold snap in Summer: %v",
-	// 	"",
-	// 	"jet",
-	// 	colorListColdSpell, nil, nil, 1.0, 0,
-	// 	1, "", outC)
+	waitForNum++
+	colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	go drawMaps(gridSourceLookup,
+		p.coldSpellGrid,
+		asciiOutCombinedTemplate,
+		"coldSpell",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Cold snap in Summer: %v",
+		"",
+		"jet",
+		colorListColdSpell, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
@@ -501,7 +501,7 @@ func main() {
 	// 	nil, nil, nil, 1.0, -20,
 	// 	50, "", outC)
 
-	// colorListShortSeason := []string{"lightgrey", "cyan"}
+	colorListShortSeason := []string{"lightgrey", "cyan"}
 	// waitForNum++
 	// go drawScenarioMaps(gridSourceLookup,
 	// 	p.shortSeasonGridAll,
@@ -528,18 +528,18 @@ func main() {
 	// 	colorListShortSeason, nil, nil, 1.0,
 	// 	0, 1, "", outC)
 
-	// waitForNum++
-	// go drawMaps(gridSourceLookup,
-	// 	p.shortSeasonDeviationGridSumAll,
-	// 	asciiOutCombinedTemplate,
-	// 	"dev_short_season",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"(Dev) Short season: %v",
-	// 	"",
-	// 	"plasma",
-	// 	colorListShortSeason, nil, nil, 1.0, 0,
-	// 	1, "", outC)
+	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.shortSeasonDeviationGridSumAll,
+		asciiOutCombinedTemplate,
+		"dev_short_season",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Short season: %v",
+		"",
+		"plasma",
+		colorListShortSeason, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
