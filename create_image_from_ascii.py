@@ -310,7 +310,7 @@ def createImgFromMeta(ascii_path, meta_path, out_path, pdf=None) :
     minLoaded = False
 
     if os.path.isfile(meta_path)  :
-        with open(meta_path, 'rt') as meta:
+        with open(meta_path, 'rt', encoding='utf-8') as meta:
         # documents = yaml.load(meta, Loader=yaml.FullLoader)
             yaml=YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
             documents = yaml.load(meta)
@@ -477,6 +477,7 @@ class Meta:
     renderAs: str
     transparencyfactor: float
     lineLabel: str
+    lineColor: str
     xLabel: str
     yLabel: str
     YaxisMappingFile: str
@@ -510,6 +511,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     renderAs = "heatmap"
     transparencyfactor = 1.0
     lineLabel = ""
+    lineColor = ""
     xLabel = ""
     yLabel = ""
     YaxisMappingFile = ""
@@ -563,6 +565,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 cbarLabel = doc
             elif item == "lineLabel" :
                 lineLabel = doc
+            elif item == "lineColor" :
+                lineColor = doc
             elif item == "xLabel" :
                 xLabel = doc
             elif item == "yLabel" :
@@ -599,7 +603,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
                 cbarLabel, factor, ticklist,yTicklist,xTicklist, maxValue, maxLoaded, minValue, minLoaded, 
-                showbars, mintransparent, renderAs, transparencyfactor, lineLabel, xLabel, yLabel,
+                showbars, mintransparent, renderAs, transparencyfactor, lineLabel, lineColor, xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
                 densityReduction, densityFactor)
@@ -817,10 +821,16 @@ def createSubPlot(image, out_path, pdf=None) :
                         x_new = a_BSpline(y_new)
                         x_new[x_new < minV] = minV
                         x_new[x_new > maxV] = maxV
-                        ax.plot(x_new,y_new, label=meta.lineLabel)
+                        if len(meta.lineColor) > 0 :
+                            ax.plot(x_new,y_new, label=meta.lineLabel, color=meta.lineColor)
+                        else :
+                            ax.plot(x_new,y_new, label=meta.lineLabel)
                     else :
                         y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
-                        ax.plot(arithemticMean, y, label=meta.lineLabel)
+                        if len(meta.lineColor) > 0 :
+                            ax.plot(arithemticMean, y, label=meta.lineLabel, color=meta.lineColor)
+                        else :
+                            ax.plot(arithemticMean, y, label=meta.lineLabel)
 
                     if len(meta.lineLabel) > 0 :
                         ax.legend()
