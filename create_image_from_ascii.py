@@ -162,11 +162,20 @@ class Merge:
     mintransparency: list
     transparencyfactor: list
     content: list
+    inserts: list
+
+@dataclass
+class Insert:
+    height: float
+    width: float
+    loc: float
+    content: list
 
 @dataclass
 class File:
     name: str
     meta: str
+    inserts: list
 
 def readSetup(filename, root, files) :
     imageList = list()
@@ -180,7 +189,8 @@ def readSetup(filename, root, files) :
             metafilename = filename[:-2]+"meta"
         filepath = os.path.join(root, filename)
         metapath = os.path.join(root, metafilename)
-        return File(filepath, metapath)   
+        inserts = list()
+        return File(filepath, metapath, inserts)   
 
     def readRows(doc) : 
         rowContent = list()
@@ -200,6 +210,8 @@ def readSetup(filename, root, files) :
                                 rowList.append(readFile(entries["file"]))
                             if entry == "merge" :
                                 rowList.append(readMerge(entries["merge"]))
+                            if entry == "insert" :
+                                rowList[-1].inserts.append(readInsert(entries["insert"]))
                     rowContent.append(Row(subtitle, sharedColorBar, rowList))
         return rowContent
 
@@ -207,6 +219,7 @@ def readSetup(filename, root, files) :
         mergeContent = list()
         mintransparency = list()
         transparencyfactorList = list()
+        inserts = list()
         for entry in doc :
             for f in entry:
                 if f == "file" :
@@ -219,7 +232,26 @@ def readSetup(filename, root, files) :
                 if f == "transparencyfactor" :
                     val = float(entry["transparencyfactor"])
                     transparencyfactorList[len(transparencyfactorList) - 1] = val
-        return Merge(mintransparency, transparencyfactorList, mergeContent)
+        return Merge(mintransparency, transparencyfactorList, mergeContent, inserts)
+
+    def readInsert(doc) :
+        height = 30.0
+        width = 30.0
+        loc = 10.0
+        insertContent = list()
+        for entry in doc :
+            if entry == "height" :
+                height = float(doc["height"])
+            if entry == "width" :
+                width = float(doc["width"])
+            if entry == "loc" :
+                loc = float(doc["loc"])
+            if entry == "file" :
+                insertContent.append(readFile(doc["file"]))
+            if entry == "merge" :
+                insertContent.append(readMerge(doc["merge"]))
+
+        return Insert(height, width, loc, insertContent)
 
     with open(filename, 'rt') as source:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -269,6 +301,8 @@ def readSetup(filename, root, files) :
                         imageContent = readRows(item["image"][entry])
                     elif entry == "merge" :
                         imageContent.append(readMerge(item["image"][entry]))
+                    elif entry == "insert" :
+                        imageContent[-1].inserts.append(readInsert(item["image"][entry]))
                 if sizeX > 0 and sizeY > 0 :
                     imgSize = (sizeX, sizeY)
                 imageList.append(Image(imagename, title, imgSize,
@@ -615,18 +649,69 @@ def createSubPlot(image, out_path, pdf=None) :
     nplotCols = 0
     asciiHeaderLs = dict()
     metaLs = dict()
+    asciiHeaderInsertLs = dict()
+    metaInsertLs = dict()
+    subPositions = dict()
     subtitles = list()
-    for content in image.content :
 
+    def readContent(content) :
+        asciiHeaderList = list()
+        metaList = list()
+        insertAsciiHeaderList = list()
+        insertMetaList = list()
+        insertPosition = dict()
         if type(content) is File :
             name = content.name
-            meta = content.meta
+            metaName = content.meta
             asciiHeader = readAsciiHeader(name)
-            meta = readMeta(meta, asciiHeader.ascii_nodata, True)  
+            meta = readMeta(metaName, asciiHeader.ascii_nodata, True)  
+            asciiHeaderList.append(asciiHeader)
+            metaList.append(meta)
+            if len(content.inserts) > 0 :
+                ah, met, _, _, iDic = readContent(content.inserts[0])
+                for i in range(len(ah)):
+                    insertAsciiHeaderList.append(ah[i])
+                    insertMetaList.append(met[i])
+                insertPosition = iDic
+        elif type(content) is Merge:
+            transparencyList = content.mintransparency
+            transparencyfactorList = content.transparencyfactor
+            idxT = 0
+            for f in content.content :
+                asciiHeader = readAsciiHeader(f.name)         
+                meta = readMeta(f.meta, asciiHeader.ascii_nodata, True) 
+                meta.mintransparent = min(transparencyList[idxT], meta.mintransparent)
+                meta.transparencyfactor = transparencyfactorList[idxT]
+                asciiHeaderList.append(asciiHeader)
+                metaList.append(meta)
+                idxT += 1
+            if len(content.inserts) > 0 :
+                ah, met, _, _, iDic = readContent(content.inserts[0])
+                for i in range(len(ah)):
+                    insertAsciiHeaderList.append(ah[i])
+                    insertMetaList.append(met[i])
+                insertPosition = iDic
+        elif type(content) is Insert:
+            insertPosition["height"] = content.height
+            insertPosition["width"] = content.width
+            insertPosition["loc"] = content.loc
+            ah, met, _, _, _ = readContent(content.content[0])
+            for i in range(len(ah)):
+                asciiHeaderList.append(ah[i])
+                metaList.append(met[i])
+
+        return (asciiHeaderList,metaList,insertAsciiHeaderList,insertMetaList, insertPosition)
+
+    for content in image.content :
+        if type(content) is File or type(content) is Merge:
+            asciiHeader, meta, asciiHeaderInsert, metaInsert, subPosi = readContent(content)
             nplotRows += 1
             nplotCols += 1             
             asciiHeaderLs[(nplotRows, nplotCols)] = asciiHeader 
             metaLs[(nplotRows, nplotCols)] = meta
+            asciiHeaderInsertLs[(nplotRows, nplotCols)] = asciiHeaderInsert
+            metaInsertLs[(nplotRows, nplotCols)] = metaInsert
+            subPositions[(nplotRows, nplotCols)] = subPosi
             break
         elif type(content) is Row :
             nplotRows += 1
@@ -637,53 +722,20 @@ def createSubPlot(image, out_path, pdf=None) :
             for col in content.content :
                 numCol += 1
                 showBar = not shareCBar or (numCol == lastCol) 
-                if type(col) is File :
-                    asciiHeader = readAsciiHeader(col.name)         
-                    asciiHeaderLs[(nplotRows, numCol)] = asciiHeader
-                    metaLs[(nplotRows, numCol)] = readMeta(col.meta, asciiHeader.ascii_nodata, showBar) 
-                elif type(col) is Merge :
-                    mergeHeaderList = list()
-                    mergeMetaList = list()
-                    transparencyList = col.mintransparency
-                    transparencyfactorList = col.transparencyfactor
-                    idxT = 0
-                    for f in col.content :
-                        asciiHeader = readAsciiHeader(f.name)         
-                        meta = readMeta(f.meta, asciiHeader.ascii_nodata, showBar) 
-                        meta.mintransparent = min(transparencyList[idxT], meta.mintransparent)
-                        meta.transparencyfactor = transparencyfactorList[idxT]
-                        mergeHeaderList.append(asciiHeader)
-                        mergeMetaList.append(meta)
-                        idxT += 1
-                    asciiHeaderLs[(nplotRows, numCol)] = mergeHeaderList
-                    metaLs[(nplotRows, numCol)] = mergeMetaList
-
+                if type(col) is File or type(col) is Merge :
+                    asciiHeader, meta, asciiHeaderInsert, metaInsert, subPosi = readContent(col)
+                    asciiHeaderLs[(nplotRows, numCol)] = asciiHeader 
+                    metaLs[(nplotRows, numCol)] = meta
+                    asciiHeaderInsertLs[(nplotRows, numCol)] = asciiHeaderInsert
+                    metaInsertLs[(nplotRows, numCol)] = metaInsert
+                    subPositions[(nplotRows, numCol)] = subPosi
+                    for m in metaLs[(nplotRows, numCol)] :
+                        m.showbars = showBar
             if numCol > nplotCols : 
                 nplotCols = numCol
                 
-        elif type(content) is Merge:
-            mergeHeaderList = list()
-            mergeMetaList = list()
-            transparencyList = content.mintransparency
-            transparencyfactorList = content.transparencyfactor
-            idxT = 0
-            for f in content.content :
-                asciiHeader = readAsciiHeader(f.name)         
-                meta = readMeta(f.meta, asciiHeader.ascii_nodata, True) 
-                meta.mintransparent = min(transparencyList[idxT], meta.mintransparent)
-                meta.transparencyfactor = transparencyfactorList[idxT]
-                mergeHeaderList.append(asciiHeader)
-                mergeMetaList.append(meta)
-                idxT += 1
-            nplotRows += 1
-            nplotCols += 1 
-            asciiHeaderLs[(nplotRows, nplotCols)] = mergeHeaderList
-            metaLs[(nplotRows, nplotCols)] = mergeMetaList
-            break
     # Plot data array
-    # fig, ax = plt.subplots()
-    # ax.set_title(title)
-    
+
     fig, axs = plt.subplots(nrows=nplotRows, ncols=nplotCols, squeeze=False, sharex=True, sharey=True, figsize=image.size)
     # defaults
     # image.adjBottom = 0.15
@@ -697,186 +749,49 @@ def createSubPlot(image, out_path, pdf=None) :
     if image.title :
         fig.suptitle(image.title, fontsize='xx-large')
 
-    #fig.suptitle('historical     future', fontsize=14, y=1.0, x=0.6)
-
     for idxRow in range(1,nplotRows+1) :
         for idxCol in range(1,nplotCols+1) :
             ax = axs[idxRow-1][idxCol-1]
             asciiHeaders = asciiHeaderLs[(idxRow,idxCol)]
             metas = metaLs[(idxRow,idxCol)]
-            asciiHeadersLs = list()
-            matchMetaLs = list()
-            if type(asciiHeaders) is not list :
-                asciiHeadersLs.append(asciiHeaders)
-                matchMetaLs.append(metas)
-            else :
-                asciiHeadersLs = asciiHeaders
-                matchMetaLs = metas
-            for idxMerg in range(len(asciiHeadersLs)) :
-                asciiHeader = asciiHeadersLs[idxMerg]
-                meta = matchMetaLs[idxMerg]
-                # Read in the ascii data array
-                ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
+            for idxMerg in range(len(asciiHeaders)) :
+                asciiHeader = asciiHeaders[idxMerg]
+                meta = metas[idxMerg]
+                subtitle = ""
+                if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
+                    subtitle = subtitles[idxRow-1]
+                onlyOnce = (idxMerg == len(asciiHeaders)-1)
+                plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce)
+            if (len(metaInsertLs[(idxRow,idxCol)]) > 0 and 
+                len(asciiHeaderInsertLs[(idxRow,idxCol)]) > 0 and 
+                len(subPositions[(idxRow,idxCol)]) > 0) :
+
+                asciiHeaders = asciiHeaderInsertLs[(idxRow,idxCol)]
+                metas = metaInsertLs[(idxRow,idxCol)]
+                subPosi = subPositions[(idxRow,idxCol)]
                 
-                colorM = None
-                # set min color if given
-                if len(meta.minColor) > 0 and not meta.cMap:
-                    newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
-                    newcolors = newColorMap(np.linspace(0, 1, 256))
-                    for idC in range(256) :
-                        if idC == 0 :
-                            alpha = meta.mintransparent * meta.transparencyfactor
-                            rgba = matplotlib.cm.colors.to_rgba(meta.minColor, alpha=alpha)
-                            minColorVal = np.array([rgba])
-                            newcolors[:1, :] = minColorVal
-                        else :
-                            newcolors[idC:idC+1, 3:4] = meta.transparencyfactor
-                    colorM = ListedColormap(newcolors)
-                # Get the img object in order to pass it to the colorbar function
-                elif meta.cMap :
-                    if meta.transparencyfactor < 1.0 or meta.mintransparent < 1.0:
-                        newColorMap = ListedColormap(meta.cMap)
-                        newcolors = newColorMap(np.linspace(0, 1, len(meta.cMap)))
-                        for idC in range(len(meta.cMap)) :
-                            alpha = meta.transparencyfactor
-                            if idC == 0 :
-                                alpha = meta.mintransparent * meta.transparencyfactor
-                            rgba = matplotlib.cm.colors.to_rgba(meta.cMap[idC], alpha=alpha)
-                            newcolors[idC:idC+1, :] = np.array([rgba])
-                        colorM = ListedColormap(newcolors)
-                    else :
-                        colorM = ListedColormap(meta.cMap)
-                else :
-                # use color map name 
-                    newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
-                    newcolors = newColorMap(np.linspace(0, 1, 256))
-                    for idC in range(256) :
-                        alpha = meta.transparencyfactor
-                        if idC == 0 :
-                            alpha = meta.mintransparent * meta.transparencyfactor
-                        newcolors[idC:idC+1, 3:4] = alpha
-                    colorM = ListedColormap(newcolors)
+                inset_ax = inset_axes(ax,
+                                    # height="{:5.2f}%".format(subPosi["height"]), 
+                                    # width="{:5.2f}%".format(subPosi["width"]),
+                                    # loc=subPosi["loc"])
+                                    # height="30%",
+                                    # width="30%",
+                                    width="100%", height="100%",
+                                    bbox_to_anchor=(0, 0.1, .24, .8),
+                                    #bbox_to_anchor=(.057, .4, .233, .5), #looks ok
+                                    bbox_transform=ax.transAxes, loc=2,
+                                    borderpad=0
+                                    )
+                fontsize = 6
+                axlabelpad = 1
+                axtickpad = 0
+                for idxMerg in range(len(asciiHeaders)) :
+                    asciiHeader = asciiHeaders[idxMerg]
+                    meta = metas[idxMerg]
+                    subtitle = ""
+                    onlyOnce = (idxMerg == len(asciiHeaders)-1)
+                    plotLayer(fig, inset_ax, asciiHeader, meta, subtitle, onlyOnce, fontsize, axlabelpad, axtickpad)
 
-                if meta.renderAs == "heatmap" :
-                    # Set the nodata values to nan
-                    ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-                    # data is stored as an integer but scaled by a factor
-                    ascii_data_array *= meta.factor
-
-                    if meta.minLoaded and meta.maxLoaded:
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
-                    elif meta.minLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
-                    elif meta.maxLoaded :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
-                    else :
-                        img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
-
-                    if meta.showbars :
-                        axins = inset_axes(ax,
-                        width="5%",  # width = 5% of parent_bbox width
-                        height="90%",  # height : 50%
-                        loc='lower left',
-                        bbox_to_anchor=(1.05, 0., 1, 1),
-                        bbox_transform=ax.transAxes,
-                        borderpad=0,
-                        )
-                        if meta.ticklist :
-                            # Place a colorbar next to the map
-                            cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
-                        else :
-                            # Place a colorbar next to the map
-                            cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
-                        if len(meta.label) > 0 :
-                            #cbar.ax.set_label(meta.label)
-                            cbar.ax.set_title(meta.label, loc='left') 
-                        if meta.cbarLabel :
-                            cbar.ax.set_yticklabels(meta.cbarLabel) 
-
-                    if len(meta.title) > 0 :
-                        ax.set_title(meta.title, y=0.90, x=0.05)   
-                    if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
-                        ax.set_title(subtitles[idxRow-1])    
-                
-                    #ax.set_axis_off()
-                    ax.grid(True, alpha=0.5)
-                    ax.axes.xaxis.set_visible(False)
-                    ax.axes.yaxis.set_visible(False)
-                
-                if meta.renderAs == "densitySpread" : 
-                    if idxMerg == len(asciiHeadersLs)-1 :
-                        ax.axes.invert_yaxis()                    
-                    ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-                    arithemticMean = np.nanmean(ascii_data_array, axis=1)
-                    arithemticMean = np.nan_to_num(arithemticMean)
-                    arithemticMean *= meta.densityFactor
-                    maxV = np.max(arithemticMean)
-                    minV = np.min(arithemticMean)
-                    if meta.densityReduction > 0 :
-                        y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
-                        spl = spy.UnivariateSpline(y, arithemticMean)    
-                        ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
-                        y_new = np.linspace(0, len(arithemticMean), 500)
-                        a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
-                        x_new = a_BSpline(y_new)
-                        x_new[x_new < minV] = minV
-                        x_new[x_new > maxV] = maxV
-                        if len(meta.lineColor) > 0 :
-                            ax.plot(x_new,y_new, label=meta.lineLabel, color=meta.lineColor)
-                        else :
-                            ax.plot(x_new,y_new, label=meta.lineLabel)
-                    else :
-                        y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
-                        if len(meta.lineColor) > 0 :
-                            ax.plot(arithemticMean, y, label=meta.lineLabel, color=meta.lineColor)
-                        else :
-                            ax.plot(arithemticMean, y, label=meta.lineLabel)
-
-                    if len(meta.lineLabel) > 0 :
-                        ax.legend()
-                    
-                    if idxMerg == len(asciiHeadersLs)-1 :
-                        # do this only once
-
-                        def update_ticks(val, pos):
-                            val *= (1/meta.densityFactor)
-                            val *= meta.factor
-                            return str(val)
-                        ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
-
-                        if meta.yTicklist :
-                            ax.set_yticks(meta.yTicklist)
-                        if meta.xTicklist :
-                            ax.set_xticks(meta.xTicklist)
-
-                        def applyTickLabelMapping(file, ref, tar, textformat, axis):
-                            if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
-                                lookup = readAxisLookup(file, ref, tar)
-                                def update_ticks_fromLookup(val, pos):
-                                    if val in lookup :
-                                        if len(textformat) > 0 :
-                                            newVal = lookup[val]
-                                            return textformat.format(newVal)
-                                        return str(lookup[val])
-                                    return ''
-                                axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
-
-                        applyTickLabelMapping(meta.YaxisMappingFile,
-                                            meta.YaxisMappingRefColumn, 
-                                            meta.YaxisMappingTarColumn, 
-                                            meta.YaxisMappingFormat, 
-                                            ax.yaxis)
-                        applyTickLabelMapping(meta.XaxisMappingFile,
-                                            meta.XaxisMappingRefColumn, 
-                                            meta.XaxisMappingTarColumn, 
-                                            meta.XaxisMappingFormat, 
-                                            ax.xaxis)
-                        if len(meta.yLabel) > 0 :
-                            ax.set_ylabel(meta.yLabel) 
-                        if len(meta.xLabel) > 0 :
-                            ax.set_xlabel(meta.xLabel) 
-                        if len(meta.title) > 0 :
-                            ax.set_title(meta.title)   
 
     # save image and pdf 
     makeDir(out_path)
@@ -884,6 +799,179 @@ def createSubPlot(image, out_path, pdf=None) :
         pdf.savefig(dpi=150)
     plt.savefig(out_path, dpi=250)
     plt.close(fig)
+
+def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axlabelpad = None, axtickpad = None) :
+    # Read in the ascii data array
+    ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
+    
+    colorM = None
+    # set min color if given
+    if len(meta.minColor) > 0 and not meta.cMap:
+        newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
+        newcolors = newColorMap(np.linspace(0, 1, 256))
+        for idC in range(256) :
+            if idC == 0 :
+                alpha = meta.mintransparent * meta.transparencyfactor
+                rgba = matplotlib.cm.colors.to_rgba(meta.minColor, alpha=alpha)
+                minColorVal = np.array([rgba])
+                newcolors[:1, :] = minColorVal
+            else :
+                newcolors[idC:idC+1, 3:4] = meta.transparencyfactor
+        colorM = ListedColormap(newcolors)
+    # Get the img object in order to pass it to the colorbar function
+    elif meta.cMap :
+        if meta.transparencyfactor < 1.0 or meta.mintransparent < 1.0:
+            newColorMap = ListedColormap(meta.cMap)
+            newcolors = newColorMap(np.linspace(0, 1, len(meta.cMap)))
+            for idC in range(len(meta.cMap)) :
+                alpha = meta.transparencyfactor
+                if idC == 0 :
+                    alpha = meta.mintransparent * meta.transparencyfactor
+                rgba = matplotlib.cm.colors.to_rgba(meta.cMap[idC], alpha=alpha)
+                newcolors[idC:idC+1, :] = np.array([rgba])
+            colorM = ListedColormap(newcolors)
+        else :
+            colorM = ListedColormap(meta.cMap)
+    else :
+    # use color map name 
+        newColorMap = matplotlib.cm.get_cmap(meta.colormap, 256)
+        newcolors = newColorMap(np.linspace(0, 1, 256))
+        for idC in range(256) :
+            alpha = meta.transparencyfactor
+            if idC == 0 :
+                alpha = meta.mintransparent * meta.transparencyfactor
+            newcolors[idC:idC+1, 3:4] = alpha
+        colorM = ListedColormap(newcolors)
+
+    if meta.renderAs == "heatmap" :
+        # Set the nodata values to nan
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        # data is stored as an integer but scaled by a factor
+        ascii_data_array *= meta.factor
+
+        if meta.minLoaded and meta.maxLoaded:
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
+        elif meta.minLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
+        elif meta.maxLoaded :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
+        else :
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
+
+        if meta.showbars :
+            axins = inset_axes(ax,
+            width="5%",  # width = 5% of parent_bbox width
+            height="90%",  # height : 50%
+            loc='lower left',
+            bbox_to_anchor=(1.05, 0., 1, 1),
+            bbox_transform=ax.transAxes,
+            borderpad=0,
+            )
+            if meta.ticklist :
+                # Place a colorbar next to the map
+                cbar = fig.colorbar(img_plot, ticks=meta.ticklist, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
+            else :
+                # Place a colorbar next to the map
+                cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
+            if len(meta.label) > 0 :
+                #cbar.ax.set_label(meta.label)
+                cbar.ax.set_title(meta.label, loc='left') 
+            if meta.cbarLabel :
+                cbar.ax.set_yticklabels(meta.cbarLabel) 
+
+        if len(meta.title) > 0 :
+            ax.set_title(meta.title, y=0.90, x=0.05)   
+        if len(subtitle) > 0 :
+            ax.set_title(subtitle)    
+    
+        #ax.set_axis_off()
+        ax.grid(True, alpha=0.5)
+        ax.axes.xaxis.set_visible(False)
+        ax.axes.yaxis.set_visible(False)
+    
+    if meta.renderAs == "densitySpread" : 
+        if onlyOnce :
+            ax.axes.invert_yaxis()                    
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        arithemticMean = np.nanmean(ascii_data_array, axis=1)
+        arithemticMean = np.nan_to_num(arithemticMean)
+        arithemticMean *= meta.densityFactor
+        maxV = np.max(arithemticMean)
+        minV = np.min(arithemticMean)
+        if meta.densityReduction > 0 :
+            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+            spl = spy.UnivariateSpline(y, arithemticMean)    
+            ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
+            y_new = np.linspace(0, len(arithemticMean), 500)
+            a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
+            x_new = a_BSpline(y_new)
+            x_new[x_new < minV] = minV
+            x_new[x_new > maxV] = maxV
+            if len(meta.lineColor) > 0 :
+                ax.plot(x_new,y_new, label=meta.lineLabel, color=meta.lineColor)
+            else :
+                ax.plot(x_new,y_new, label=meta.lineLabel)
+        else :
+            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+            if len(meta.lineColor) > 0 :
+                ax.plot(arithemticMean, y, label=meta.lineLabel, color=meta.lineColor)
+            else :
+                ax.plot(arithemticMean, y, label=meta.lineLabel)
+
+        if len(meta.lineLabel) > 0 :
+            # ax.legend(fontsize=fontsize, handlelength=1)
+            ax.legend(fontsize=fontsize, handlelength=1, bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        if onlyOnce :
+            # do this only once
+
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(val)
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            def applyTickLabelMapping(file, ref, tar, textformat, axis):
+                if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+                    lookup = readAxisLookup(file, ref, tar)
+                    def update_ticks_fromLookup(val, pos):
+                        if val in lookup :
+                            if len(textformat) > 0 :
+                                newVal = lookup[val]
+                                return textformat.format(newVal)
+                            return str(lookup[val])
+                        return ''
+                    axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title)   
+            for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
+
 
 def readAxisLookup(filename, refCol, tarCol) :
     lookup = dict()
