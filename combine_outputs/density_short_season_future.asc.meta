@@ -1,8 +1,9 @@
 renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
-lineLabel: 'stort season future'
-xLabel: 'Intensity'
+lineLabel: 'S future'
+lineColor: cornflowerblue
+xLabel: 'Risk'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

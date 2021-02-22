@@ -1,8 +1,9 @@
 renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
-lineLabel: 'drought future'
-xLabel: 'Intensity'
+lineLabel: 'D future'
+lineColor: peachpuff
+xLabel: 'Risk'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

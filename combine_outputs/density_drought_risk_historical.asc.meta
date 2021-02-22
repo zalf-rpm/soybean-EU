@@ -1,8 +1,9 @@
 renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
-lineLabel: 'drought hist'
-xLabel: 'Intensity'
+lineLabel: 'D historical'
+lineColor: orangered
+xLabel: 'Risk'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

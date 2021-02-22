@@ -1,5 +1,5 @@
 - image: 
-    name: density_spread
+    name: density_spread_max_yield
     sizeX: 4.5
     sizeY: 4
     adjBottom: 0.15
@@ -11,3 +11,33 @@
     merge: 
        - file: 'density_max_yield_historical.asc.gz'
        - file: 'density_max_yield_future.asc.gz'
+- image: 
+    name: density_spread_max_yield_000_II
+    sizeX: 4.5
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.95
+    adLeft: 0.15
+    adhspace: 0.0
+    adwspace: 0.0
+    merge: 
+       - file: 'density_000_historical.asc.gz'
+       - file: 'density_000_future.asc.gz'
+       - file: 'density_II_historical.asc.gz'
+       - file: 'density_II_future.asc.gz'
+- image: 
+    name: density_spread_risk_factors
+    sizeX: 4.5
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.95
+    adLeft: 0.15
+    adhspace: 0.0
+    adwspace: 0.0
+    merge: 
+       - file: 'density_short_season_future.asc.gz'
+       - file: 'density_short_season_historical.asc.gz'
+       - file: 'density_drought_risk_future.asc.gz'
+       - file: 'density_drought_risk_historical.asc.gz'

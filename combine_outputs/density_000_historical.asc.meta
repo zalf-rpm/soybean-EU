@@ -1,9 +1,9 @@
+factor: 0.001
 renderAs: densitySpread
 densityReduction: 20
-densityFactor: 1000
-lineLabel: 'S historical'
-lineColor: darkblue
-xLabel: 'Risk'
+lineLabel: '000 historical'
+lineColor: forestgreen
+xLabel: '[t ha–1]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row
@@ -14,7 +14,3 @@ yTicklist:
  - 1807
  - 2867
  - 4017
-xTicklist: 
- - 0
- - 500
- - 1000
