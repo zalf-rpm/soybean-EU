@@ -1,6 +1,8 @@
+title: 'A'
 factor: 0.001
 renderAs: densitySpread
 densityReduction: 20
+lineColor: limegreen
 lineLabel: future
 xLabel: '[t ha–1]'
 yLabel: 'Latitude'

@@ -2,12 +2,12 @@
     name: summary_final
     sizeX: 10
     sizeY: 11
-    adjBottom: 0.01
+    adjBottom: 0.05
     adjTop: 0.99
     adRight: 0.80
-    adLeft: 0.1
-    adhspace: -0.3
-    adwspace: 0.02
+    adLeft: 0.25
+    adhspace: 0.12
+    adwspace: 0.01
     rows:
         - row:
             - sharedColorBar : True
@@ -46,5 +46,14 @@
                     - file: 'density_drought_risk_future.asc.gz'
                     - file: 'density_drought_risk_historical.asc.gz'
             - file: dev_allRisks_future.asc.gz
-
-
+# - image: 
+#     name: mirca_mask
+#     sizeX: 4.5
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.95
+#     adLeft: 0.15
+#     adhspace: 0.0
+#     adwspace: 0.0
+#     file: 'irrg_irrigated_areas.asc.gz'

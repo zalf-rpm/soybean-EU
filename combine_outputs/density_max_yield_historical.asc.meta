@@ -1,7 +1,9 @@
+title: 'A'
 factor: 0.001
 renderAs: densitySpread
 densityReduction: 20
 lineLabel: historical
+lineColor: forestgreen
 xLabel: '[t ha–1]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
