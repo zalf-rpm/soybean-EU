@@ -776,13 +776,14 @@ def createSubPlot(image, out_path, pdf=None) :
                                     # loc=subPosi["loc"])
                                     # height="30%",
                                     # width="30%",
-                                    width="100%", height="100%",
-                                    bbox_to_anchor=(0, 0.1, .24, .8),
+                                    width="50%", height="100%",
+                                    bbox_to_anchor=(-0.565, 0., 1, 1),
+                                    #bbox_to_anchor=(0, 0.1, .24, .8), # inside
                                     #bbox_to_anchor=(.057, .4, .233, .5), #looks ok
-                                    bbox_transform=ax.transAxes, loc=2,
+                                    bbox_transform=ax.transAxes, loc=3,
                                     borderpad=0
                                     )
-                fontsize = 6
+                fontsize = 10
                 axlabelpad = 1
                 axtickpad = 0
                 for idxMerg in range(len(asciiHeaders)) :
@@ -846,17 +847,23 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
     if meta.renderAs == "heatmap" :
         # Set the nodata values to nan
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        ascii_data_array = ascii_data_array[:,~np.isnan(ascii_data_array).all(axis=0)]
+        rowcol = ascii_data_array.shape
+        image_extent = [
+                asciiHeader.ascii_xll, asciiHeader.ascii_xll + rowcol[1] * asciiHeader.ascii_cs,
+                asciiHeader.ascii_yll, asciiHeader.ascii_yll + asciiHeader.ascii_rows * asciiHeader.ascii_cs] 
+
         # data is stored as an integer but scaled by a factor
         ascii_data_array *= meta.factor
 
         if meta.minLoaded and meta.maxLoaded:
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
         elif meta.minLoaded :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=meta.minValue)
         elif meta.maxLoaded :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=meta.maxValue)
         else :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
 
         if meta.showbars :
             axins = inset_axes(ax,
@@ -919,8 +926,8 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 ax.plot(arithemticMean, y, label=meta.lineLabel)
 
         if len(meta.lineLabel) > 0 :
-            # ax.legend(fontsize=fontsize, handlelength=1)
-            ax.legend(fontsize=fontsize, handlelength=1, bbox_to_anchor=(1.05, 1), loc='upper left')
+            ax.legend(fontsize=6, handlelength=1)
+            #ax.legend(fontsize=fontsize, handlelength=1, bbox_to_anchor=(1.05, 1), loc='upper left')
         
         if onlyOnce :
             # do this only once
@@ -967,7 +974,7 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
             if len(meta.xLabel) > 0 :
                 ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
             if len(meta.title) > 0 :
-                ax.set_title(meta.title)   
+                ax.set_title(meta.title, y=0.90, x=0.05)   
             for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
