@@ -236,11 +236,11 @@ func main() {
 		nil,
 		nil,
 		&irrLookup,
-		"irrg_%s.asc",
-		"irrigated_areas",
+		"irrgated_%s.asc",
+		"areas",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"irrigated areas",
+		"",
 		"",
 		"jet",
 		colorListIrrigArea, nil, nil, 1, 0,
@@ -255,7 +255,7 @@ func main() {
 		"dev_max_yield",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"A",
+		"B",
 		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
@@ -270,7 +270,7 @@ func main() {
 		"dev_max_yield",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"B",
+		"C",
 		"[t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
@@ -449,7 +449,7 @@ func main() {
 	// 	2, minColor, outC)
 
 	// waitForNum++
-	// colorListDroughtRisk := []string{"lightgrey", "orange"}
+	colorListDroughtRisk := []string{"lightgrey", "orange"}
 	// go drawMaps(gridSourceLookup,
 	// 	p.droughtRiskGridsAll,
 	// 	asciiOutCombinedTemplate,
@@ -462,32 +462,32 @@ func main() {
 	// 	colorListDroughtRisk, nil, nil, 1.0, 0,
 	// 	1, "", outC)
 
-	// waitForNum++
-	// go drawMaps(gridSourceLookup,
-	// 	p.droughtRiskDeviationGridsAll,
-	// 	asciiOutCombinedTemplate,
-	// 	"dev_drought_risk",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"(dev) drought risk: %v",
-	// 	"",
-	// 	"plasma",
-	// 	colorListDroughtRisk, nil, nil, 1.0, 0,
-	// 	1, "", outC)
-
 	waitForNum++
-	colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
-		p.coldSpellGrid,
+		p.droughtRiskDeviationGridsAll,
 		asciiOutCombinedTemplate,
-		"coldSpell",
+		"dev_drought_risk",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"Cold snap in Summer: %v",
+		"(dev) drought risk: %v",
 		"",
-		"jet",
-		colorListColdSpell, nil, nil, 1.0, 0,
+		"plasma",
+		colorListDroughtRisk, nil, nil, 1.0, 0,
 		1, "", outC)
+
+	// waitForNum++
+	// colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	// go drawMaps(gridSourceLookup,
+	// 	p.coldSpellGrid,
+	// 	asciiOutCombinedTemplate,
+	// 	"coldSpell",
+	// 	extCol, extRow,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"Cold snap in Summer: %v",
+	// 	"",
+	// 	"jet",
+	// 	colorListColdSpell, nil, nil, 1.0, 0,
+	// 	1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
@@ -564,7 +564,7 @@ func main() {
 		"dev_maturity_groups",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"C",
+		"E",
 		"Maturity groups",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
@@ -579,7 +579,7 @@ func main() {
 		"dev_maturity_groups",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"D",
+		"F",
 		"Maturity groups",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
@@ -716,7 +716,7 @@ func main() {
 		"dev_allRisks",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"F",
+		"H",
 		"Risk factors",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
@@ -732,7 +732,7 @@ func main() {
 		"dev_allRisks",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"E",
+		"I",
 		"Risk factors",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
@@ -2686,6 +2686,9 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 	defer file.Close()
 	file.WriteString(fmt.Sprintf("title: '%s'\n", title))
+	file.WriteString("yTitle: 0.90\n")
+	file.WriteString("xTitle: 0.05\n")
+	file.WriteString("removeEmptyColumns: True\n")
 	file.WriteString(fmt.Sprintf("labeltext: '%s'\n", labeltext))
 	if colormap != "" {
 		file.WriteString(fmt.Sprintf("colormap: '%s'\n", colormap))

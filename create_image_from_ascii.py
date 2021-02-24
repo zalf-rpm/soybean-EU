@@ -166,9 +166,10 @@ class Merge:
 
 @dataclass
 class Insert:
-    height: float
-    width: float
-    loc: float
+    height: str
+    width: str
+    loc: str
+    bboxToAnchor: typing.Tuple[float, float, float, float]
     content: list
 
 @dataclass
@@ -235,23 +236,32 @@ def readSetup(filename, root, files) :
         return Merge(mintransparency, transparencyfactorList, mergeContent, inserts)
 
     def readInsert(doc) :
-        height = 30.0
-        width = 30.0
-        loc = 10.0
+        height = "30%"
+        width = "30%"
+        loc = "lower left"
+        bbTA = [0,0,1,1]
         insertContent = list()
         for entry in doc :
             if entry == "height" :
-                height = float(doc["height"])
+                height = doc["height"]
             if entry == "width" :
-                width = float(doc["width"])
+                width = doc["width"]
             if entry == "loc" :
-                loc = float(doc["loc"])
+                loc = doc["loc"]
+            if entry == "bboxToAnchorX" :
+                bbTA[0] = float(doc["bboxToAnchorX"])
+            if entry == "bboxToAnchorY" :
+                bbTA[1] = float(doc["bboxToAnchorY"])
+            if entry == "bboxToAnchorXext" :
+                bbTA[2] = float(doc["bboxToAnchorXext"])
+            if entry == "bboxToAnchorYext" :
+                bbTA[3] = float(doc["bboxToAnchorYext"])
             if entry == "file" :
                 insertContent.append(readFile(doc["file"]))
             if entry == "merge" :
                 insertContent.append(readMerge(doc["merge"]))
 
-        return Insert(height, width, loc, insertContent)
+        return Insert(height, width, loc,(bbTA[0], bbTA[1], bbTA[2],bbTA[3] ), insertContent )
 
     with open(filename, 'rt') as source:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -524,6 +534,9 @@ class Meta:
     XaxisMappingFormat: str
     densityReduction: int
     densityFactor: float
+    yTitle: float
+    xTitle: float
+    removeEmptyColumns: bool
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -558,6 +571,9 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     XaxisMappingFormat = ""
     densityReduction = -1
     densityFactor = 1.0
+    yTitle = 1
+    xTitle = 1
+    removeEmptyColumns = False
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -621,6 +637,14 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 XaxisMappingTarColumn = doc
             elif item == "XaxisMappingFormat" :
                 YaxisMappingFormat = doc
+            elif item == "yTitle" :
+                yTitle = float(doc) 
+            elif item == "xTitle" :
+                xTitle = float(doc)
+            elif item == "removeEmptyColumns" :
+                removeEmptyColumns = bool(doc)
+            elif item == "showbar" :
+                showbars = bool(doc)
             elif item == "ticklist" :
                 ticklist = list()
                 for i in doc :
@@ -640,7 +664,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 showbars, mintransparent, renderAs, transparencyfactor, lineLabel, lineColor, xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
-                densityReduction, densityFactor)
+                densityReduction, densityFactor, 
+                yTitle,xTitle,removeEmptyColumns)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -695,6 +720,7 @@ def createSubPlot(image, out_path, pdf=None) :
             insertPosition["height"] = content.height
             insertPosition["width"] = content.width
             insertPosition["loc"] = content.loc
+            insertPosition["bbox_to_anchor"] = content.bboxToAnchor
             ah, met, _, _, _ = readContent(content.content[0])
             for i in range(len(ah)):
                 asciiHeaderList.append(ah[i])
@@ -776,11 +802,15 @@ def createSubPlot(image, out_path, pdf=None) :
                                     # loc=subPosi["loc"])
                                     # height="30%",
                                     # width="30%",
-                                    width="50%", height="100%",
-                                    bbox_to_anchor=(-0.565, 0., 1, 1),
+                                    #width="50%", height="100%",
+                                    width=subPosi["width"], height=subPosi["height"],
+                                    bbox_to_anchor=subPosi["bbox_to_anchor"],
+                                    #bbox_to_anchor=(-0.565, 0., 1, 1), #outside
                                     #bbox_to_anchor=(0, 0.1, .24, .8), # inside
                                     #bbox_to_anchor=(.057, .4, .233, .5), #looks ok
-                                    bbox_transform=ax.transAxes, loc=3,
+                                    #bbox_transform=ax.transAxes, loc=3,
+                                    bbox_transform=ax.transAxes, 
+                                    loc=subPosi["loc"],
                                     borderpad=0
                                     )
                 fontsize = 10
@@ -847,7 +877,8 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
     if meta.renderAs == "heatmap" :
         # Set the nodata values to nan
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-        ascii_data_array = ascii_data_array[:,~np.isnan(ascii_data_array).all(axis=0)]
+        if meta.removeEmptyColumns :
+            ascii_data_array = ascii_data_array[:,~np.isnan(ascii_data_array).all(axis=0)]
         rowcol = ascii_data_array.shape
         image_extent = [
                 asciiHeader.ascii_xll, asciiHeader.ascii_xll + rowcol[1] * asciiHeader.ascii_cs,
@@ -887,7 +918,7 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 cbar.ax.set_yticklabels(meta.cbarLabel) 
 
         if len(meta.title) > 0 :
-            ax.set_title(meta.title, y=0.90, x=0.05)   
+            ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
         if len(subtitle) > 0 :
             ax.set_title(subtitle)    
     
@@ -974,8 +1005,8 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
             if len(meta.xLabel) > 0 :
                 ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
             if len(meta.title) > 0 :
-                ax.set_title(meta.title, y=0.90, x=0.05)   
-            for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
 
