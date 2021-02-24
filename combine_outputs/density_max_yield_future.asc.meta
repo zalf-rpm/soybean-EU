@@ -1,4 +1,6 @@
 title: 'A'
+yTitle: 0.90
+xTitle: 0.1
 factor: 0.001
 renderAs: densitySpread
 densityReduction: 20
