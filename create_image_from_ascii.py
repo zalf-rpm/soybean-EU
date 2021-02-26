@@ -846,27 +846,17 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
     if meta.renderAs == "heatmap" :
         # Set the nodata values to nan
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-    	
-        # ascii_data_array = ascii_data_array[:, ~np.isnan(ascii_data_array).all(axis=0)]
-        # #ascii_data_array[:,~np.all(np.isnan(ascii_data_array), axis=0)]
-        rowcols = ascii_data_array.shape
-
-
-        image_extent = [
-                asciiHeader.ascii_xll, asciiHeader.ascii_xll + rowcols[1] * asciiHeader.ascii_cs,
-                asciiHeader.ascii_yll, asciiHeader.ascii_yll + asciiHeader.ascii_rows * asciiHeader.ascii_cs] 
-
         # data is stored as an integer but scaled by a factor
         ascii_data_array *= meta.factor
 
         if meta.minLoaded and meta.maxLoaded:
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmin=meta.minValue, vmax=meta.maxValue)
         elif meta.minLoaded :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=meta.minValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.minValue)
         elif meta.maxLoaded :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none', vmax=meta.maxValue)
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none', vmax=meta.maxValue)
         else :
-            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=image_extent, interpolation='none')
+            img_plot = ax.imshow(ascii_data_array, cmap=colorM, extent=asciiHeader.image_extent, interpolation='none')
 
         if meta.showbars :
             axins = inset_axes(ax,
