@@ -2,20 +2,24 @@
     name: summary_final
     sizeX: 10
     sizeY: 11
-    adjBottom: 0.01
+    adjBottom: 0.05
     adjTop: 0.99
     adRight: 0.80
-    adLeft: 0.1
-    adhspace: -0.3
-    adwspace: 0.02
+    adLeft: 0.25
+    adhspace: 0.12
+    adwspace: 0.01
     rows:
         - row:
             - sharedColorBar : True
             - file: dev_max_yield_historical.asc.gz 
             - insert:
-                width: 30
-                height: 30
-                loc: 2
+                width: '50%'
+                height: '100%'
+                loc: 'lower left'
+                bboxToAnchorX: -0.565
+                bboxToAnchorY: 0
+                bboxToAnchorXext: 1
+                bboxToAnchorYext: 1
                 merge: 
                     - file: 'density_max_yield_historical.asc.gz'
                     - file: 'density_max_yield_future.asc.gz'
@@ -24,9 +28,13 @@
             - sharedColorBar : True
             - file: dev_maturity_groups_historical.asc.gz
             - insert:
-                width: 30
-                height: 50
-                loc: 10
+                width: '50%'
+                height: '100%'
+                loc: 'lower left'
+                bboxToAnchorX: -0.565
+                bboxToAnchorY: 0
+                bboxToAnchorXext: 1
+                bboxToAnchorYext: 1
                 merge: 
                     - file: 'density_000_historical.asc.gz'
                     - file: 'density_000_future.asc.gz'
@@ -37,14 +45,27 @@
             - sharedColorBar : True
             - file: dev_allRisks_historical.asc.gz
             - insert :
-                width: 25
-                height: 45
-                loc: 10
+                width: '50%'
+                height: '100%'
+                loc: 'lower left'
+                bboxToAnchorX: -0.565
+                bboxToAnchorY: 0
+                bboxToAnchorXext: 1
+                bboxToAnchorYext: 1
                 merge: 
                     - file: 'density_short_season_future.asc.gz'
                     - file: 'density_short_season_historical.asc.gz'
                     - file: 'density_drought_risk_future.asc.gz'
                     - file: 'density_drought_risk_historical.asc.gz'
             - file: dev_allRisks_future.asc.gz
-
-
+- image: 
+    name: mirca_mask
+    sizeX: 4.5
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.95
+    adLeft: 0.15
+    adhspace: 0.0
+    adwspace: 0.0
+    file: 'irrg_irrigated_areas.asc.gz'

@@ -247,7 +247,7 @@ func main() {
 						}(matureValue, harvestValue))
 						simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 						simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
-						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() == harvestValue)
+						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
 						dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
 					}
 				}
