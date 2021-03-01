@@ -31,6 +31,7 @@ const asciiOutFilenameSowDoy = "doy_sow_%s_trno%s.asc"                        //
 const asciiOutFilenameEmergeDoy = "doy_emg_%s_trno%s.asc"                     // mGroup_treatmentnumber
 const asciiOutFilenameAnthesisDoy = "doy_ant_%s_trno%s.asc"                   // mGroup_treatmentnumber
 const asciiOutFilenameMatDoy = "doy_mat_%s_trno%s.asc"                        // mGroup_treatmentnumber
+const asciiOutFilenameHarDoy = "doy_har_%s_trno%s.asc"                        // mGroup_treatmentnumber
 const asciiOutFilenameCoolWeather = "coolweather_%s_trno%s.asc"               // mGroup_treatmentnumber
 const asciiOutFilenameCoolWeatherDeath = "coolweather_severity_%s_trno%s.asc" // mGroup_treatmentnumber
 const asciiOutFilenameCoolWeatherWeight = "coolweather_weights_%s_trno%s.asc" // mGroup_treatmentnumber
@@ -508,6 +509,19 @@ func main() {
 		"inferno",
 		nil, nil, 1.0, NONEVALUE,
 		p.maxMatHarvest, "Harvest before maturity", outC)
+
+	waitForNum++
+	go drawDateMaps(gridSourceLookup,
+		p.harvestGrid,
+		asciiOutFilenameHarDoy,
+		extCol, extRow,
+		asciiOutFolder,
+		"Harvest DOY - Scn: %v %v %v",
+		"avg DOY",
+		false,
+		"inferno",
+		nil, nil, 1.0, NONEVALUE,
+		350, "Harvest before maturity", outC)
 
 	waitForNum++
 	go drawDateMaps(gridSourceLookup,
