@@ -220,7 +220,8 @@ func main() {
 					// load relevant line content
 					lineKey, lineContent, lineErr := loadLine(line, header)
 					if lineErr != nil {
-						log.Fatalf("%v :%s", err, sourcefileName)
+						log.Printf("%v :%s", lineErr, sourcefileName)
+						break
 					}
 					// check for the lines with a specific crop
 					if IsCrop(lineKey, CROPNAME) && (lineKey.treatNo == "T1" || lineKey.treatNo == "T2") {
