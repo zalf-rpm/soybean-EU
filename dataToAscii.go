@@ -218,7 +218,10 @@ func main() {
 					header = readHeader(line)
 				} else {
 					// load relevant line content
-					lineKey, lineContent := loadLine(line, header)
+					lineKey, lineContent, lineErr := loadLine(line, header)
+					if lineErr != nil {
+						log.Fatalf("%v :%s", err, sourcefileName)
+					}
 					// check for the lines with a specific crop
 					if IsCrop(lineKey, CROPNAME) && (lineKey.treatNo == "T1" || lineKey.treatNo == "T2") {
 						yieldValue := lineContent.yields
@@ -1102,7 +1105,7 @@ func readHeader(line string) SimDataIndex {
 	return indices
 }
 
-func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
+func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData, error) {
 	// read relevant content from line
 	rawTokens := strings.FieldsFunc(line, isSeperator)
 
@@ -1120,7 +1123,7 @@ func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
 	content.period = tokens[header.periodIdx]
 	val, err := strconv.ParseInt(tokens[header.yearIdx], 10, 0)
 	if err != nil {
-		log.Fatal(err)
+		return key, content, err
 	}
 	content.year = int(val)
 	content.sowDOY = validDOY(tokens[header.sowDOYIdx])
@@ -1129,7 +1132,7 @@ func loadLine(line string, header SimDataIndex) (SimKeyTuple, SimData) {
 	content.matDOY = validDOY(tokens[header.matDOYIdx])
 	content.harDOY = validDOY(tokens[header.harvDOYIdx])
 	content.yields, _ = strconv.ParseFloat(tokens[header.yieldsIdx], 64)
-	return key, content
+	return key, content, nil
 }
 
 func validDOY(s string) int {
