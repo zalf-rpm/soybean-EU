@@ -53,7 +53,7 @@ def build() :
     pathId = USER
     sourceFolder = ""
     outputFolder = ""
-    generatePDF = False
+    generatePDF = True
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
             k, v = arg.split("=")
