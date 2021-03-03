@@ -97,6 +97,7 @@ func main() {
 	noprogessPtr := flag.Bool("showprogess", SHOWPROGRESSBAR, "show progress bar")
 	projectPtr := flag.String("project", "", "path to project folder")
 	climatePtr := flag.String("climate", "", "path to climate folder")
+	offsetPtr := flag.Int("offset", 0, "bugfix for missmatch grid")
 
 	flag.Parse()
 
@@ -106,6 +107,7 @@ func main() {
 	outputFolder := *outPtr
 	climateFolder := *climatePtr
 	projectpath := *projectPtr
+	offset := *offsetPtr
 
 	if len(sourceFolder) == 0 {
 		sourceFolder = PATHS[pathID]["sourcepath"]
@@ -125,7 +127,7 @@ func main() {
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 
-	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource)
+	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource, offset)
 
 	climateRef := GetClimateReference(refSource)
 
@@ -1194,7 +1196,7 @@ func newGridLookup(maxRef, defaultVal int) []int {
 }
 
 // GetGridLookup ..
-func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]int) {
+func GetGridLookup(gridsource string, offset int) (rowExt int, colExt int, lookupGrid [][]int) {
 	colExt = 0
 	rowExt = 0
 	lookup := make(map[int64][]GridCoord)
@@ -1244,7 +1246,7 @@ func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]in
 	lookupGrid = newGrid(rowExt, colExt, NONEVALUE)
 	for ref, coord := range lookup {
 		for _, rowCol := range coord {
-			lookupGrid[rowCol.row-1][rowCol.col-1] = int(ref)
+			lookupGrid[rowCol.row-1][rowCol.col-1] = int(ref) + offset
 		}
 	}
 
