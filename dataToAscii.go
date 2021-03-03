@@ -98,6 +98,7 @@ func main() {
 	projectPtr := flag.String("project", "", "path to project folder")
 	climatePtr := flag.String("climate", "", "path to climate folder")
 	offsetPtr := flag.Int("offset", 0, "bugfix for missmatch grid")
+	harvestDayPtr := flag.Int("harvest", 31, "bugfix for wrong harvest date")
 
 	flag.Parse()
 
@@ -108,6 +109,7 @@ func main() {
 	climateFolder := *climatePtr
 	projectpath := *projectPtr
 	offset := *offsetPtr
+	harvestDay := *harvestDayPtr
 
 	if len(sourceFolder) == 0 {
 		sourceFolder = PATHS[pathID]["sourcepath"]
@@ -250,7 +252,7 @@ func main() {
 						}(matureValue, harvestValue))
 						simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 						simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
-						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
+						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, harvestDay, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
 						dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
 					}
 				}
