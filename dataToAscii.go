@@ -19,12 +19,14 @@ import (
 	"gonum.org/v1/gonum/stat"
 )
 
-const asciiOutFilenameAvg = "avg_%s_trno%s.asc"                             // mGroup_treatmentnumber
-const asciiOutFilenameDeviAvg = "devi_avg_%s_trno%s.asc"                    // mGroup_treatmentnumber
-const asciiOutFilenameMaxYield = "maxyield_trno%s.asc"                      // treatmentnumber
-const asciiOutFilenameMaxYieldMat = "maxyield_matgroup_trno%s.asc"          // treatmentnumber
-const asciiOutFilenameMaxYieldDevi = "maxyield_devi_trno%s.asc"             // treatmentnumber
-const asciiOutFilenameMaxYieldMatDevi = "maxyield_devi_matgroup_trno%s.asc" // treatmentnumber
+const asciiOutFilenameAvg = "avg_%s_trno%s.asc"                                 // mGroup_treatmentnumber
+const asciiOutFilenameDeviAvg = "devi_avg_%s_trno%s.asc"                        // mGroup_treatmentnumber
+const asciiOutFilenameMaxYield = "maxyield_trno%s.asc"                          // treatmentnumber
+const asciiOutFilenameMaxYieldMat = "maxyield_matgroup_trno%s.asc"              // treatmentnumber
+const asciiOutFilenameMaxYieldDevi = "maxyield_devi_trno%s.asc"                 // treatmentnumber
+const asciiOutFilenameMaxYieldMatDevi = "maxyield_devi_matgroup_trno%s.asc"     // treatmentnumber
+const asciiOutFilenameMaxYieldInTime = "maxyield_intime_trno%s.asc"             // treatmentnumber
+const asciiOutFilenameMaxYieldMatInTime = "maxyield_intime_matgroup_trno%s.asc" // treatmentnumber
 const asciiOutFilenameWaterDiff = "water_diff_%s.asc"
 const asciiOutFilenameWaterDiffMax = "water_diff_max_yield.asc"
 const asciiOutFilenameSowDoy = "doy_sow_%s_trno%s.asc"                        // mGroup_treatmentnumber
@@ -97,7 +99,6 @@ func main() {
 	noprogessPtr := flag.Bool("showprogess", SHOWPROGRESSBAR, "show progress bar")
 	projectPtr := flag.String("project", "", "path to project folder")
 	climatePtr := flag.String("climate", "", "path to climate folder")
-	offsetPtr := flag.Int("offset", 0, "bugfix for missmatch grid")
 	harvestDayPtr := flag.Int("harvest", 31, "bugfix for wrong harvest date")
 
 	flag.Parse()
@@ -108,7 +109,6 @@ func main() {
 	outputFolder := *outPtr
 	climateFolder := *climatePtr
 	projectpath := *projectPtr
-	offset := *offsetPtr
 	harvestDay := *harvestDayPtr
 
 	if len(sourceFolder) == 0 {
@@ -129,7 +129,7 @@ func main() {
 	gridSource := filepath.Join(projectpath, "stu_eu_layer_grid.csv")
 	refSource := filepath.Join(projectpath, "stu_eu_layer_ref.csv")
 
-	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource, offset)
+	extRow, extCol, gridSourceLookup := GetGridLookup(gridSource)
 
 	climateRef := GetClimateReference(refSource)
 
@@ -309,8 +309,9 @@ func main() {
 				p.allGrids[simKey][refIDIndex] = int(pixelValue)
 				p.StdDevAvgGrids[simKey][refIDIndex] = int(stdDeviation)
 
-				p.setMaxLateHarvest(p.lateHarvestGrid[simKey][refIDIndex])
-				p.setMaxMatHarvest(p.matIsHavestGrid[simKey][refIDIndex])
+				numYears := len(simulations[simKey])
+				p.setMaxLateHarvest(numYears)
+				p.setMaxMatHarvest(numYears)
 			}
 			//coolWeatherImpactGrid
 			for scenario := range p.climateFilePeriod {
@@ -493,19 +494,19 @@ func main() {
 
 	outC := make(chan string)
 	waitForNum := 1
-	go drawMaps(gridSourceLookup,
-		p.annualTemperatureSumAvg,
-		asciiOutCombinedTemplate,
-		"temp_sums",
-		extCol, extRow,
-		asciiOutFolder,
-		"Climate Scenario Temp Sum: %v",
-		"",
-		"plasma",
-		nil, nil, nil, 1.0, 0,
-		1, "lightgrey", outC)
+	// go drawMaps(gridSourceLookup,
+	// 	p.annualTemperatureSumAvg,
+	// 	asciiOutCombinedTemplate,
+	// 	"temp_sums",
+	// 	extCol, extRow,
+	// 	asciiOutFolder,
+	// 	"Climate Scenario Temp Sum: %v",
+	// 	"",
+	// 	"plasma",
+	// 	nil, nil, nil, 1.0, 0,
+	// 	1, "lightgrey", outC)
 
-	waitForNum++
+	// waitForNum++
 	go drawDateMaps(gridSourceLookup,
 		p.matIsHavestGrid,
 		asciiOutFilenameMatIsHarvest,
@@ -557,47 +558,47 @@ func main() {
 		nil, nil, 1.0, NONEVALUE,
 		p.maxWetHarvest,
 		"wet harvest", outC)
-	waitForNum++
-	go drawDateMaps(gridSourceLookup,
-		p.coolWeatherImpactGrid,
-		asciiOutFilenameCoolWeather,
-		extCol, extRow,
-		asciiOutFolder,
-		"Cool weather occurrence - Scn: %v %v %v",
-		"counted occurrences in 30 years",
-		false,
-		"nipy_spectral",
-		nil, nil, 1.0, NONEVALUE,
-		p.sumMaxOccurrence,
-		"Cool weather", outC)
+	// waitForNum++
+	// go drawDateMaps(gridSourceLookup,
+	// 	p.coolWeatherImpactGrid,
+	// 	asciiOutFilenameCoolWeather,
+	// 	extCol, extRow,
+	// 	asciiOutFolder,
+	// 	"Cool weather occurrence - Scn: %v %v %v",
+	// 	"counted occurrences in 30 years",
+	// 	false,
+	// 	"nipy_spectral",
+	// 	nil, nil, 1.0, NONEVALUE,
+	// 	p.sumMaxOccurrence,
+	// 	"Cool weather", outC)
 
-	coolWeatherWeightLabels := []string{"0", "< 15\u00B0C", "< 10\u00B0C", "< 8\u00B0C"}
-	ticklist := []float64{0, 3, 7, 11}
-	waitForNum++
-	go drawDateMaps(gridSourceLookup,
-		p.coolWeatherImpactWeightGrid,
-		asciiOutFilenameCoolWeatherWeight,
-		extCol, extRow,
-		asciiOutFolder,
-		"Cool weather weight - Scn: %v %v %v",
-		"weights for occurrences in 30 years",
-		false,
-		"gnuplot",
-		coolWeatherWeightLabels, ticklist, 1.0, NONEVALUE, 12,
-		"Cool weather", outC)
-	waitForNum++
-	go drawDateMaps(gridSourceLookup,
-		p.coolWeatherDeathGrid,
-		asciiOutFilenameCoolWeatherDeath,
-		extCol, extRow,
-		asciiOutFolder,
-		"Cool weather severity - Scn: %v %v %v",
-		"counted occurrences with severity factor",
-		false,
-		"nipy_spectral",
-		nil, nil, 0.0001, NONEVALUE,
-		p.sumMaxDeathOccurrence,
-		"Cool weather death", outC)
+	// coolWeatherWeightLabels := []string{"0", "< 15\u00B0C", "< 10\u00B0C", "< 8\u00B0C"}
+	// ticklist := []float64{0, 3, 7, 11}
+	// waitForNum++
+	// go drawDateMaps(gridSourceLookup,
+	// 	p.coolWeatherImpactWeightGrid,
+	// 	asciiOutFilenameCoolWeatherWeight,
+	// 	extCol, extRow,
+	// 	asciiOutFolder,
+	// 	"Cool weather weight - Scn: %v %v %v",
+	// 	"weights for occurrences in 30 years",
+	// 	false,
+	// 	"gnuplot",
+	// 	coolWeatherWeightLabels, ticklist, 1.0, NONEVALUE, 12,
+	// 	"Cool weather", outC)
+	// waitForNum++
+	// go drawDateMaps(gridSourceLookup,
+	// 	p.coolWeatherDeathGrid,
+	// 	asciiOutFilenameCoolWeatherDeath,
+	// 	extCol, extRow,
+	// 	asciiOutFolder,
+	// 	"Cool weather severity - Scn: %v %v %v",
+	// 	"counted occurrences with severity factor",
+	// 	false,
+	// 	"nipy_spectral",
+	// 	nil, nil, 0.0001, NONEVALUE,
+	// 	p.sumMaxDeathOccurrence,
+	// 	"Cool weather death", outC)
 	waitForNum++
 	go drawDateMaps(gridSourceLookup,
 		p.allGrids,
@@ -637,6 +638,8 @@ func main() {
 	numKeys := len(p.allGrids)
 	maxYieldGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	matGroupGrids := make(map[ScenarioKeyTuple][]int, numKeys)
+	maxYieldInTimeGrids := make(map[ScenarioKeyTuple][]int, numKeys)
+	matGroupInTimeGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	maxYieldDeviationGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	matGroupDeviationGrids := make(map[ScenarioKeyTuple][]int, numKeys)
 	matGroupIDGrids := map[string]int{
@@ -649,6 +652,8 @@ func main() {
 		"soybean/000":  6,
 		"soybean/0000": 7}
 
+	minLateHarvest := p.maxLateHarvest / 5
+	fmt.Println("Min late harvest value: ", minLateHarvest)
 	for simKey, currGrid := range p.allGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
@@ -657,18 +662,29 @@ func main() {
 			matGroupGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
 			maxYieldDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
 			matGroupDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
+			maxYieldInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
+			matGroupInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
 		}
 
 		for ref := 0; ref < maxRefNo; ref++ {
-			if currGrid[ref] > maxYieldGrids[scenarioKey][ref] {
-				maxYieldGrids[scenarioKey][ref] = currGrid[ref]
+			if currGrid[ref] > maxYieldInTimeGrids[scenarioKey][ref] &&
+				p.lateHarvestGrid[simKey][ref] < minLateHarvest {
+				maxYieldInTimeGrids[scenarioKey][ref] = currGrid[ref]
 				maxYieldDeviationGrids[scenarioKey][ref] = currGrid[ref]
 				if currGrid[ref] == 0 {
-					matGroupGrids[scenarioKey][ref] = matGroupIDGrids["none"]
+					matGroupInTimeGrids[scenarioKey][ref] = matGroupIDGrids["none"]
 					matGroupDeviationGrids[scenarioKey][ref] = matGroupIDGrids["none"]
 				} else {
-					matGroupGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
+					matGroupInTimeGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
 					matGroupDeviationGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
+				}
+			}
+			if currGrid[ref] > maxYieldGrids[scenarioKey][ref] {
+				maxYieldGrids[scenarioKey][ref] = currGrid[ref]
+				if currGrid[ref] == 0 {
+					matGroupGrids[scenarioKey][ref] = matGroupIDGrids["none"]
+				} else {
+					matGroupGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
 				}
 			}
 		}
@@ -682,11 +698,13 @@ func main() {
 		//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 		currGridDeviation := p.StdDevAvgGrids[simKey]
+		currGridHarvest := p.lateHarvestGrid[simKey]
 		for ref := 0; ref < maxRefNo; ref++ {
 			if matGroupDeviationGrids[scenarioKey][ref] != NONEVALUE {
 				matGroup := invMatGroupIDGrids[matGroupDeviationGrids[scenarioKey][ref]]
 				matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
-				if float64(currGridYield[ref]) > float64(maxYieldGrids[scenarioKey][ref])*0.9 &&
+				if currGridHarvest[ref] < minLateHarvest &&
+					float64(currGridYield[ref]) > float64(maxYieldInTimeGrids[scenarioKey][ref])*0.9 &&
 					currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][ref] {
 					maxYieldDeviationGrids[scenarioKey][ref] = currGridYield[ref]
 					matGroupDeviationGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
@@ -742,6 +760,31 @@ func main() {
 			progressBar(currentInput)
 		}
 	}
+	currentInput = 0
+	if showBar {
+		numInput = len(asciiOutFilenameMaxYieldInTime)
+		progressBar = progress(numInput, "max yields grids in time")
+	}
+	for scenarioKey, scenarioVal := range maxYieldInTimeGrids {
+		gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldInTime, scenarioKey.treatNo)
+		gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
+		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+
+		// create ascii file
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+		file.Close()
+		title := fmt.Sprintf("Max average yield in time - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+		labelText := "Yield in t"
+		colormap := "jet"
+		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0, "")
+		currentInput++
+		if showBar {
+			progressBar(currentInput)
+		}
+	}
+
+	currentInput = 0
 	if showBar {
 		numInput = len(matGroupGrids)
 		progressBar = progress(numInput, "mat groups grids")
@@ -757,7 +800,7 @@ func main() {
 	for id := range matGroupIDGrids {
 		sidebarLabel[matGroupIDGrids[id]] = id
 	}
-	ticklist = make([]float64, len(sidebarLabel))
+	ticklist := make([]float64, len(sidebarLabel))
 	for tick := 0; tick < len(ticklist); tick++ {
 		ticklist[tick] = float64(tick) + 0.5
 	}
@@ -783,7 +826,6 @@ func main() {
 	currentInput = 0
 	numInput = len(matGroupDeviationGrids)
 	if showBar {
-		numInput = len(matGroupDeviationGrids)
 		progressBar = progress(numInput, "mat groups grids devi")
 	}
 	for scenarioKey, scenarioVal := range matGroupDeviationGrids {
@@ -796,6 +838,28 @@ func main() {
 		file.Close()
 
 		title := fmt.Sprintf("Maturity groups - max avg yield minus deviation  - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
+		currentInput++
+		if showBar {
+			progressBar(currentInput)
+		}
+	}
+
+	currentInput = 0
+	numInput = len(matGroupInTimeGrids)
+	if showBar {
+		progressBar = progress(numInput, "mat groups grids in time")
+	}
+	for scenarioKey, scenarioVal := range matGroupInTimeGrids {
+		gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldMatInTime, scenarioKey.treatNo)
+		gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
+		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
+		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+		file.Close()
+
+		title := fmt.Sprintf("Maturity groups - max avg yield in time  - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
 		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
 		currentInput++
 		if showBar {
@@ -1202,7 +1266,7 @@ func newGridLookup(maxRef, defaultVal int) []int {
 }
 
 // GetGridLookup ..
-func GetGridLookup(gridsource string, offset int) (rowExt int, colExt int, lookupGrid [][]int) {
+func GetGridLookup(gridsource string) (rowExt int, colExt int, lookupGrid [][]int) {
 	colExt = 0
 	rowExt = 0
 	lookup := make(map[int64][]GridCoord)
@@ -1252,7 +1316,7 @@ func GetGridLookup(gridsource string, offset int) (rowExt int, colExt int, looku
 	lookupGrid = newGrid(rowExt, colExt, NONEVALUE)
 	for ref, coord := range lookup {
 		for _, rowCol := range coord {
-			lookupGrid[rowCol.row-1][rowCol.col-1] = int(ref) + offset
+			lookupGrid[rowCol.row-1][rowCol.col-1] = int(ref)
 		}
 	}
 
