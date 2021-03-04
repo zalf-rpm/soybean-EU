@@ -658,12 +658,12 @@ func main() {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 		if _, ok := maxYieldGrids[scenarioKey]; !ok {
-			maxYieldGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
-			matGroupGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
-			maxYieldDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
-			matGroupDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
-			maxYieldInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
-			matGroupInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, NONEVALUE)
+			maxYieldGrids[scenarioKey] = newGridLookup(maxRefNo, 0)
+			matGroupGrids[scenarioKey] = newGridLookup(maxRefNo, matGroupIDGrids["none"])
+			maxYieldDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, 0)
+			matGroupDeviationGrids[scenarioKey] = newGridLookup(maxRefNo, matGroupIDGrids["none"])
+			maxYieldInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, 0)
+			matGroupInTimeGrids[scenarioKey] = newGridLookup(maxRefNo, matGroupIDGrids["none"])
 		}
 
 		for ref := 0; ref < maxRefNo; ref++ {
