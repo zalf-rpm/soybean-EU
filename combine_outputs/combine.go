@@ -1081,8 +1081,9 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 		p.allYieldGrids[simKey][idxSource][refIDIndex] = int(pixelValue)
 		p.StdDevAvgGrids[simKey][idxSource][refIDIndex] = int(stdDeviation)
 
-		p.setMaxLateHarvest(p.lateHarvestGrid[simKey][idxSource][refIDIndex])
-		p.setMaxMatHarvest(p.matIsHavestGrid[simKey][idxSource][refIDIndex])
+		numYears := len(simulations[simKey])
+		p.setMaxLateHarvest(numYears)
+		p.setMaxMatHarvest(numYears)
 	}
 	//coolWeatherImpactGrid
 	for scenario := range p.climateFilePeriod {
@@ -1449,6 +1450,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 }
 
 func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
+	minLateHarvest := p.maxLateHarvest / 5
+	fmt.Println("Min late harvest value: ", minLateHarvest)
 	// calculate max yield layer and maturity layer grid
 	for simKey, currGrid := range p.allYieldGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
@@ -1462,7 +1465,8 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 		for idx, sourceGrid := range currGrid {
 
 			for ref := 0; ref < maxRefNo; ref++ {
-				if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] {
+				if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] &&
+					p.lateHarvestGrid[simKey][idx][ref] < minLateHarvest {
 					p.maxYieldGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 					p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 					if sourceGrid[ref] == 0 {
@@ -1487,11 +1491,13 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 			scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 			currGridDeviation := p.StdDevAvgGrids[simKey][idx]
+			currGridHarvest := p.lateHarvestGrid[simKey][idx]
 			for ref := 0; ref < maxRefNo; ref++ {
 				if p.matGroupDeviationGrids[scenarioKey][idx][ref] > 0 {
 					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
 					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
-					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
+					if currGridHarvest[ref] < minLateHarvest &&
+						float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
 						currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
 						p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 						p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
