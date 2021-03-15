@@ -2692,8 +2692,8 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 	}
 	defer file.Close()
 	file.WriteString(fmt.Sprintf("title: '%s'\n", title))
-	file.WriteString("yTitle: 0.90\n")
-	file.WriteString("xTitle: 0.05\n")
+	file.WriteString("yTitle: 0.88\n")
+	file.WriteString("xTitle: 0.105\n")
 	file.WriteString("removeEmptyColumns: True\n")
 	file.WriteString(fmt.Sprintf("labeltext: '%s'\n", labeltext))
 	if colormap != "" {
