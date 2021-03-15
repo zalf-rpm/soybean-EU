@@ -1,6 +1,6 @@
 title: 'G'
-yTitle: 0.90
-xTitle: 0.1
+yTitle: 0.88
+xTitle: 0.105
 renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
