@@ -15,6 +15,7 @@ func main() {
 
 	sourcePtr := flag.String("source", "D:/stics/out", "path to source folder")
 	sourceFolder := *sourcePtr
+	flag.Parse()
 
 	filelist, err := ioutil.ReadDir(sourceFolder)
 	if err != nil {
