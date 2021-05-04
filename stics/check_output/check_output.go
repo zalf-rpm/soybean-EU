@@ -14,9 +14,8 @@ const soilRefNumber = 99637
 func main() {
 
 	sourcePtr := flag.String("source", "D:/stics/out", "path to source folder")
-	sourceFolder := *sourcePtr
 	flag.Parse()
-
+	sourceFolder := *sourcePtr
 	filelist, err := ioutil.ReadDir(sourceFolder)
 	if err != nil {
 		log.Fatal(err)
