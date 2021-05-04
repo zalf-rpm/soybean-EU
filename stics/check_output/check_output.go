@@ -22,10 +22,21 @@ func main() {
 	}
 	existingFiles := make(map[int]bool, soilRefNumber)
 	for _, file := range filelist {
-		refIDStr := strings.Split(strings.Split(file.Name(), ".")[0], "_")[3]
+		ext := strings.Split(file.Name(), ".")
+		if len(ext) != 2 {
+			fmt.Printf("error %s, wrong format\n", file.Name())
+			continue
+		}
+		parts := strings.Split(ext[0], "_")
+		if len(parts) != 4 {
+			fmt.Printf("error %s, wrong format\n", file.Name())
+			continue
+		}
+		refIDStr := parts[3]
 		refID64, err := strconv.ParseInt(refIDStr, 10, 64)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("error %s, %v \n", file.Name(), err)
+			continue
 		}
 		existingFiles[int(refID64)] = true
 	}
