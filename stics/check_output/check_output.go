@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const soilRefNumber = 99637
+const soilRefNumber = 99367
 
 func main() {
 
