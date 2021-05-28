@@ -17,20 +17,20 @@ var outputHeader = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,Producti
 
 func main() {
 
-	source1Ptr := flag.String("source1", "D:/stics_15_03_2021/out", "path to source folder")
-	source2Ptr := flag.String("source2", "D:/stics_15_03_2021/MGIII", "path to source folder")
-	outFolderPtr := flag.String("output", "D:/stics_15_03_2021/merged", "path to output folder")
+	sourcePtr := flag.String("source", "./testout/stics", "path to source folder")
+	overridePtr := flag.String("override", "./testout_other/stics", "path to override source folder")
+	outFolderPtr := flag.String("output", "./testout/merged", "path to output folder")
 
 	flag.Parse()
 
-	source1Folder := *source1Ptr
-	source2Folder := *source2Ptr
+	sourceFolder := *sourcePtr
+	overrideFolder := *overridePtr
 	outFolder := *outFolderPtr
 	numSources := 0
-	if len(source1Folder) > 0 {
+	if len(sourceFolder) > 0 {
 		numSources++
 	}
-	if len(source2Folder) > 0 {
+	if len(overrideFolder) > 0 {
 		numSources++
 	}
 
@@ -62,14 +62,14 @@ func main() {
 		}
 		return nil
 	}
-	findMatchingFiles(source1Folder, filepathes)
-	findMatchingFiles(source2Folder, filepathes)
+	findMatchingFiles(sourceFolder, filepathes)
+	findMatchingFiles(overrideFolder, filepathes)
 
 	for i := 1; i <= soilRefNumber; i++ {
 		if _, ok := filepathes[i]; !ok {
 			fmt.Printf("%d\n", i)
-		} else if len(filepathes[i]) < numSources {
-			fmt.Printf("%d part\n", i)
+			// } else if len(filepathes[i]) < numSources {
+			// 	fmt.Printf("%d part\n", i)
 		} else {
 			// open out file
 			// append each source
@@ -85,6 +85,8 @@ func main() {
 			writer := bufio.NewWriter(outFile)
 			writer.WriteString(outputHeader)
 
+			lookup := make(map[SimKey][]string)
+
 			for _, filePath := range filepathes[i] {
 				file, err := os.Open(filePath)
 				if err != nil {
@@ -95,24 +97,53 @@ func main() {
 				for scanner.Scan() {
 					index++
 					if index > 1 {
-						tokens := strings.FieldsFunc(scanner.Text(), func(r rune) bool {
-							return (r == ',' || r == ';')
-						})
-						for idx, t := range tokens {
-							writer.WriteString(strings.Trim(t, "\""))
-							if idx+1 < len(tokens) {
-								writer.WriteRune(',')
-							}
-						}
-						writer.WriteString("\r\n")
+						simKey, tokens := readSimKey(scanner.Text())
+						lookup[simKey] = tokens
 					}
 				}
 				file.Close()
+			}
+			for _, tokens := range lookup {
+				for idx, t := range tokens {
+					writer.WriteString(t)
+					if idx+1 < len(tokens) {
+						writer.WriteRune(',')
+					}
+				}
+				writer.WriteString("\r\n")
 			}
 			writer.Flush()
 			outFile.Close()
 		}
 	}
+}
+
+type SimKey struct {
+	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
+	firstCrop  string
+	crop       string
+	year       string
+	climateScn string
+	treatment  string
+}
+
+func readSimKey(line string) (SimKey, []string) {
+	tokens := strings.FieldsFunc(line, func(r rune) bool {
+		return (r == ',' || r == ';')
+	})
+	outTokens := make([]string, len(tokens))
+	for idx, t := range tokens {
+		outTokens[idx] = strings.Trim(t, "\"")
+	}
+	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
+	// 0     1        2           3    4      5  6    7    8             9
+	return SimKey{
+		firstCrop:  outTokens[1],
+		crop:       outTokens[3],
+		year:       outTokens[9],
+		climateScn: outTokens[5],
+		treatment:  outTokens[7],
+	}, outTokens
 }
 
 func makeDir(outPath string) {
