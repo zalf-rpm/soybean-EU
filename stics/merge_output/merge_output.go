@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -100,8 +101,10 @@ func main() {
 				for scanner.Scan() {
 					index++
 					if index > 1 {
-						simKey, tokens := readSimKey(scanner.Text())
-						lookup[simKey] = tokens
+						simKey, tokens, err := readSimKey(scanner.Text())
+						if err != nil {
+							lookup[simKey] = tokens
+						}
 					}
 				}
 				file.Close()
@@ -133,13 +136,17 @@ type SimKey struct {
 	treatment  string
 }
 
-func readSimKey(line string) (SimKey, []string) {
+func readSimKey(line string) (SimKey, []string, error) {
 	tokens := strings.FieldsFunc(line, func(r rune) bool {
 		return (r == ',' || r == ';')
 	})
 	outTokens := make([]string, len(tokens))
 	for idx, t := range tokens {
 		outTokens[idx] = strings.Trim(t, "\"")
+	}
+	if outTokens[2] == "first_crop" {
+		// catch headline in between
+		return SimKey{}, []string{}, errors.New("headline in between")
 	}
 	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
 	// 0     1        2           3    4      5  6    7    8             9
@@ -149,7 +156,7 @@ func readSimKey(line string) (SimKey, []string) {
 		year:       outTokens[9],
 		climateScn: outTokens[5],
 		treatment:  outTokens[7],
-	}, outTokens
+	}, outTokens, nil
 }
 
 func makeDir(outPath string) {
