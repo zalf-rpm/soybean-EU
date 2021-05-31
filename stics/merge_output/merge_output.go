@@ -12,6 +12,7 @@ import (
 )
 
 const soilRefNumber = 99367
+const minlineCount = 2880
 
 var outputHeader = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,ProductionCase,Year,Yield,MaxLAI,SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,sum_ET,AWC_30_sow,AWC_60_sow,AWC_90_sow,AWC_30_harv,AWC_60_harv,AWC_90_harv,tradef,sum_irri,sum_Nmin\r\n"
 
@@ -20,12 +21,14 @@ func main() {
 	sourcePtr := flag.String("source", "./testout/stics", "path to source folder")
 	overridePtr := flag.String("override", "./testout_other/stics", "path to override source folder")
 	outFolderPtr := flag.String("output", "./testout/merged", "path to output folder")
+	countLinesPtr := flag.Bool("countoutput", false, "count missing output lines")
 
 	flag.Parse()
 
 	sourceFolder := *sourcePtr
 	overrideFolder := *overridePtr
 	outFolder := *outFolderPtr
+	countLines := *countLinesPtr
 	numSources := 0
 	if len(sourceFolder) > 0 {
 		numSources++
@@ -76,9 +79,9 @@ func main() {
 			soilRef := strconv.Itoa(i)
 			fulloutpath := filepath.Join(outFolder, "EU_SOY_ST_"+soilRef+".csv")
 			makeDir(fulloutpath)
-			fmt.Println(fulloutpath)
+			//fmt.Println(fulloutpath)
 
-			outFile, err := os.OpenFile(fulloutpath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
+			outFile, err := os.OpenFile(fulloutpath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0660)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -102,6 +105,9 @@ func main() {
 					}
 				}
 				file.Close()
+			}
+			if countLines && len(lookup) < minlineCount {
+				println(soilRefNumber, len(lookup))
 			}
 			for _, tokens := range lookup {
 				for idx, t := range tokens {
