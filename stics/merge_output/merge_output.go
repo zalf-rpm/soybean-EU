@@ -107,7 +107,7 @@ func main() {
 				file.Close()
 			}
 			if countLines && len(lookup) < minlineCount {
-				println(soilRefNumber, len(lookup))
+				println(i, len(lookup))
 			}
 			for _, tokens := range lookup {
 				for idx, t := range tokens {
