@@ -102,7 +102,7 @@ func main() {
 					index++
 					if index > 1 {
 						simKey, tokens, err := readSimKey(scanner.Text())
-						if err != nil {
+						if err == nil {
 							lookup[simKey] = tokens
 						}
 					}
