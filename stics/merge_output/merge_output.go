@@ -145,7 +145,6 @@ func main() {
 
 type SimKey struct {
 	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
-	firstCrop  string
 	crop       string
 	year       string
 	climateScn string
@@ -171,7 +170,6 @@ func readSimKey(line string) (SimKey, []string, error) {
 	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
 	// 0     1        2           3    4      5  6    7    8             9
 	return SimKey{
-		firstCrop:  outTokens[2],
 		crop:       outTokens[3],
 		year:       outTokens[9],
 		climateScn: outTokens[5],
@@ -191,9 +189,6 @@ func generateSimKeys() map[SimKey][]string {
 		"soybean/II",
 		"soybean/III",
 	}
-	firstCrops := []string{
-		"maize",
-		"soybean"}
 	year := make([]string, 30)
 	for i := 0; i < 30; i++ {
 		year[i] = strconv.FormatInt(int64(1981+i), 10)
@@ -211,17 +206,14 @@ func generateSimKeys() map[SimKey][]string {
 	for _, t := range treatment {
 		for _, y := range year {
 			for _, c := range climateScn {
-				for _, f := range firstCrops {
-					for _, crop := range allCrops {
-						key := SimKey{
-							firstCrop:  f,
-							crop:       crop,
-							year:       y,
-							climateScn: c,
-							treatment:  t,
-						}
-						lookup[key] = nil
+				for _, crop := range allCrops {
+					key := SimKey{
+						crop:       crop,
+						year:       y,
+						climateScn: c,
+						treatment:  t,
 					}
+					lookup[key] = nil
 				}
 			}
 		}
@@ -246,11 +238,6 @@ func checkForMissingData(id int, lookup map[SimKey][]string) {
 	if len(emptyKeyList) > 0 {
 		fmt.Println(id, len(lookup), len(emptyKeyList), len(lookup)-len(emptyKeyList))
 		if len(lookup) > len(emptyKeyList) {
-			//missing crop rotation
-			firstCrops := []string{
-				"maize",
-				"soybean"}
-			allOfList("firstCrop", emptyKeyList, firstCrops)
 
 			//missing crop rotation
 			climateScn := []string{
