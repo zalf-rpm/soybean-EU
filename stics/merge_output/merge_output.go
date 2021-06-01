@@ -77,7 +77,7 @@ func main() {
 	for i := 1; i <= soilRefNumber; i++ {
 		clearLookup(lookup)
 		if _, ok := filepathes[i]; !ok {
-			fmt.Printf("%d\n", i)
+			fmt.Printf("%d not exists\n", i)
 			// } else if len(filepathes[i]) < numSources {
 			// 	fmt.Printf("%d part\n", i)
 		} else {
@@ -91,14 +91,17 @@ func main() {
 				for scanner.Scan() {
 					index++
 					if index > 1 {
-						simKey, tokens, err := readSimKey(scanner.Text())
-						if err == nil {
-							if _, ok := lookup[simKey]; ok {
-								lookup[simKey] = tokens
-							} else {
-								fmt.Println("error:", simKey)
+						line := scanner.Text()
+						// skip empty lines
+						if len(line) > 0 {
+							simKey, tokens, err := readSimKey(line)
+							if err == nil {
+								if _, ok := lookup[simKey]; ok {
+									lookup[simKey] = tokens
+								} else {
+									fmt.Println("error:", simKey)
+								}
 							}
-
 						}
 					}
 				}
@@ -153,6 +156,10 @@ func readSimKey(line string) (SimKey, []string, error) {
 	outTokens := make([]string, len(tokens))
 	for idx, t := range tokens {
 		outTokens[idx] = strings.Trim(t, "\"")
+	}
+	if len(outTokens) < 10 {
+		fmt.Println("error: ", line)
+		return SimKey{}, []string{}, errors.New("to few tokens")
 	}
 	if outTokens[2] == "first_crop" {
 		// catch headline in between
