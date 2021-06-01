@@ -161,7 +161,7 @@ func readSimKey(line string) (SimKey, []string, error) {
 	//Model;soil_ref;first_crop;Crop;period;sce;CO2;TrNo;ProductionCase;Year
 	// 0     1        2           3    4      5  6    7    8             9
 	return SimKey{
-		firstCrop:  outTokens[1],
+		firstCrop:  outTokens[2],
 		crop:       outTokens[3],
 		year:       outTokens[9],
 		climateScn: outTokens[5],
