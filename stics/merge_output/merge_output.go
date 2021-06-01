@@ -8,28 +8,31 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 )
 
-const soilRefNumber = 99367
-const minlineCount = 2880
+//const soilRefNumber = 99367
+const soilRefNumber = 10000
+
+//const minlineCount = 2880
 
 var outputHeader = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,ProductionCase,Year,Yield,MaxLAI,SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,sum_ET,AWC_30_sow,AWC_60_sow,AWC_90_sow,AWC_30_harv,AWC_60_harv,AWC_90_harv,tradef,sum_irri,sum_Nmin\r\n"
 
 func main() {
 
 	sourcePtr := flag.String("source", "./testout/stics", "path to source folder")
-	overridePtr := flag.String("override", "./testout_other/stics", "path to override source folder")
+	overridePtr := flag.String("override", "", "path to override source folder")
 	outFolderPtr := flag.String("output", "./testout/merged", "path to output folder")
-	countLinesPtr := flag.Bool("countoutput", false, "count missing output lines")
+	checkoutputPtr := flag.Bool("checkoutput", false, "check for missing output lines")
 
 	flag.Parse()
 
 	sourceFolder := *sourcePtr
 	overrideFolder := *overridePtr
 	outFolder := *outFolderPtr
-	countLines := *countLinesPtr
+	checkoutput := *checkoutputPtr
 	numSources := 0
 	if len(sourceFolder) > 0 {
 		numSources++
@@ -67,30 +70,17 @@ func main() {
 		return nil
 	}
 	findMatchingFiles(sourceFolder, filepathes)
-	findMatchingFiles(overrideFolder, filepathes)
-
+	if len(overrideFolder) > 0 {
+		findMatchingFiles(overrideFolder, filepathes)
+	}
+	lookup := generateSimKeys()
 	for i := 1; i <= soilRefNumber; i++ {
+		clearLookup(lookup)
 		if _, ok := filepathes[i]; !ok {
 			fmt.Printf("%d\n", i)
 			// } else if len(filepathes[i]) < numSources {
 			// 	fmt.Printf("%d part\n", i)
 		} else {
-			// open out file
-			// append each source
-			soilRef := strconv.Itoa(i)
-			fulloutpath := filepath.Join(outFolder, "EU_SOY_ST_"+soilRef+".csv")
-			makeDir(fulloutpath)
-			//fmt.Println(fulloutpath)
-
-			outFile, err := os.OpenFile(fulloutpath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0660)
-			if err != nil {
-				log.Fatal(err)
-			}
-			writer := bufio.NewWriter(outFile)
-			writer.WriteString(outputHeader)
-
-			lookup := make(map[SimKey][]string)
-
 			for _, filePath := range filepathes[i] {
 				file, err := os.Open(filePath)
 				if err != nil {
@@ -103,26 +93,46 @@ func main() {
 					if index > 1 {
 						simKey, tokens, err := readSimKey(scanner.Text())
 						if err == nil {
-							lookup[simKey] = tokens
+							if _, ok := lookup[simKey]; ok {
+								lookup[simKey] = tokens
+							} else {
+								fmt.Println("error:", simKey)
+							}
+
 						}
 					}
 				}
 				file.Close()
 			}
-			if countLines && len(lookup) < minlineCount {
-				println(i, len(lookup))
-			}
-			for _, tokens := range lookup {
-				for idx, t := range tokens {
-					writer.WriteString(t)
-					if idx+1 < len(tokens) {
-						writer.WriteRune(',')
-					}
+			if checkoutput {
+				checkForMissingData(i, lookup)
+			} else {
+				// open out file
+				// append each source
+				soilRef := strconv.Itoa(i)
+				fulloutpath := filepath.Join(outFolder, "EU_SOY_ST_"+soilRef+".csv")
+				makeDir(fulloutpath)
+				//fmt.Println(fulloutpath)
+
+				outFile, err := os.OpenFile(fulloutpath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0660)
+				if err != nil {
+					log.Fatal(err)
 				}
-				writer.WriteString("\r\n")
+				writer := bufio.NewWriter(outFile)
+				writer.WriteString(outputHeader)
+				for _, tokens := range lookup {
+					for idx, t := range tokens {
+						writer.WriteString(t)
+						if idx+1 < len(tokens) {
+							writer.WriteRune(',')
+						}
+					}
+					writer.WriteString("\r\n")
+				}
+				writer.Flush()
+				outFile.Close()
 			}
-			writer.Flush()
-			outFile.Close()
+
 		}
 	}
 }
@@ -157,6 +167,128 @@ func readSimKey(line string) (SimKey, []string, error) {
 		climateScn: outTokens[5],
 		treatment:  outTokens[7],
 	}, outTokens, nil
+}
+
+func generateSimKeys() map[SimKey][]string {
+	lookup := make(map[SimKey][]string)
+	allCrops := []string{
+		"maize",
+		"soybean/0000",
+		"soybean/000",
+		"soybean/00",
+		"soybean/0",
+		"soybean/I",
+		"soybean/II",
+		"soybean/III",
+	}
+	firstCrops := []string{
+		"maize",
+		"soybean"}
+	year := make([]string, 30)
+	for i := 0; i < 30; i++ {
+		year[i] = strconv.FormatInt(int64(1981+i), 10)
+	}
+	climateScn := []string{
+		"GISS-E2-R_45",
+		"GFDL-CM3_45",
+		"HadGEM2-ES_45",
+		"MPI-ESM-MR_45",
+		"MIROC5_45",
+		"0_0",
+	}
+	treatment := []string{"T1", "T2"}
+
+	for _, t := range treatment {
+		for _, y := range year {
+			for _, c := range climateScn {
+				for _, f := range firstCrops {
+					for _, crop := range allCrops {
+						key := SimKey{
+							firstCrop:  f,
+							crop:       crop,
+							year:       y,
+							climateScn: c,
+							treatment:  t,
+						}
+						lookup[key] = nil
+					}
+				}
+			}
+		}
+	}
+	return lookup
+}
+
+func clearLookup(lookup map[SimKey][]string) {
+	for key := range lookup {
+		lookup[key] = nil
+	}
+}
+
+func checkForMissingData(id int, lookup map[SimKey][]string) {
+
+	emptyKeyList := make([]SimKey, 0, len(lookup))
+	for key := range lookup {
+		if lookup[key] == nil {
+			emptyKeyList = append(emptyKeyList, key)
+		}
+	}
+	if len(emptyKeyList) > 0 {
+		fmt.Println(id, len(lookup)-len(emptyKeyList))
+		if len(lookup) > len(emptyKeyList) {
+
+			//missing crop rotation
+			firstCrops := []string{
+				"maize",
+				"soybean"}
+			allOfList("firstCrop", emptyKeyList, firstCrops)
+
+			//missing crop rotation
+			climateScn := []string{
+				"GISS-E2-R_45",
+				"GFDL-CM3_45",
+				"HadGEM2-ES_45",
+				"MPI-ESM-MR_45",
+				"MIROC5_45",
+				"0_0",
+			}
+			allOfList("climateScn", emptyKeyList, climateScn)
+
+			allCrops := []string{
+				"maize",
+				"soybean/0000",
+				"soybean/000",
+				"soybean/00",
+				"soybean/0",
+				"soybean/I",
+				"soybean/II",
+				"soybean/III",
+			}
+			allOfList("crop", emptyKeyList, allCrops)
+		}
+	}
+
+}
+
+func allOfList(varName string, emptyKeyList []SimKey, valRefs []string) map[string]bool {
+
+	all := make(map[string]bool, len(valRefs))
+	for _, valRef := range valRefs {
+		all[valRef] = true
+		for _, key := range emptyKeyList {
+			v := reflect.ValueOf(key)
+			f := v.FieldByName(varName)
+			value := f.String()
+			if value != valRef {
+				all[valRef] = false
+				break
+			}
+		}
+		if all[valRef] {
+			fmt.Println(varName, ": all of ", valRef)
+		}
+	}
+	return all
 }
 
 func makeDir(outPath string) {
