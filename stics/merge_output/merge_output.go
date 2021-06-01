@@ -74,6 +74,7 @@ func main() {
 		findMatchingFiles(overrideFolder, filepathes)
 	}
 	lookup := generateSimKeys()
+	fmt.Println("All Lookups:", len(lookup))
 	for i := 1; i <= soilRefNumber; i++ {
 		clearLookup(lookup)
 		if _, ok := filepathes[i]; !ok {
@@ -124,13 +125,15 @@ func main() {
 				writer := bufio.NewWriter(outFile)
 				writer.WriteString(outputHeader)
 				for _, tokens := range lookup {
-					for idx, t := range tokens {
-						writer.WriteString(t)
-						if idx+1 < len(tokens) {
-							writer.WriteRune(',')
+					if len(tokens) > 0 {
+						for idx, t := range tokens {
+							writer.WriteString(t)
+							if idx+1 < len(tokens) {
+								writer.WriteRune(',')
+							}
 						}
+						writer.WriteString("\r\n")
 					}
-					writer.WriteString("\r\n")
 				}
 				writer.Flush()
 				outFile.Close()
@@ -236,14 +239,13 @@ func checkForMissingData(id int, lookup map[SimKey][]string) {
 
 	emptyKeyList := make([]SimKey, 0, len(lookup))
 	for key := range lookup {
-		if lookup[key] == nil {
+		if len(lookup[key]) == 0 {
 			emptyKeyList = append(emptyKeyList, key)
 		}
 	}
 	if len(emptyKeyList) > 0 {
-		fmt.Println(id, len(lookup)-len(emptyKeyList))
+		fmt.Println(id, len(lookup), len(emptyKeyList), len(lookup)-len(emptyKeyList))
 		if len(lookup) > len(emptyKeyList) {
-
 			//missing crop rotation
 			firstCrops := []string{
 				"maize",
