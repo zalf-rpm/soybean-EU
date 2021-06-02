@@ -277,29 +277,33 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 				"soybean/III",
 			}
 			allOfList(id, "crop", emptyKeyList, allCrops, errorLookup)
+			treatment := []string{"T1", "T2"}
+			allOfList(id, "treatment", emptyKeyList, treatment, errorLookup)
 
 			// missing second crop
 			for _, crop := range allCrops {
 				for _, clim := range climateScn {
-					yearCounterEven := 0
-					yearCounterUnEven := 0
-					for _, simKey := range emptyKeyList {
-						if simKey.climateScn == clim && simKey.crop == crop {
-							year, _ := strconv.ParseInt(simKey.year, 10, 32)
-							if (year % 2) == 0 {
-								yearCounterEven++
-							} else {
-								yearCounterUnEven++
+					for _, treat := range treatment {
+						yearCounterEven := 0
+						yearCounterUnEven := 0
+						for _, simKey := range emptyKeyList {
+							if simKey.climateScn == clim && simKey.crop == crop && simKey.treatment == treat {
+								year, _ := strconv.ParseInt(simKey.year, 10, 32)
+								if (year % 2) == 0 {
+									yearCounterEven++
+								} else {
+									yearCounterUnEven++
+								}
 							}
 						}
-					}
-					if (yearCounterEven == 15 || yearCounterUnEven == 15) &&
-						yearCounterUnEven != yearCounterEven {
-						text := fmt.Sprintf("Missing Crop Rotation: %s %s", crop, clim)
-						if _, ok := errorLookup[text]; !ok {
-							errorLookup[text] = []string{fmt.Sprintf("%d", id)}
-						} else {
-							errorLookup[text] = append(errorLookup[text], fmt.Sprintf("%d", id))
+						if (yearCounterEven == 15 || yearCounterUnEven == 15) &&
+							yearCounterUnEven != yearCounterEven {
+							text := fmt.Sprintf("Missing Crop Rotation: %s %s %s", crop, clim, treat)
+							if _, ok := errorLookup[text]; !ok {
+								errorLookup[text] = []string{fmt.Sprintf("%d", id)}
+							} else {
+								errorLookup[text] = append(errorLookup[text], fmt.Sprintf("%d", id))
+							}
 						}
 					}
 				}
