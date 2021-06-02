@@ -13,10 +13,9 @@ import (
 	"strings"
 )
 
-//const soilRefNumber = 99367
-const soilRefNumber = 10000
+const soilRefNumber = 99367
 
-//const minlineCount = 2880
+//const soilRefNumber = 10000
 
 var outputHeader = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,ProductionCase,Year,Yield,MaxLAI,SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,sum_ET,AWC_30_sow,AWC_60_sow,AWC_90_sow,AWC_30_harv,AWC_60_harv,AWC_90_harv,tradef,sum_irri,sum_Nmin\r\n"
 
@@ -252,9 +251,15 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 		}
 	}
 	if len(emptyKeyList) > 0 {
+		idAsString := fmt.Sprintf("%d", id)
 		fmt.Println(id, len(lookup), len(emptyKeyList), len(lookup)-len(emptyKeyList))
 		if len(lookup) > len(emptyKeyList) {
-
+			missingLinesText := "has missing lines"
+			if _, ok := errorLookup[missingLinesText]; !ok {
+				errorLookup[missingLinesText] = []string{idAsString}
+			} else {
+				errorLookup[missingLinesText] = append(errorLookup[missingLinesText], idAsString)
+			}
 			//missing crop rotation
 			climateScn := []string{
 				"GISS-E2-R_45",
@@ -300,18 +305,16 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 							yearCounterUnEven != yearCounterEven {
 							text := fmt.Sprintf("Missing Crop Rotation: %s %s %s", crop, clim, treat)
 							if _, ok := errorLookup[text]; !ok {
-								errorLookup[text] = []string{fmt.Sprintf("%d", id)}
+								errorLookup[text] = []string{idAsString}
 							} else {
-								errorLookup[text] = append(errorLookup[text], fmt.Sprintf("%d", id))
+								errorLookup[text] = append(errorLookup[text], idAsString)
 							}
 						}
 					}
 				}
 			}
-
 		}
 	}
-
 }
 
 func allOfList(id int, varName string, emptyKeyList []SimKey, valRefs []string, errorLookup map[string][]string) map[string]bool {
