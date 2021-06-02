@@ -75,10 +75,13 @@ func main() {
 	}
 	lookup := generateSimKeys()
 	fmt.Println("All Lookups:", len(lookup))
+	errorLog := make(map[string][]string)
+	missingFiles := make([]string, 0, 10)
 	for i := 1; i <= soilRefNumber; i++ {
 		clearLookup(lookup)
 		if _, ok := filepathes[i]; !ok {
-			fmt.Printf("%d not exists\n", i)
+			missingFiles = append(missingFiles, fmt.Sprintf("%d", i))
+			//fmt.Printf("%d not exists\n", i)
 			// } else if len(filepathes[i]) < numSources {
 			// 	fmt.Printf("%d part\n", i)
 		} else {
@@ -109,7 +112,7 @@ func main() {
 				file.Close()
 			}
 			if checkoutput {
-				checkForMissingData(i, lookup)
+				checkForMissingData(i, lookup, errorLog)
 			} else {
 				// open out file
 				// append each source
@@ -139,6 +142,19 @@ func main() {
 				outFile.Close()
 			}
 
+		}
+	}
+
+	fmt.Println("Error Summary:")
+	fmt.Println("missing files")
+	for _, val := range missingFiles {
+		fmt.Println(val)
+	}
+	fmt.Println("missing files of type")
+	for logtext, ids := range errorLog {
+		fmt.Println(logtext)
+		for entry := range ids {
+			fmt.Println(entry)
 		}
 	}
 }
@@ -227,7 +243,7 @@ func clearLookup(lookup map[SimKey][]string) {
 	}
 }
 
-func checkForMissingData(id int, lookup map[SimKey][]string) {
+func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[string][]string) {
 
 	emptyKeyList := make([]SimKey, 0, len(lookup))
 	for key := range lookup {
@@ -248,7 +264,7 @@ func checkForMissingData(id int, lookup map[SimKey][]string) {
 				"MIROC5_45",
 				"0_0",
 			}
-			allOfList("climateScn", emptyKeyList, climateScn)
+			allOfList(id, "climateScn", emptyKeyList, climateScn, errorLookup)
 
 			allCrops := []string{
 				"maize",
@@ -260,13 +276,13 @@ func checkForMissingData(id int, lookup map[SimKey][]string) {
 				"soybean/II",
 				"soybean/III",
 			}
-			allOfList("crop", emptyKeyList, allCrops)
+			allOfList(id, "crop", emptyKeyList, allCrops, errorLookup)
 		}
 	}
 
 }
 
-func allOfList(varName string, emptyKeyList []SimKey, valRefs []string) map[string]bool {
+func allOfList(id int, varName string, emptyKeyList []SimKey, valRefs []string, errorLookup map[string][]string) map[string]bool {
 
 	all := make(map[string]bool, len(valRefs))
 	for _, valRef := range valRefs {
@@ -281,7 +297,13 @@ func allOfList(varName string, emptyKeyList []SimKey, valRefs []string) map[stri
 			}
 		}
 		if all[valRef] {
-			fmt.Println(varName, ": all of ", valRef)
+			text := fmt.Sprintf("%s: all of %s", varName, valRef)
+			fmt.Println(text)
+			if _, ok := errorLookup[text]; !ok {
+				errorLookup[text] = []string{fmt.Sprintf("%d", id)}
+			} else {
+				errorLookup[text] = append(errorLookup[text], fmt.Sprintf("%d", id))
+			}
 		}
 	}
 	return all
