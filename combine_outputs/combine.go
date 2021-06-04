@@ -31,9 +31,9 @@ const NONEVALUE = -9999
 const climateFilePattern = "%s_v3test.csv"
 
 // output pattern
-const asciiOutTemplate = "%s_%s_trno%s.asc"               // <descriptio>_<scenario>_<treatmentnumber>
-const asciiOutCombinedTemplate = "%s_%s.asc"              // <descriptio>_<scenario>
-const asciiOutTemplateDebug = "%s_%s_trno%s_source%d.asc" // <descriptio>_<scenario>_<treatmentnumber>
+const asciiOutTemplate = "%s_%s_trno%s.asc"  // <descriptio>_<scenario>_<treatmentnumber>
+const asciiOutCombinedTemplate = "%s_%s.asc" // <descriptio>_<scenario>
+//const asciiOutTemplateDebug = "%s_%s_trno%s_source%d.asc" // <descriptio>_<scenario>_<treatmentnumber>
 
 const ignoreSzenario = "0_0"
 const ignoreMaturityGroup = "soybean/III"
@@ -130,13 +130,18 @@ func main() {
 	receivedResults := 0
 	maxRefNoOverAll := 0
 	for receivedResults < numSourceFolder {
-		select {
-		case maxRefNo := <-outMaxRefNoC:
-			if maxRefNoOverAll < maxRefNo {
-				maxRefNoOverAll = maxRefNo
-			}
-			receivedResults++
+		maxRefNo := <-outMaxRefNoC
+		if maxRefNoOverAll < maxRefNo {
+			maxRefNoOverAll = maxRefNo
 		}
+		receivedResults++
+		// select {
+		// case maxRefNo := <-outMaxRefNoC:
+		// 	if maxRefNoOverAll < maxRefNo {
+		// 		maxRefNoOverAll = maxRefNo
+		// 	}
+		// 	receivedResults++
+		// }
 	}
 	fmt.Println("Number of References:", maxRefNoOverAll)
 
@@ -153,19 +158,23 @@ func main() {
 			currRuns++
 			if currRuns >= maxRuns {
 				for currRuns >= maxRuns {
-					select {
-					case <-outChan:
-						currRuns--
-					}
+					<-outChan
+					currRuns--
+					// select {
+					// case <-outChan:
+					// 	currRuns--
+					// }
 				}
 			}
 		}
 	}
 	for currRuns > 0 {
-		select {
-		case <-outChan:
-			currRuns--
-		}
+		<-outChan
+		currRuns--
+		// select {
+		// case <-outChan:
+		// 	currRuns--
+		// }
 	}
 	// part 2: merge To get one past and one future
 	// create merged maps over maturity groups
@@ -950,19 +959,19 @@ func findMaxValueInScenarioList(lists ...map[ScenarioKeyTuple][]int) int {
 	return maxVal
 }
 
-func findMaxValueInDic(lists ...map[string][]int) int {
-	var maxVal int
-	for _, list := range lists {
-		for _, listVal := range list {
-			for _, val := range listVal {
-				if val > maxVal {
-					maxVal = val
-				}
-			}
-		}
-	}
-	return maxVal
-}
+// func findMaxValueInDic(lists ...map[string][]int) int {
+// 	var maxVal int
+// 	for _, list := range lists {
+// 		for _, listVal := range list {
+// 			for _, val := range listVal {
+// 				if val > maxVal {
+// 					maxVal = val
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return maxVal
+// }
 
 func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sourcefileName, climateFolder string, climateRef map[int]string, maxRefNoOverAll int, outC chan bool) {
 	numSourceFolder := len(sourceFolder)
@@ -2317,7 +2326,6 @@ type SimDataIndex struct {
 	matDOYIdx         int
 	harvDOYIdx        int
 	yieldsIdx         int
-	sowIdx            int
 }
 
 // GridCoord tuple of positions
@@ -2451,11 +2459,6 @@ func getIrrigationGridLookup(gridsource string) map[GridCoord]bool {
 		}
 	}
 	return lookup
-}
-
-func isIrrigated(row, col int, lookup *map[GridCoord]bool) bool {
-	_, ok := (*lookup)[GridCoord{row, col}]
-	return ok
 }
 
 // GetClimateReference ..
@@ -2619,24 +2622,24 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 	outC <- filenameDescPart
 }
 
-func drawScenarioPerModelMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][][]int, filenameFormat, filenameDescPart string, numsource, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+// func drawScenarioPerModelMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][][]int, filenameFormat, filenameDescPart string, numsource, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 
-	for i := 0; i < numsource; i++ {
-		for simKey, simVal := range grids {
-			//simkey = treatmentNo, climateSenario, maturityGroup, comment
-			gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, climateScenarioShortToName(simKey.climateSenario), simKey.treatNo, i)
-			gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
-			file := writeAGridHeader(gridFilePath, extCol, extRow)
+// 	for i := 0; i < numsource; i++ {
+// 		for simKey, simVal := range grids {
+// 			//simkey = treatmentNo, climateSenario, maturityGroup, comment
+// 			gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart, climateScenarioShortToName(simKey.climateSenario), simKey.treatNo, i)
+// 			gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+// 			file := writeAGridHeader(gridFilePath, extCol, extRow)
 
-			writeRows(file, extRow, extCol, simVal[i], gridSourceLookup)
-			file.Close()
-			title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey.climateSenario), simKey.comment)
-			writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+// 			writeRows(file, extRow, extCol, simVal[i], gridSourceLookup)
+// 			file.Close()
+// 			title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey.climateSenario), simKey.comment)
+// 			writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 
-		}
-	}
-	outC <- "debug models" + filenameDescPart
-}
+// 		}
+// 	}
+// 	outC <- "debug models" + filenameDescPart
+// }
 
 func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 
