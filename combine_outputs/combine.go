@@ -289,19 +289,19 @@ func main() {
 	// 	nil, nil, nil, 0.001, NONEVALUE,
 	// 	int(p.maxAllAvgYield), minColor, outC)
 
-	// // map of max yield average(30y) over all models and maturity groups with acceptable variation
-	// waitForNum++
-	// go drawScenarioMaps(gridSourceLookup,
-	// 	p.maxYieldDeviationGridsAll,
-	// 	asciiOutTemplate,
-	// 	"dev_max_yield",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"(Dev )Max Yield: %v %v",
-	// 	"Yield in t",
-	// 	"jet",
-	// 	nil, nil, nil, 0.001, NONEVALUE,
-	// 	int(p.maxAllAvgYield), minColor, outC)
+	// map of max yield average(30y) over all models and maturity groups with acceptable variation
+	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.maxYieldDeviationGridsAll,
+		asciiOutTemplate,
+		"dev_max_yield",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "eval"),
+		"(Dev )Max Yield: %v %v",
+		"Yield in t",
+		"jet",
+		nil, nil, nil, 0.001, NONEVALUE,
+		int(p.maxAllAvgYield), minColor, outC)
 
 	// waitForNum++
 	// go drawScenarioPerModelMaps(gridSourceLookup,
@@ -744,11 +744,9 @@ func main() {
 	)
 
 	for waitForNum > 0 {
-		select {
-		case progessStatus := <-outC:
-			waitForNum--
-			fmt.Println(progessStatus)
-		}
+		progessStatus := <-outC
+		waitForNum--
+		fmt.Println(progessStatus)
 	}
 
 	// // generate pictures with maturity groups
