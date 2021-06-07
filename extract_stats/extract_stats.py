@@ -21,13 +21,24 @@ def build() :
         ascii_data_array = np.loadtxt(header.ascii_path, dtype=np.float, skiprows=6)
         # Set the nodata values to nan
         ascii_data_array[ascii_data_array == header.ascii_nodata] = np.nan
+        #print(file)
+        #print("area:", np.count_nonzero(~np.isnan(ascii_data_array)), "(1x1km pixel)")
         ascii_data_array[ascii_data_array == 0] = np.nan
+        #print("evaluated area:", np.count_nonzero(~np.isnan(ascii_data_array)), "(1x1km pixel)")
         return ascii_data_array
 
     arrYieldfutuT1 = readFile(asciiYieldfutuT1)
     arrYieldfutuT2 = readFile(asciiYieldfutuT2)
     arrYieldhistT1 = readFile(asciiYieldhistT1)
     arrYieldhistT2 = readFile(asciiYieldhistT2)
+
+# # for visualization
+#     print("max:")
+#     print("future T1:", np.nanmax(arrYieldfutuT1))
+#     print("future T2:", np.nanmax(arrYieldfutuT2))
+#     print("hist T1:", np.nanmax(arrYieldhistT1))
+#     print("hist T2:", np.nanmax(arrYieldhistT2))
+ 
 
  # 1) Durchschnittlicher Ertrag pro Hektar, einem für die beregneten, einmal für die unberegneten und einmal für alle Soja-Flächen. 
  # AVG max yield - irrigated/rainfed historical - future
@@ -37,6 +48,8 @@ def build() :
     avgYieldhistT1 = np.nanmean(arrYieldhistT1)
     avgYieldhistT2 = np.nanmean(arrYieldhistT2)
 
+    avgYieldfuture = np.nanmean(np.concatenate((arrYieldfutuT1, arrYieldfutuT2), axis=None))
+    avgYieldhistorcal = np.nanmean(np.concatenate((arrYieldhistT1, arrYieldhistT2), axis=None))
 
  # 2) Die Soja-Fläche in der Baseline und die Soja-Fläche in der Zukunft 
  # Area historical - future (irr/rainfed)
@@ -86,21 +99,23 @@ def build() :
     areaYieldAddT1 = avgIntersectionOuter(arrYieldfutuT1, arrYieldhistT1)
     areaYieldAddT2 = avgIntersectionOuter(arrYieldfutuT2, arrYieldhistT2)
 
-    print("Results:")
-    print("Average Yield future T1",  avgYieldfutuT1)
-    print("Average Yield future T2",  avgYieldfutuT2)
-    print("Average Yield historical T1",  avgYieldhistT1)
-    print("Average Yield historical T2",  avgYieldhistT2)
+    print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
+    print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
+    print("Average Yield historical T1:",  int(avgYieldhistT1), "[t ha-1]")
+    print("Average Yield historical T2:",  int(avgYieldhistT2), "[t ha-1]")
 
-    print("Soybean Area future T1" ,areaYieldfutuT1)
-    print("Soybean Area future T2" ,areaYieldfutuT2)
-    print("Soybean Area historical T1", areaYieldhistT1)
-    print("Soybean Area historical T2", areaYieldhistT2)
+    print("Average Yield future:       ", int(avgYieldfuture), "[t ha-1]")
+    print("Average Yield historical:   ", int(avgYieldhistorcal), "[t ha-1]")
 
-    print("Future Yield on baseline T1", areaYieldT1)
-    print("Future Yield on baseline T2", areaYieldT2)
-    print("Future Yield addition T1", areaYieldAddT1)
-    print("Future Yield addition T2", areaYieldAddT2)
+    print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
+    print("Soybean Area future T2:     " ,areaYieldfutuT2,"(1x1km pixel)")
+    print("Soybean Area historical T1: ", areaYieldhistT1, "(1x1km pixel)")
+    print("Soybean Area historical T2: ", areaYieldhistT2, "(1x1km pixel)")
+
+    print("Future Yield on baseline T1:", int(areaYieldT1), "[t ha-1]")
+    print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
+    print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
+    print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
 
 @dataclass
 class AsciiHeader:
