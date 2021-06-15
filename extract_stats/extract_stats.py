@@ -14,6 +14,7 @@ def build() :
     asciiYieldfutuT2 = "./extract_stats/eval/dev_max_yield_future_trnoT2.asc.gz"
     asciiYieldhistT1 = "./extract_stats/eval/dev_max_yield_historical_trnoT1.asc.gz"
     asciiYieldhistT2 = "./extract_stats/eval/dev_max_yield_historical_trnoT2.asc.gz"
+    irrigatedArea = "./extract_stats/eval/irrgated_areas.asc.gz"
 
     def readFile(file) :
         print("File:", file)
@@ -31,6 +32,7 @@ def build() :
     arrYieldfutuT2 = readFile(asciiYieldfutuT2)
     arrYieldhistT1 = readFile(asciiYieldhistT1)
     arrYieldhistT2 = readFile(asciiYieldhistT2)
+    irrigated = readFile(irrigatedArea)
 
 # # for visualization
 #     print("max:")
@@ -51,6 +53,43 @@ def build() :
     avgYieldfuture = np.nanmean(np.concatenate((arrYieldfutuT1, arrYieldfutuT2), axis=None))
     avgYieldhistorcal = np.nanmean(np.concatenate((arrYieldhistT1, arrYieldhistT2), axis=None))
 
+# MICRA
+    # create a mask 
+    def maskedArrayIrrigated(arr, irrigated) :
+        numrows = len(arr)    
+        numcols = len(arr[0])
+        resultArray = np.full((numrows, numcols), np.nan)
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr[r][c]) and not math.isnan(irrigated[r][c]):
+                    resultArray[r][c] = arr[r][c]
+        return resultArray
+
+    def maskedArrayRainfed(arr, irrigated) :
+        numrows = len(arr)    
+        numcols = len(arr[0])
+        resultArray = np.full((numrows, numcols), np.nan)
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr[r][c]) and math.isnan(irrigated[r][c]):
+                    resultArray[r][c] = arr[r][c]
+        return resultArray
+ 
+    irrigatedFuture = maskedArrayIrrigated(arrYieldfutuT2, irrigated)
+    irrigatedhistorical = maskedArrayIrrigated(arrYieldhistT2, irrigated)
+    rainfedFuture = maskedArrayRainfed(arrYieldfutuT1, irrigated)
+    rainfedhistorical = maskedArrayRainfed(arrYieldhistT1, irrigated)    
+    
+
+    avgYieldirrigatedFuture = np.nanmean(irrigatedFuture)
+    avgYieldirrigatedhistorical = np.nanmean(irrigatedhistorical)
+    avgYieldrainfedFuture = np.nanmean(rainfedFuture)
+    avgYieldrainfedhistorical = np.nanmean(rainfedhistorical)
+
+    avgYieldfutureMasked = np.nanmean(np.concatenate((irrigatedFuture, rainfedFuture), axis=None))
+    avgYieldhistorcalMasked = np.nanmean(np.concatenate((irrigatedhistorical, rainfedhistorical), axis=None))
+
+
  # 2) Die Soja-Fläche in der Baseline und die Soja-Fläche in der Zukunft 
  # Area historical - future (irr/rainfed)
 
@@ -59,10 +98,16 @@ def build() :
     areaYieldhistT1 = np.count_nonzero(~np.isnan(arrYieldhistT1))
     areaYieldhistT2 = np.count_nonzero(~np.isnan(arrYieldhistT2))
 
+    areaYieldirrgatedFuture = np.count_nonzero(~np.isnan(irrigatedFuture))
+    areaYieldirrgatedhistorical = np.count_nonzero(~np.isnan(irrigatedhistorical))
+    areaYieldrainfedFuture = np.count_nonzero(~np.isnan(rainfedFuture))
+    areaYieldrainfedhistorical = np.count_nonzero(~np.isnan(rainfedhistorical))
+
+
  # 3) den durchschnittlichen Ertrag pro Fläche auf den Soja-Flächen der Baseline im Vergleich mit genau diesen Flächen in der Zukunft (flächentreu) und den durchschnittlichen Ertrag pro Fläche auf den Flächen die in der Zukunft neu hinzugekommen sind.
     
     def avgIntersection(future, historical) :
-        numrows = len(historical)    # 3 rows in your example
+        numrows = len(historical)    
         numcols = len(historical[0])
         counter = 0
         sum = 0
@@ -80,6 +125,9 @@ def build() :
 
     areaYieldT1 = avgIntersection(arrYieldfutuT1, arrYieldhistT1)
     areaYieldT2 = avgIntersection(arrYieldfutuT2, arrYieldhistT2)
+
+    areaYieldirrigated = avgIntersection(irrigatedFuture,irrigatedhistorical)
+    areaYieldrainfed = avgIntersection(rainfedFuture, rainfedhistorical)
 
     def avgIntersectionOuter(future, historical) :
         numrows = len(historical)    # 3 rows in your example
@@ -99,6 +147,9 @@ def build() :
     areaYieldAddT1 = avgIntersectionOuter(arrYieldfutuT1, arrYieldhistT1)
     areaYieldAddT2 = avgIntersectionOuter(arrYieldfutuT2, arrYieldhistT2)
 
+    areaYieldAddirrigated = avgIntersectionOuter(irrigatedFuture,irrigatedhistorical)
+    areaYieldAddrainfed = avgIntersectionOuter(rainfedFuture, rainfedhistorical)
+
     print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
     print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
     print("Average Yield historical T1:",  int(avgYieldhistT1), "[t ha-1]")
@@ -107,15 +158,39 @@ def build() :
     print("Average Yield future:       ", int(avgYieldfuture), "[t ha-1]")
     print("Average Yield historical:   ", int(avgYieldhistorcal), "[t ha-1]")
 
+    print("micra: ")
+
+    print("Average Yield future irrig:   ", int(avgYieldirrigatedFuture), "[t ha-1]")
+    print("Average Yield future rainfed: ", int(avgYieldrainfedFuture), "[t ha-1]")
+    print("Average Yield hist. irrig:    ", int(avgYieldirrigatedhistorical), "[t ha-1]")
+    print("Average Yield hist. rainfed:  ", int(avgYieldrainfedhistorical), "[t ha-1]")
+
+    print("Average Yield future     :    ", int(avgYieldfutureMasked), "[t ha-1]")
+    print("Average Yield historical :    ", int(avgYieldhistorcalMasked), "[t ha-1]")
+
+    print("------------------------------------------- ")
+
     print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
     print("Soybean Area future T2:     " ,areaYieldfutuT2,"(1x1km pixel)")
     print("Soybean Area historical T1: ", areaYieldhistT1, "(1x1km pixel)")
     print("Soybean Area historical T2: ", areaYieldhistT2, "(1x1km pixel)")
 
+    print("Note: the irrigated area has not changed much, because we are using the same micra mask")
+
+    print("Soybean Area irrgated future:     ", areaYieldirrgatedFuture, "(1x1km pixel)")
+    print("Soybean Area irrgated historical: ", areaYieldirrgatedhistorical, "(1x1km pixel)")
+    print("Soybean Area rainfed future:      ", areaYieldrainfedFuture, "(1x1km pixel)")
+    print("Soybean Area rainfed historical:  ", areaYieldrainfedhistorical, "(1x1km pixel)")
+
     print("Future Yield on baseline T1:", int(areaYieldT1), "[t ha-1]")
     print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
     print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
     print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
+
+    print("Future Yield on baseline irrigated :", int(areaYieldirrigated), "[t ha-1]")
+    print("Future Yield on baseline rainfed:   ", int(areaYieldrainfed), "[t ha-1]")
+    print("Future Yield addition irrigated:    ", int(areaYieldAddirrigated), "[t ha-1]")
+    print("Future Yield addition rainfed:      ", int(areaYieldAddrainfed), "[t ha-1]")
 
 @dataclass
 class AsciiHeader:
