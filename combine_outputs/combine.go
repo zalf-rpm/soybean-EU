@@ -59,6 +59,11 @@ func main() {
 	source2Ptr := flag.String("source2", "", "path to source folder")
 	source3Ptr := flag.String("source3", "", "path to source folder")
 	source4Ptr := flag.String("source4", "", "path to source folder")
+	harvestDay1Ptr := flag.Int("harvest1", 31, "harvest day")
+	harvestDay2Ptr := flag.Int("harvest2", 31, "harvest day")
+	harvestDay3Ptr := flag.Int("harvest3", 31, "harvest day")
+	harvestDay4Ptr := flag.Int("harvest4", 31, "harvest day")
+
 	outPtr := flag.String("out", "", "path to out folder")
 	projectPtr := flag.String("project", "", "path to project folder")
 	climatePtr := flag.String("climate", "", "path to climate folder")
@@ -71,17 +76,22 @@ func main() {
 	projectpath := *projectPtr
 
 	sourceFolder := make([]string, 0, 4)
+	sourceHarvestDate := make([]int, 0, 4)
 	if len(*source1Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source1Ptr)
+		sourceHarvestDate = append(sourceHarvestDate, *harvestDay1Ptr)
 	}
 	if len(*source2Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source2Ptr)
+		sourceHarvestDate = append(sourceHarvestDate, *harvestDay2Ptr)
 	}
 	if len(*source3Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source3Ptr)
+		sourceHarvestDate = append(sourceHarvestDate, *harvestDay3Ptr)
 	}
 	if len(*source4Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source4Ptr)
+		sourceHarvestDate = append(sourceHarvestDate, *harvestDay4Ptr)
 	}
 	if len(outputFolder) == 0 {
 		outputFolder = PATHS[pathID]["outputpath"]
@@ -154,7 +164,7 @@ func main() {
 	outChan := make(chan bool)
 	for idxSource, filelist := range filelists {
 		for _, sourcefileInfo := range filelist {
-			go p.loadAndProcess(idxSource, sourceFolder, sourcefileInfo.Name(), climateFolder, climateRef, maxRefNoOverAll, outChan)
+			go p.loadAndProcess(idxSource, sourceFolder, sourceHarvestDate, sourcefileInfo.Name(), climateFolder, climateRef, maxRefNoOverAll, outChan)
 			currRuns++
 			if currRuns >= maxRuns {
 				for currRuns >= maxRuns {
@@ -973,7 +983,7 @@ func findMaxValueInScenarioList(lists ...map[ScenarioKeyTuple][]int) int {
 // 	return maxVal
 // }
 
-func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sourcefileName, climateFolder string, climateRef map[int]string, maxRefNoOverAll int, outC chan bool) {
+func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sourceHarvestDate []int, sourcefileName, climateFolder string, climateRef map[int]string, maxRefNoOverAll int, outC chan bool) {
 	numSourceFolder := len(sourceFolder)
 	sourcefile, err := os.Open(filepath.Join(sourceFolder[idxSource], sourcefileName))
 	if err != nil {
@@ -1044,7 +1054,7 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 				simNoMaturity[lineKey] = append(simNoMaturity[lineKey], !(matureValue > 0))
 				simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 				simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
-				simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, 31, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
+				simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, sourceHarvestDate[idxSource], 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
 				dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
 			}
 		}
