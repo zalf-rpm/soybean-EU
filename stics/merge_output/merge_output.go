@@ -104,7 +104,7 @@ func main() {
 								if _, ok := lookup[simKey]; ok {
 									lookup[simKey] = tokens
 								} else {
-									fmt.Println("error:", simKey)
+									//fmt.Println("error:", simKey)
 								}
 							}
 						}
