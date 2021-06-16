@@ -178,6 +178,9 @@ func readSimKey(line string) (SimKey, []string, error) {
 		fmt.Println("error: ", line)
 		return SimKey{}, []string{}, errors.New("to few tokens")
 	}
+	if len(outTokens) > 27 {
+		outTokens = outTokens[:27]
+	}
 	if outTokens[2] == "first_crop" {
 		// catch headline in between
 		return SimKey{}, []string{}, errors.New("headline in between")
