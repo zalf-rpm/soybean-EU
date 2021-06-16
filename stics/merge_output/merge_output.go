@@ -25,6 +25,7 @@ func main() {
 	overridePtr := flag.String("override", "", "path to override source folder")
 	outFolderPtr := flag.String("output", "./testout/merged", "path to output folder")
 	checkoutputPtr := flag.Bool("checkoutput", false, "check for missing output lines")
+	excludeClimPtr := flag.String("exclude", "", "exlude climate scenario")
 
 	flag.Parse()
 
@@ -32,6 +33,7 @@ func main() {
 	overrideFolder := *overridePtr
 	outFolder := *outFolderPtr
 	checkoutput := *checkoutputPtr
+
 	numSources := 0
 	if len(sourceFolder) > 0 {
 		numSources++
@@ -72,7 +74,7 @@ func main() {
 	if len(overrideFolder) > 0 {
 		findMatchingFiles(overrideFolder, filepathes)
 	}
-	lookup := generateSimKeys()
+	lookup := generateSimKeys(*excludeClimPtr)
 	fmt.Println("All Lookups:", len(lookup))
 	errorLog := make(map[string][]string)
 	missingFiles := make([]string, 0, 10)
@@ -195,7 +197,7 @@ func readSimKey(line string) (SimKey, []string, error) {
 	}, outTokens, nil
 }
 
-func generateSimKeys() map[SimKey][]string {
+func generateSimKeys(excludeClim string) map[SimKey][]string {
 	lookup := make(map[SimKey][]string)
 	allCrops := []string{
 		"maize",
@@ -219,6 +221,17 @@ func generateSimKeys() map[SimKey][]string {
 		"MIROC5_45",
 		"0_0",
 	}
+
+	found := -1
+	for c, val := range climateScn {
+		if val == excludeClim {
+			found = c
+		}
+	}
+	if found != -1 {
+		climateScn = append(climateScn[:found], climateScn[found+1:]...)
+	}
+
 	treatment := []string{"T1", "T2"}
 
 	for _, t := range treatment {
