@@ -78,6 +78,9 @@ func main() {
 	fmt.Println("All Lookups:", len(lookup))
 	errorLog := make(map[string][]string)
 	missingFiles := make([]string, 0, 10)
+	errorFilesBatch := make([][]int, 0, soilRefNumber)
+	indexEFB := -1
+	errorCounter := 0
 	for i := 1; i <= soilRefNumber; i++ {
 		clearLookup(lookup)
 		if _, ok := filepathes[i]; !ok {
@@ -113,7 +116,15 @@ func main() {
 				file.Close()
 			}
 			if checkoutput {
-				checkForMissingData(i, lookup, errorLog)
+				ok := checkForMissingData(i, lookup, errorLog)
+				if !ok {
+					errorCounter++
+					if indexEFB == -1 || errorFilesBatch[indexEFB][1]+1 < i {
+						indexEFB++
+						errorFilesBatch = append(errorFilesBatch, []int{i, i})
+					}
+					errorFilesBatch[indexEFB][1] = i
+				}
 			} else {
 				// open out file
 				// append each source
@@ -157,6 +168,11 @@ func main() {
 		for _, entry := range ids {
 			fmt.Println(entry)
 		}
+	}
+	fmt.Println("defective files: ", errorCounter)
+	fmt.Println("files batches: ", len(errorFilesBatch))
+	for _, val := range errorFilesBatch {
+		fmt.Println(val[0], val[1])
 	}
 }
 
@@ -258,8 +274,9 @@ func clearLookup(lookup map[SimKey][]string) {
 	}
 }
 
-func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[string][]string) {
+func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[string][]string) bool {
 
+	noDataMissing := true
 	emptyKeyList := make([]SimKey, 0, len(lookup))
 	for key := range lookup {
 		if len(lookup[key]) == 0 {
@@ -267,6 +284,7 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 		}
 	}
 	if len(emptyKeyList) > 0 {
+		noDataMissing = false
 		idAsString := fmt.Sprintf("%d", id)
 		fmt.Println(id, len(lookup), len(emptyKeyList), len(lookup)-len(emptyKeyList))
 		if len(lookup) > len(emptyKeyList) {
@@ -331,6 +349,7 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 			}
 		}
 	}
+	return noDataMissing
 }
 
 func allOfList(id int, varName string, emptyKeyList []SimKey, valRefs []string, errorLookup map[string][]string) map[string]bool {
