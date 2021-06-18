@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-var concurrentOperations uint16 = 10 // number of paralell processes
 const filename = "missing.txt"
 const rscript1 = "scriptRotaClusterSMGISS.R"
 const rscript2 = "scriptRotaClusterMGISS.R"
@@ -29,6 +28,9 @@ func main() {
 
 	climatePath := flag.String("climatePath", "", "path to climate folder")
 	homePath := flag.String("homePath", "", "path to home")
+	concurrent := flag.Int("concurrent", 10, "concurrent processes")
+	start := flag.Int("start", 1, "start line")
+	end := flag.Int("end", 99367, "end line including")
 
 	flag.Parse()
 
@@ -40,19 +42,34 @@ func main() {
 	defer simsFile.Close()
 
 	scanner := bufio.NewScanner(simsFile)
-
+	idList := make([]string, 0, *end+1-*start)
+	linecounter := 0
+	for scanner.Scan() {
+		linecounter++
+		id := scanner.Text()
+		id = strings.TrimSpace(id)
+		if linecounter < *start {
+			continue
+		}
+		if linecounter > *end {
+			break
+		}
+		idList = append(idList, id)
+	}
 	call := fmt.Sprintf(cmdline, *homePath, *climatePath)
+
+	runIDList(*homePath, call, rscript1, idList, *concurrent)
+	runIDList(*homePath, call, rscript2, idList, *concurrent)
+}
+
+func runIDList(workdir, call, rscript string, idList []string, concurrent int) {
 	// start active runs for number of concurrentOperations
 	// when an active run is finished, start a follow up run
 	logOutputChan := make(chan string)
 	resultChannel := make(chan string)
-	var activeRuns uint16
-	for scanner.Scan() {
-
-		id := scanner.Text()
-		id = strings.TrimSpace(id)
-
-		for activeRuns == concurrentOperations {
+	var activeRuns int
+	for _, id := range idList {
+		for activeRuns == concurrent {
 			select {
 			case <-resultChannel:
 				activeRuns--
@@ -61,13 +78,10 @@ func main() {
 			}
 		}
 
-		if activeRuns < concurrentOperations {
+		if activeRuns < concurrent {
 			activeRuns++
-			logID := fmt.Sprintf("[%v] started", id)
-			fmt.Println(logID)
-			go doCall(*homePath, call, rscript1, id, resultChannel, logOutputChan)
-			time.Sleep(10 * time.Second)
-			go doCall(*homePath, call, rscript2, id, resultChannel, logOutputChan)
+			fmt.Printf("[%v] started\n", id)
+			go doCall(workdir, call, rscript, id, resultChannel, logOutputChan)
 			time.Sleep(10 * time.Second)
 		}
 	}
@@ -82,6 +96,7 @@ func main() {
 		}
 	}
 }
+
 func doCall(workingDir, cmdline, rscript, id string, outResult, logOutputChan chan string) {
 
 	var cmd *exec.Cmd
