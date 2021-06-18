@@ -78,8 +78,9 @@ func main() {
 	fmt.Println("All Lookups:", len(lookup))
 	errorLog := make(map[string][]string)
 	missingFiles := make([]string, 0, 10)
-	errorFilesBatch := make([][]int, 0, soilRefNumber)
-	indexEFB := -1
+	//errorFilesBatch := make([][]int, 0, soilRefNumber)
+	errorFilesBatch := make([]int, 0, 10000)
+	//indexEFB := -1
 	errorCounter := 0
 	for i := 1; i <= soilRefNumber; i++ {
 		clearLookup(lookup)
@@ -106,9 +107,10 @@ func main() {
 							if err == nil {
 								if _, ok := lookup[simKey]; ok {
 									lookup[simKey] = tokens
-								} else {
-									//fmt.Println("error:", simKey)
 								}
+								// else {
+								// 	//fmt.Println("error:", simKey)
+								// }
 							}
 						}
 					}
@@ -119,11 +121,13 @@ func main() {
 				ok := checkForMissingData(i, lookup, errorLog)
 				if !ok {
 					errorCounter++
-					if indexEFB == -1 || errorFilesBatch[indexEFB][1]+1 < i {
-						indexEFB++
-						errorFilesBatch = append(errorFilesBatch, []int{i, i})
-					}
-					errorFilesBatch[indexEFB][1] = i
+					errorFilesBatch = append(errorFilesBatch, i)
+
+					// if indexEFB == -1 || errorFilesBatch[indexEFB][1]+1 < i {
+					// 	indexEFB++
+					// 	errorFilesBatch = append(errorFilesBatch, []int{i, i})
+					// }
+					// errorFilesBatch[indexEFB][1] = i
 				}
 			} else {
 				// open out file
@@ -170,9 +174,10 @@ func main() {
 		}
 	}
 	fmt.Println("defective files: ", errorCounter)
-	fmt.Println("files batches: ", len(errorFilesBatch))
+	//fmt.Println("files batches: ", len(errorFilesBatch))
 	for _, val := range errorFilesBatch {
-		fmt.Println(val[0], val[1])
+		//fmt.Println(val[0], val[1])
+		fmt.Println(val)
 	}
 }
 
