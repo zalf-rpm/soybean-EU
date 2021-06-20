@@ -1873,7 +1873,7 @@ func getBestGuessMaturityGroup(matGroupDistribution []int) int {
 					break
 				}
 			}
-			if numOccOther > numOcc {
+			if numOccOther > numOcc || (numOccOther == numOcc && matGroupDistribution[centerIdx] == 0) {
 				centerIdx = centerIdxOther
 			}
 		}
