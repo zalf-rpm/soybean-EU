@@ -1853,13 +1853,41 @@ func getBestGuessMaturityGroup(matGroupDistribution []int) int {
 	sort.Ints(matGroupDistribution)
 	numSource := len(matGroupDistribution)
 	centerIdx := int(float64(numSource)/2+0.5) - 1
-	if matGroupDistribution[centerIdx] == 0 {
-		for i := centerIdx + 1; i < len(matGroupDistribution); i++ {
-			if matGroupDistribution[i] > 0 {
-				return matGroupDistribution[i]
+	if numSource%2 == 1 && numSource > 2 {
+		centerIdxOther := int(float64(numSource)/2+1) - 1
+		if centerIdxOther != centerIdx {
+			numOcc := 1
+			numOccOther := 1
+			// check which one has the most occurences
+			for i := centerIdxOther + 1; i < len(matGroupDistribution); i++ {
+				if matGroupDistribution[i] == matGroupDistribution[centerIdxOther] {
+					numOccOther++
+				} else {
+					break
+				}
+			}
+			for i := centerIdx - 1; i >= 0; i-- {
+				if matGroupDistribution[i] == matGroupDistribution[centerIdx] {
+					numOcc++
+				} else {
+					break
+				}
+			}
+			if numOccOther > numOcc {
+				centerIdx = centerIdxOther
+			}
+		}
+	} else if numSource == 2 {
+		// num sources is 2, if maturity group is 0, use the other
+		if matGroupDistribution[centerIdx] == 0 {
+			for i := centerIdx + 1; i < len(matGroupDistribution); i++ {
+				if matGroupDistribution[i] > 0 {
+					return matGroupDistribution[i]
+				}
 			}
 		}
 	}
+
 	return matGroupDistribution[centerIdx]
 }
 
