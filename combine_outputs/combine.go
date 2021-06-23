@@ -1877,13 +1877,12 @@ func getBestGuessMaturityGroup(matGroupDistribution []int) int {
 				centerIdx = centerIdxOther
 			}
 		}
-	} else if numSource == 2 {
-		// num sources is 2, if maturity group is 0, use the other
-		if matGroupDistribution[centerIdx] == 0 {
-			for i := centerIdx + 1; i < len(matGroupDistribution); i++ {
-				if matGroupDistribution[i] > 0 {
-					return matGroupDistribution[i]
-				}
+	}
+	// num sources is 2, if maturity group is 0, use the other
+	if matGroupDistribution[centerIdx] == 0 {
+		for i := centerIdx + 1; i < len(matGroupDistribution); i++ {
+			if matGroupDistribution[i] > 0 {
+				return matGroupDistribution[i]
 			}
 		}
 	}
