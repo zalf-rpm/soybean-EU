@@ -3,8 +3,8 @@
 
 outFile = "./stu_eu_layer_grid.csv"
 #sidFile = "./hermes/soil_lookup.csv"
-lat_lon_up = (56.327102, 21.181307)
-lat_lon_down = (54.132505, 25.950884)
+lat_lon_up = (51.959284, 13.928282)
+lat_lon_down = (51.795406, 14.160063)
 
 def findAllSoilRef() :
 
