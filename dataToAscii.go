@@ -100,6 +100,7 @@ func main() {
 	projectPtr := flag.String("project", "", "path to project folder")
 	climatePtr := flag.String("climate", "", "path to climate folder")
 	harvestDayPtr := flag.Int("harvest", 31, "bugfix for wrong harvest date")
+	forcedCutDatePtr := flag.Int("cut", 31, "forced cut date")
 
 	flag.Parse()
 
@@ -110,6 +111,7 @@ func main() {
 	climateFolder := *climatePtr
 	projectpath := *projectPtr
 	harvestDay := *harvestDayPtr
+	forcedCutDate := *forcedCutDatePtr
 
 	if len(sourceFolder) == 0 {
 		sourceFolder = PATHS[pathID]["sourcepath"]
@@ -205,6 +207,7 @@ func main() {
 			simDoyHarvest := make(map[SimKeyTuple][]int)
 			simMatIsHarvest := make(map[SimKeyTuple][]bool)
 			simLastHarvestDate := make(map[SimKeyTuple][]bool)
+			simForcedCutDate := make(map[SimKeyTuple][]bool)
 			dateYearOrder := make(map[SimKeyTuple][]int)
 
 			firstLine := true
@@ -241,6 +244,7 @@ func main() {
 							simMatIsHarvest[lineKey] = make([]bool, 0, 30)
 							simLastHarvestDate[lineKey] = make([]bool, 0, 30)
 							simDoySow[lineKey] = make([]int, 0, 30)
+							simForcedCutDate[lineKey] = make([]bool, 0, 30)
 							dateYearOrder[lineKey] = make([]int, 0, 30)
 						}
 						p.setClimateFilePeriod(lineKey.climateSenario, period)
@@ -257,6 +261,7 @@ func main() {
 						simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 						simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
 						simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, harvestDay, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
+						simForcedCutDate[lineKey] = append(simForcedCutDate[lineKey], time.Date(yearValue, time.October, forcedCutDate, 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
 						dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
 					}
 				}
@@ -286,7 +291,7 @@ func main() {
 			p.setOutputGridsGenerated(simulations, maxRefNo)
 
 			for simKey := range simulations {
-				pixelValue := CalculatePixel(simulations[simKey])
+				pixelValue := CalculatePixel(simulations[simKey], simForcedCutDate[simKey])
 				p.setMaxAllAvgYield(pixelValue)
 				stdDeviation := stat.StdDev(simulations[simKey], nil)
 				p.setMaxSdtDeviation(stdDeviation)
@@ -533,18 +538,19 @@ func main() {
 		350, "Harvest before maturity", outC)
 
 	waitForNum++
+	harvestDayStr := strconv.Itoa(harvestDay)
 	go drawDateMaps(gridSourceLookup,
 		p.lateHarvestGrid,
 		asciiOutFilenameLateHarvest,
 		extCol, extRow,
 		asciiOutFolder,
-		"Auto Harvest 31. October - Scn: %v %v %v",
+		"Auto Harvest "+harvestDayStr+". October - Scn: %v %v %v",
 		"counted occurrences in 30 years",
 		false,
 		"viridis",
 		nil, nil, 1.0, NONEVALUE,
 		p.maxLateHarvest,
-		"Harvest 31. October", outC)
+		"Harvest "+harvestDayStr+". October", outC)
 	waitForNum++
 	go drawDateMaps(gridSourceLookup,
 		p.wetHarvestGrid,
@@ -652,8 +658,8 @@ func main() {
 		"soybean/000":  6,
 		"soybean/0000": 7}
 
-	minLateHarvest := p.maxLateHarvest / 5
-	fmt.Println("Min late harvest value: ", minLateHarvest)
+	// minLateHarvest := p.maxLateHarvest / 5
+	// fmt.Println("Min late harvest value: ", minLateHarvest)
 	for simKey, currGrid := range p.allGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
@@ -667,8 +673,9 @@ func main() {
 		}
 
 		for ref := 0; ref < maxRefNo; ref++ {
-			if currGrid[ref] > maxYieldInTimeGrids[scenarioKey][ref] &&
-				p.lateHarvestGrid[simKey][ref] < minLateHarvest {
+			// if currGrid[ref] > maxYieldInTimeGrids[scenarioKey][ref] &&
+			// 	p.lateHarvestGrid[simKey][ref] < minLateHarvest {
+			if currGrid[ref] > maxYieldInTimeGrids[scenarioKey][ref] {
 				maxYieldInTimeGrids[scenarioKey][ref] = currGrid[ref]
 				maxYieldDeviationGrids[scenarioKey][ref] = currGrid[ref]
 				if currGrid[ref] == 0 {
@@ -698,13 +705,13 @@ func main() {
 		//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 		scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 		currGridDeviation := p.StdDevAvgGrids[simKey]
-		currGridHarvest := p.lateHarvestGrid[simKey]
+		//currGridHarvest := p.lateHarvestGrid[simKey]
 		for ref := 0; ref < maxRefNo; ref++ {
 			if matGroupDeviationGrids[scenarioKey][ref] != NONEVALUE {
 				matGroup := invMatGroupIDGrids[matGroupDeviationGrids[scenarioKey][ref]]
 				matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
-				if currGridHarvest[ref] < minLateHarvest &&
-					float64(currGridYield[ref]) > float64(maxYieldInTimeGrids[scenarioKey][ref])*0.9 &&
+				// if currGridHarvest[ref] < minLateHarvest &&
+				if float64(currGridYield[ref]) > float64(maxYieldInTimeGrids[scenarioKey][ref])*0.9 &&
 					currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][ref] {
 					maxYieldDeviationGrids[scenarioKey][ref] = currGridYield[ref]
 					matGroupDeviationGrids[scenarioKey][ref] = matGroupIDGrids[simKey.mGroup]
@@ -760,29 +767,29 @@ func main() {
 			progressBar(currentInput)
 		}
 	}
-	currentInput = 0
-	if showBar {
-		numInput = len(asciiOutFilenameMaxYieldInTime)
-		progressBar = progress(numInput, "max yields grids in time")
-	}
-	for scenarioKey, scenarioVal := range maxYieldInTimeGrids {
-		gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldInTime, scenarioKey.treatNo)
-		gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
-		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+	// currentInput = 0
+	// if showBar {
+	// 	numInput = len(asciiOutFilenameMaxYieldInTime)
+	// 	progressBar = progress(numInput, "max yields grids in time")
+	// }
+	// for scenarioKey, scenarioVal := range maxYieldInTimeGrids {
+	// 	gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldInTime, scenarioKey.treatNo)
+	// 	gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
+	// 	gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
 
-		// create ascii file
-		file := writeAGridHeader(gridFilePath, extCol, extRow)
-		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
-		file.Close()
-		title := fmt.Sprintf("Max average yield in time - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
-		labelText := "Yield in t"
-		colormap := "jet"
-		writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0, "")
-		currentInput++
-		if showBar {
-			progressBar(currentInput)
-		}
-	}
+	// 	// create ascii file
+	// 	file := writeAGridHeader(gridFilePath, extCol, extRow)
+	// 	writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+	// 	file.Close()
+	// 	title := fmt.Sprintf("Max average yield in time - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+	// 	labelText := "Yield in t"
+	// 	colormap := "jet"
+	// 	writeMetaFile(gridFilePath, title, labelText, colormap, nil, nil, nil, 0.001, int(p.maxAllAvgYield), 0, "")
+	// 	currentInput++
+	// 	if showBar {
+	// 		progressBar(currentInput)
+	// 	}
+	// }
 
 	currentInput = 0
 	if showBar {
@@ -845,27 +852,27 @@ func main() {
 		}
 	}
 
-	currentInput = 0
-	numInput = len(matGroupInTimeGrids)
-	if showBar {
-		progressBar = progress(numInput, "mat groups grids in time")
-	}
-	for scenarioKey, scenarioVal := range matGroupInTimeGrids {
-		gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldMatInTime, scenarioKey.treatNo)
-		gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
-		gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
+	// currentInput = 0
+	// numInput = len(matGroupInTimeGrids)
+	// if showBar {
+	// 	progressBar = progress(numInput, "mat groups grids in time")
+	// }
+	// for scenarioKey, scenarioVal := range matGroupInTimeGrids {
+	// 	gridFileName := fmt.Sprintf(asciiOutFilenameMaxYieldMatInTime, scenarioKey.treatNo)
+	// 	gridFileName = strings.ReplaceAll(gridFileName, "/", "-") //remove directory seperator from filename
+	// 	gridFilePath := filepath.Join(asciiOutFolder, scenarioKey.climateSenario, gridFileName)
 
-		file := writeAGridHeader(gridFilePath, extCol, extRow)
-		writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
-		file.Close()
+	// 	file := writeAGridHeader(gridFilePath, extCol, extRow)
+	// 	writeRows(file, extRow, extCol, scenarioVal, gridSourceLookup)
+	// 	file.Close()
 
-		title := fmt.Sprintf("Maturity groups - max avg yield in time  - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
-		writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
-		currentInput++
-		if showBar {
-			progressBar(currentInput)
-		}
-	}
+	// 	title := fmt.Sprintf("Maturity groups - max avg yield in time  - Scn: %s %s", scenarioKey.climateSenario, scenarioKey.comment)
+	// 	writeMetaFile(gridFilePath, title, "Maturity Group", "", colorList, sidebarLabel, ticklist, 1.0, len(sidebarLabel)-1, 0, "")
+	// 	currentInput++
+	// 	if showBar {
+	// 		progressBar(currentInput)
+	// 	}
+	// }
 
 	// Grid Diff affected by water stress T4(potential) - T1(actual)
 	currentInput = 0
@@ -1373,11 +1380,15 @@ func newGrid(extRow, extCol, defaultVal int) [][]int {
 func IsCrop(key SimKeyTuple, cropName string) bool {
 	return strings.HasPrefix(key.mGroup, cropName)
 }
-func average(list []float64) float64 {
+func average(list []float64, forcedCut []bool) float64 {
 	sum := 0.0
 	val := 0.0
 	lenVal := 0.0
-	for _, x := range list {
+	for i := range list {
+		x := list[i]
+		if forcedCut[i] {
+			x = 0
+		}
 		if x >= 0 {
 			sum = sum + x
 			lenVal++
@@ -1408,21 +1419,21 @@ func averageInt(list []int) int {
 }
 
 // CalculatePixel yield average for stable yield set
-func CalculatePixel(yieldList []float64) float64 {
-	pixelValue := average(yieldList)
-	if HasUnStableYield(yieldList, pixelValue) {
+func CalculatePixel(yieldList []float64, forcedCut []bool) float64 {
+	pixelValue := average(yieldList, forcedCut)
+	if HasUnStableYield(yieldList, forcedCut, pixelValue) {
 		pixelValue = 0
 	}
 	return pixelValue
 }
 
 //HasUnStableYield adjust this methode to define if yield loss is too hight
-func HasUnStableYield(yieldList []float64, averageValue float64) bool {
+func HasUnStableYield(yieldList []float64, forcedCut []bool, averageValue float64) bool {
 	unstable := false
 	counter := 0
 	lowPercent := averageValue * 0.2
-	for _, y := range yieldList {
-		if y < 900 || y < lowPercent {
+	for i, y := range yieldList {
+		if y < 900 || y < lowPercent || forcedCut[i] {
 			counter++
 		}
 	}
