@@ -1,4 +1,9 @@
 #!/bin/bash +x 
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=compute
+#SBATCH --job-name=prepare_combine_soyEU
+#SBATCH --time=00:10:00
 
 mkdir -p ./ascii_source
 cp ./image-setup.yml ./ascii_source/image-setup.yml 
