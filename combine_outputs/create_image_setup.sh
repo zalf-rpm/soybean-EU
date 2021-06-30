@@ -1,7 +1,7 @@
 #!/bin/bash +x 
 
 mkdir -p ./ascii_source
-cp ./image-setup.xml ./ascii_source/image-setup.xml 
+cp ./image-setup.yml ./ascii_source/image-setup.yml 
 cp ./asciigrid_combined/dev/dev_max_yield_historical.asc.gz ./ascii_source/density_max_yield_historical.asc.gz
 cp ./asciigrid_combined/dev/dev_max_yield_future.asc.gz ./ascii_source/density_max_yield_future.asc.gz
 
