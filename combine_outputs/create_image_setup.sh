@@ -9,6 +9,8 @@ mkdir -p ./ascii_source
 cp ./image-setup.yml ./ascii_source/image-setup.yml 
 cp ./asciigrid_combined/dev/dev_max_yield_historical.asc.gz ./ascii_source/density_max_yield_historical.asc.gz
 cp ./asciigrid_combined/dev/dev_max_yield_future.asc.gz ./ascii_source/density_max_yield_future.asc.gz
+cp ./density_max_yield_historical.asc.meta ./ascii_source/density_max_yield_historical.asc.meta
+cp ./density_max_yield_future.asc.meta ./ascii_source/density_max_yield_future.asc.meta
 
 cp ./density_short_season_future.asc.meta ./ascii_source/density_short_season_future.asc.meta
 cp ./density_short_season_historical.asc.meta ./ascii_source/density_short_season_historical.asc.meta
