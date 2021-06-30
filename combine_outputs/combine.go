@@ -63,6 +63,10 @@ func main() {
 	harvestDay2Ptr := flag.Int("harvest2", 31, "harvest day")
 	harvestDay3Ptr := flag.Int("harvest3", 31, "harvest day")
 	harvestDay4Ptr := flag.Int("harvest4", 31, "harvest day")
+	forcedCutDate1Ptr := flag.Int("cut1", 31, "forced cut date")
+	forcedCutDate2Ptr := flag.Int("cut2", 31, "forced cut date")
+	forcedCutDate3Ptr := flag.Int("cut3", 31, "forced cut date")
+	forcedCutDate4Ptr := flag.Int("cut4", 31, "forced cut date")
 
 	outPtr := flag.String("out", "", "path to out folder")
 	projectPtr := flag.String("project", "", "path to project folder")
@@ -77,21 +81,26 @@ func main() {
 
 	sourceFolder := make([]string, 0, 4)
 	sourceHarvestDate := make([]int, 0, 4)
+	forcedCutDate := make([]int, 0, 4)
 	if len(*source1Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source1Ptr)
 		sourceHarvestDate = append(sourceHarvestDate, *harvestDay1Ptr)
+		forcedCutDate = append(forcedCutDate, *forcedCutDate1Ptr)
 	}
 	if len(*source2Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source2Ptr)
 		sourceHarvestDate = append(sourceHarvestDate, *harvestDay2Ptr)
+		forcedCutDate = append(forcedCutDate, *forcedCutDate2Ptr)
 	}
 	if len(*source3Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source3Ptr)
 		sourceHarvestDate = append(sourceHarvestDate, *harvestDay3Ptr)
+		forcedCutDate = append(forcedCutDate, *forcedCutDate3Ptr)
 	}
 	if len(*source4Ptr) > 0 {
 		sourceFolder = append(sourceFolder, *source4Ptr)
 		sourceHarvestDate = append(sourceHarvestDate, *harvestDay4Ptr)
+		forcedCutDate = append(forcedCutDate, *forcedCutDate4Ptr)
 	}
 	if len(outputFolder) == 0 {
 		outputFolder = PATHS[pathID]["outputpath"]
@@ -164,7 +173,7 @@ func main() {
 	outChan := make(chan bool)
 	for idxSource, filelist := range filelists {
 		for _, sourcefileInfo := range filelist {
-			go p.loadAndProcess(idxSource, sourceFolder, sourceHarvestDate, sourcefileInfo.Name(), climateFolder, climateRef, maxRefNoOverAll, outChan)
+			go p.loadAndProcess(idxSource, sourceFolder, sourceHarvestDate, forcedCutDate, sourcefileInfo.Name(), climateFolder, climateRef, maxRefNoOverAll, outChan)
 			currRuns++
 			if currRuns >= maxRuns {
 				for currRuns >= maxRuns {
@@ -983,7 +992,7 @@ func findMaxValueInScenarioList(lists ...map[ScenarioKeyTuple][]int) int {
 // 	return maxVal
 // }
 
-func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sourceHarvestDate []int, sourcefileName, climateFolder string, climateRef map[int]string, maxRefNoOverAll int, outC chan bool) {
+func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sourceHarvestDate, forcedCutDate []int, sourcefileName, climateFolder string, climateRef map[int]string, maxRefNoOverAll int, outC chan bool) {
 	numSourceFolder := len(sourceFolder)
 	sourcefile, err := os.Open(filepath.Join(sourceFolder[idxSource], sourcefileName))
 	if err != nil {
@@ -1006,7 +1015,7 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 	simLastHarvestDate := make(map[SimKeyTuple][]bool)
 	simNoMaturity := make(map[SimKeyTuple][]bool)
 	dateYearOrder := make(map[SimKeyTuple][]int)
-
+	simForcedCutDate := make(map[SimKeyTuple][]bool)
 	firstLine := true
 	var header SimDataIndex
 	scanner := bufio.NewScanner(sourcefile)
@@ -1036,6 +1045,7 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 					simDoyHarvest[lineKey] = make([]int, 0, 30)
 					simMatIsHarvest[lineKey] = make([]bool, 0, 30)
 					simLastHarvestDate[lineKey] = make([]bool, 0, 30)
+					simForcedCutDate[lineKey] = make([]bool, 0, 30)
 					simNoMaturity[lineKey] = make([]bool, 0, 30)
 					simDoySow[lineKey] = make([]int, 0, 30)
 					dateYearOrder[lineKey] = make([]int, 0, 30)
@@ -1055,13 +1065,14 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 				simDoyHarvest[lineKey] = append(simDoyHarvest[lineKey], harvestValue)
 				simMatIsHarvest[lineKey] = append(simMatIsHarvest[lineKey], matureValue <= 0 && harvestValue > 0)
 				simLastHarvestDate[lineKey] = append(simLastHarvestDate[lineKey], time.Date(yearValue, time.October, sourceHarvestDate[idxSource], 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
+				simForcedCutDate[lineKey] = append(simForcedCutDate[lineKey], time.Date(yearValue, time.October, forcedCutDate[idxSource], 0, 0, 0, 0, time.UTC).YearDay() <= harvestValue)
 				dateYearOrder[lineKey] = append(dateYearOrder[lineKey], yearValue)
 			}
 		}
 	}
 	p.setOutputGridsGenerated(simulations, numSourceFolder, maxRefNoOverAll)
 	for simKey := range simulations {
-		pixelValue := CalculatePixel(simulations[simKey])
+		pixelValue := CalculatePixel(simulations[simKey], simForcedCutDate[simKey])
 		// HACK: ignore MG III in 0_0
 		if simKey.climateSenario == ignoreSzenario && simKey.mGroup == ignoreMaturityGroup {
 			pixelValue = 0
@@ -1467,8 +1478,8 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 }
 
 func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
-	minLateHarvest := p.maxLateHarvest / 5
-	fmt.Println("Min late harvest value: ", minLateHarvest)
+	// minLateHarvest := p.maxLateHarvest / 5
+	// fmt.Println("Min late harvest value: ", minLateHarvest)
 	// calculate max yield layer and maturity layer grid
 	for simKey, currGrid := range p.allYieldGrids {
 		//treatmentNoIdx, climateSenarioIdx, mGroupIdx, commentIdx
@@ -1482,8 +1493,9 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 		for idx, sourceGrid := range currGrid {
 
 			for ref := 0; ref < maxRefNo; ref++ {
-				if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] &&
-					p.lateHarvestGrid[simKey][idx][ref] < minLateHarvest {
+				// if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] &&
+				// 	p.lateHarvestGrid[simKey][idx][ref] < minLateHarvest {
+				if sourceGrid[ref] > p.maxYieldGrids[scenarioKey][idx][ref] {
 					p.maxYieldGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 					p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 					if sourceGrid[ref] == 0 {
@@ -1508,13 +1520,13 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			//#treatmentNoIdx, climateSenarioIdx, mGroupIdx, CommentIdx
 			scenarioKey := ScenarioKeyTuple{simKey.treatNo, simKey.climateSenario, simKey.comment}
 			currGridDeviation := p.StdDevAvgGrids[simKey][idx]
-			currGridHarvest := p.lateHarvestGrid[simKey][idx]
+			//currGridHarvest := p.lateHarvestGrid[simKey][idx]
 			for ref := 0; ref < maxRefNo; ref++ {
 				if p.matGroupDeviationGrids[scenarioKey][idx][ref] > 0 {
 					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
 					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
-					if currGridHarvest[ref] < minLateHarvest &&
-						float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
+					//if currGridHarvest[ref] < minLateHarvest &&
+					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
 						currGridDeviation[ref] < p.StdDevAvgGrids[matGroupKey][idx][ref] {
 						p.maxYieldDeviationGrids[scenarioKey][idx][ref] = sourceGrid[ref]
 						p.matGroupDeviationGrids[scenarioKey][idx][ref] = p.matGroupIDGrids[simKey.mGroup]
@@ -2008,11 +2020,15 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 func IsCrop(key SimKeyTuple, cropName string) bool {
 	return strings.HasPrefix(key.mGroup, cropName)
 }
-func average(list []float64) float64 {
+func average(list []float64, forcedCut []bool) float64 {
 	sum := 0.0
 	val := 0.0
 	lenVal := 0.0
-	for _, x := range list {
+	for i := range list {
+		x := list[i]
+		if forcedCut[i] {
+			x = 0
+		}
 		if x >= 0 {
 			sum = sum + x
 			lenVal++
@@ -2043,21 +2059,21 @@ func averageInt(list []int) int {
 }
 
 // CalculatePixel yield average for stable yield set
-func CalculatePixel(yieldList []float64) float64 {
-	pixelValue := average(yieldList)
-	if HasUnStableYield(yieldList, pixelValue) {
+func CalculatePixel(yieldList []float64, forcedCut []bool) float64 {
+	pixelValue := average(yieldList, forcedCut)
+	if HasUnStableYield(yieldList, forcedCut, pixelValue) {
 		pixelValue = 0
 	}
 	return pixelValue
 }
 
 //HasUnStableYield adjust this methode to define if yield loss is too hight
-func HasUnStableYield(yieldList []float64, averageValue float64) bool {
+func HasUnStableYield(yieldList []float64, forcedCut []bool, averageValue float64) bool {
 	unstable := false
 	counter := 0
 	lowPercent := averageValue * 0.2
-	for _, y := range yieldList {
-		if y < 900 || y < lowPercent {
+	for i, y := range yieldList {
+		if y < 900 || y < lowPercent || forcedCut[i] {
 			counter++
 		}
 	}
