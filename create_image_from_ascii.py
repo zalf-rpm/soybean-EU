@@ -1010,6 +1010,98 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
 
+    if meta.renderAs == "occurrenceSpread" : 
+        # TODO
+        if onlyOnce :
+            ax.axes.invert_yaxis()                    
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        unique, counts = np.unique(ascii_data_array, axis=1, return_counts=True)
+        valLookup = dict(zip(unique, counts))
+        numInArray = np.count_nonzero(~np.isnan(ascii_data_array, axis=1))
+
+        outValue = 0 
+        if numInArray > 0 :
+            outValue = valLookup[6] * 100 / numInArray
+        
+
+        arithemticMean = np.nanmean(ascii_data_array, axis=1)
+        arithemticMean = np.nan_to_num(arithemticMean)
+        arithemticMean *= meta.densityFactor
+        maxV = np.max(arithemticMean)
+        minV = np.min(arithemticMean)
+        if meta.densityReduction > 0 :
+            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+            spl = spy.UnivariateSpline(y, arithemticMean)    
+            ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
+            y_new = np.linspace(0, len(arithemticMean), 500)
+            a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
+            x_new = a_BSpline(y_new)
+            x_new[x_new < minV] = minV
+            x_new[x_new > maxV] = maxV
+            if len(meta.lineColor) > 0 :
+                ax.plot(x_new,y_new, label=meta.lineLabel, color=meta.lineColor)
+            else :
+                ax.plot(x_new,y_new, label=meta.lineLabel)
+        else :
+            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+            if len(meta.lineColor) > 0 :
+                ax.plot(arithemticMean, y, label=meta.lineLabel, color=meta.lineColor)
+            else :
+                ax.plot(arithemticMean, y, label=meta.lineLabel)
+
+        if len(meta.lineLabel) > 0 :
+            ax.legend(fontsize=6, handlelength=1)
+            #ax.legend(fontsize=fontsize, handlelength=1, bbox_to_anchor=(1.05, 1), loc='upper left')
+        
+        if onlyOnce :
+            # do this only once
+
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(val)
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            def applyTickLabelMapping(file, ref, tar, textformat, axis):
+                if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+                    lookup = readAxisLookup(file, ref, tar)
+                    def update_ticks_fromLookup(val, pos):
+                        if val in lookup :
+                            if len(textformat) > 0 :
+                                newVal = lookup[val]
+                                return textformat.format(newVal)
+                            return str(lookup[val])
+                        return ''
+                    axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
 
 def readAxisLookup(filename, refCol, tarCol) :
     lookup = dict()
