@@ -150,15 +150,15 @@ def build() :
     areaYieldAddirrigated = avgIntersectionOuter(irrigatedFuture,irrigatedhistorical)
     areaYieldAddrainfed = avgIntersectionOuter(rainfedFuture, rainfedhistorical)
 
-    print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
-    print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
-    print("Average Yield historical T1:",  int(avgYieldhistT1), "[t ha-1]")
-    print("Average Yield historical T2:",  int(avgYieldhistT2), "[t ha-1]")
+    # print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
+    # print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
+    # print("Average Yield historical T1:",  int(avgYieldhistT1), "[t ha-1]")
+    # print("Average Yield historical T2:",  int(avgYieldhistT2), "[t ha-1]")
 
-    print("Average Yield future:       ", int(avgYieldfuture), "[t ha-1]")
-    print("Average Yield historical:   ", int(avgYieldhistorcal), "[t ha-1]")
+    # print("Average Yield future:       ", int(avgYieldfuture), "[t ha-1]")
+    # print("Average Yield historical:   ", int(avgYieldhistorcal), "[t ha-1]")
 
-    print("micra: ")
+    # print("micra: ")
 
     print("Average Yield future irrig:   ", int(avgYieldirrigatedFuture), "[t ha-1]")
     print("Average Yield future rainfed: ", int(avgYieldrainfedFuture), "[t ha-1]")
@@ -170,22 +170,26 @@ def build() :
 
     print("------------------------------------------- ")
 
-    print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
-    print("Soybean Area future T2:     " ,areaYieldfutuT2,"(1x1km pixel)")
-    print("Soybean Area historical T1: ", areaYieldhistT1, "(1x1km pixel)")
-    print("Soybean Area historical T2: ", areaYieldhistT2, "(1x1km pixel)")
+    # print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
+    # print("Soybean Area future T2:     " ,areaYieldfutuT2,"(1x1km pixel)")
+    # print("Soybean Area historical T1: ", areaYieldhistT1, "(1x1km pixel)")
+    # print("Soybean Area historical T2: ", areaYieldhistT2, "(1x1km pixel)")
 
-    print("Note: the irrigated area has not changed much, because we are using the same micra mask")
+    # print("Note: the irrigated area has not changed much, because we are using the same micra mask")
 
     print("Soybean Area irrgated future:     ", areaYieldirrgatedFuture, "(1x1km pixel)")
     print("Soybean Area irrgated historical: ", areaYieldirrgatedhistorical, "(1x1km pixel)")
     print("Soybean Area rainfed future:      ", areaYieldrainfedFuture, "(1x1km pixel)")
     print("Soybean Area rainfed historical:  ", areaYieldrainfedhistorical, "(1x1km pixel)")
 
-    print("Future Yield on baseline T1:", int(areaYieldT1), "[t ha-1]")
-    print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
-    print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
-    print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
+    print("Soybean Area All future:  ", areaYieldrainfedFuture + areaYieldirrgatedFuture, "(1x1km pixel)")
+    print("Soybean Area All historical:  ", areaYieldrainfedhistorical + areaYieldirrgatedhistorical, "(1x1km pixel)")
+
+
+    # print("Future Yield on baseline T1:", int(areaYieldT1), "[t ha-1]")
+    # print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
+    # print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
+    # print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
 
     print("Future Yield on baseline irrigated :", int(areaYieldirrigated), "[t ha-1]")
     print("Future Yield on baseline rainfed:   ", int(areaYieldrainfed), "[t ha-1]")
