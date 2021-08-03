@@ -136,5 +136,6 @@ stu_eu_layer_climate.csv
 stu_eu_layer_grid_irrigation.csv
 stu_eu_layer_grid_to_reference_v3.zip
 testout_copy/
+asciigrids/
 asciigrids_old/
 eval/

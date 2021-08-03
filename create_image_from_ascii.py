@@ -534,6 +534,7 @@ class Meta:
     XaxisMappingFormat: str
     densityReduction: int
     densityFactor: float
+    occurrenceIndex: int
     yTitle: float
     xTitle: float
     removeEmptyColumns: bool
@@ -574,6 +575,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     yTitle = 1
     xTitle = 1
     removeEmptyColumns = False
+    occurrenceIndex = -1
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -603,6 +605,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 densityReduction = int(doc)
             elif item == "densityFactor" :
                 densityFactor = float(doc)
+            elif item == "occurrenceIndex" :
+                occurrenceIndex = int(doc)
             elif item == "mintransparent" :
                 mintransparent = float(doc)
             elif item == "transparencyfactor" :
@@ -664,7 +668,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 showbars, mintransparent, renderAs, transparencyfactor, lineLabel, lineColor, xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
-                densityReduction, densityFactor, 
+                densityReduction, densityFactor, occurrenceIndex,
                 yTitle,xTitle,removeEmptyColumns)
 
 
@@ -1015,25 +1019,22 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
         if onlyOnce :
             ax.axes.invert_yaxis()                    
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
-        unique, counts = np.unique(ascii_data_array, axis=1, return_counts=True)
-        valLookup = dict(zip(unique, counts))
-        numInArray = np.count_nonzero(~np.isnan(ascii_data_array, axis=1))
 
-        outValue = 0 
-        if numInArray > 0 :
-            outValue = valLookup[6] * 100 / numInArray
+        numInArray = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numXInArray = np.count_nonzero((ascii_data_array == meta.occurrenceIndex), axis=1)
+        occurenceArray = np.array([0.0] * len(numInArray))
+        for idx in range(len(numInArray)) : 
+            if numInArray[idx] > 0 :
+                occurenceArray[idx] = float(numXInArray[idx]) * 100.0 / float(numInArray[idx])
         
-
-        arithemticMean = np.nanmean(ascii_data_array, axis=1)
-        arithemticMean = np.nan_to_num(arithemticMean)
-        arithemticMean *= meta.densityFactor
-        maxV = np.max(arithemticMean)
-        minV = np.min(arithemticMean)
+        occurenceArray *= meta.densityFactor
+        maxV = np.max(occurenceArray)
+        minV = np.min(occurenceArray)
         if meta.densityReduction > 0 :
-            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
-            spl = spy.UnivariateSpline(y, arithemticMean)    
-            ys = np.linspace(0, len(arithemticMean), meta.densityReduction)
-            y_new = np.linspace(0, len(arithemticMean), 500)
+            y = np.linspace(0, len(occurenceArray)-1, len(occurenceArray))
+            spl = spy.UnivariateSpline(y, occurenceArray)    
+            ys = np.linspace(0, len(occurenceArray), meta.densityReduction)
+            y_new = np.linspace(0, len(occurenceArray), 500)
             a_BSpline = spy.interpolate.make_interp_spline(ys, spl(ys))
             x_new = a_BSpline(y_new)
             x_new[x_new < minV] = minV
@@ -1043,11 +1044,11 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
             else :
                 ax.plot(x_new,y_new, label=meta.lineLabel)
         else :
-            y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+            y = np.linspace(0, len(occurenceArray)-1, len(occurenceArray))
             if len(meta.lineColor) > 0 :
-                ax.plot(arithemticMean, y, label=meta.lineLabel, color=meta.lineColor)
+                ax.plot(occurenceArray, y, label=meta.lineLabel, color=meta.lineColor)
             else :
-                ax.plot(arithemticMean, y, label=meta.lineLabel)
+                ax.plot(occurenceArray, y, label=meta.lineLabel)
 
         if len(meta.lineLabel) > 0 :
             ax.legend(fontsize=6, handlelength=1)

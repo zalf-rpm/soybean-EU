@@ -1,12 +1,13 @@
 title: 'D'
 yTitle: 0.88
-xTitle: 0.105
-factor: 0.001
-renderAs: densitySpread
+xTitle: 0.11
+factor: 1.0
+renderAs: occurrenceSpread
+occurrenceIndex: 2
 densityReduction: 20
 lineLabel: 'II historical'
 lineColor: darkblue
-xLabel: '[t ha–1]'
+xLabel: '[%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row
