@@ -5,6 +5,9 @@ renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
 lineLabel: 'S future'
+lineLabelAnchorX: 0.37
+lineLabelAnchorY: 0.91
+lineLabelLoc: 'upper left'
 lineColor: cornflowerblue
 xLabel: 'Risk'
 yLabel: 'Latitude'

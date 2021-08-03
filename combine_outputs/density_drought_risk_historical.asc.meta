@@ -5,6 +5,9 @@ renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
 lineLabel: 'D historical'
+lineLabelAnchorX: 0.37
+lineLabelAnchorY: 0.91
+lineLabelLoc: 'upper left'
 lineColor: orangered
 xLabel: 'Risk'
 yLabel: 'Latitude'

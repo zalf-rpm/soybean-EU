@@ -522,6 +522,9 @@ class Meta:
     transparencyfactor: float
     lineLabel: str
     lineColor: str
+    lineLabelAnchorX: float
+    lineLabelAnchorY: float
+    lineLabelLoc: str
     xLabel: str
     yLabel: str
     YaxisMappingFile: str
@@ -560,6 +563,9 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     transparencyfactor = 1.0
     lineLabel = ""
     lineColor = ""
+    lineLabelAnchorX = 1.0
+    lineLabelAnchorY = 1.0
+    lineLabelLoc = "none"
     xLabel = ""
     yLabel = ""
     YaxisMappingFile = ""
@@ -621,6 +627,12 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 lineLabel = doc
             elif item == "lineColor" :
                 lineColor = doc
+            elif item == "lineLabelAnchorX":
+                lineLabelAnchorX = float(doc)
+            elif item == "lineLabelAnchorY":
+                lineLabelAnchorY = float(doc)
+            elif item == "lineLabelLoc":
+                lineLabelLoc = doc
             elif item == "xLabel" :
                 xLabel = doc
             elif item == "yLabel" :
@@ -665,7 +677,9 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     minValue *= factor
     return Meta(title, label, colormap, minColor, cMap,
                 cbarLabel, factor, ticklist,yTicklist,xTicklist, maxValue, maxLoaded, minValue, minLoaded, 
-                showbars, mintransparent, renderAs, transparencyfactor, lineLabel, lineColor, xLabel, yLabel,
+                showbars, mintransparent, renderAs, transparencyfactor, 
+                lineLabel, lineColor, lineLabelAnchorX, lineLabelAnchorY, lineLabelLoc,
+                xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
                 densityReduction, densityFactor, occurrenceIndex,
@@ -961,8 +975,10 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 ax.plot(arithemticMean, y, label=meta.lineLabel)
 
         if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=1)
-            #ax.legend(fontsize=fontsize, handlelength=1, bbox_to_anchor=(1.05, 1), loc='upper left')
+            if meta.lineLabelLoc == "none" :
+                ax.legend(fontsize=6, handlelength=1)
+            else :
+                ax.legend(fontsize=6, handlelength=1, bbox_to_anchor=(meta.lineLabelAnchorX, meta.lineLabelAnchorY), loc=meta.lineLabelLoc)
         
         if onlyOnce :
             # do this only once
