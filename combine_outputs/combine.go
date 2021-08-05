@@ -284,7 +284,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"B",
-		"[t ha–1]",
+		"Average yield [t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
@@ -299,7 +299,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"C",
-		"[t ha–1]",
+		"Average yield [t ha–1]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
@@ -744,7 +744,7 @@ func main() {
 		"dev_allRisks",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"I",
+		"J",
 		"Risk factors",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
