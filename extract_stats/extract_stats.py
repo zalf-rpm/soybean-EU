@@ -16,6 +16,9 @@ def build() :
     asciiYieldhistT2 = "./extract_stats/eval/dev_max_yield_historical_trnoT2.asc.gz"
     irrigatedArea = "./extract_stats/eval/irrgated_areas.asc.gz"
 
+    asciiAllRisksHistorical = "./extract_stats/eval/dev_allRisks_historical.asc.gz"
+    asciiAllRisksFuture = "./extract_stats/eval/dev_allRisks_future.asc.gz"
+
     def readFile(file) :
         print("File:", file)
         header = readAsciiHeader(file)
@@ -28,11 +31,14 @@ def build() :
         #print("evaluated area:", np.count_nonzero(~np.isnan(ascii_data_array)), "(1x1km pixel)")
         return ascii_data_array
 
+    arrAllRisksHistorical = readFile(asciiAllRisksHistorical)
+    arrAllRisksFuture = readFile(asciiAllRisksFuture)
     arrYieldfutuT1 = readFile(asciiYieldfutuT1)
     arrYieldfutuT2 = readFile(asciiYieldfutuT2)
     arrYieldhistT1 = readFile(asciiYieldhistT1)
     arrYieldhistT2 = readFile(asciiYieldhistT2)
     irrigated = readFile(irrigatedArea)
+
 
 # # for visualization
 #     print("max:")
@@ -150,6 +156,46 @@ def build() :
     areaYieldAddirrigated = avgIntersectionOuter(irrigatedFuture,irrigatedhistorical)
     areaYieldAddrainfed = avgIntersectionOuter(rainfedFuture, rainfedhistorical)
 
+
+    
+    # Ich benötige die absoluten Flächen unter den jeweiligen Risiko-Faktoren in km². 
+    # Dabei soll es keine Rolle spielen, ob auf einem Pixel auch noch andere Risiko-Faktoren wirken. 
+    # D.h. die Summe der vier Zahlen ist dann größer als die gesamte Soja-Fläche.
+
+    arrAllRisksHistorical[arrAllRisksHistorical == np.nan] = 0
+    arrAllRisksFuture[arrAllRisksFuture == np.nan] = 0
+
+    arrAllRisksHistorical = arrAllRisksHistorical.flatten()
+    arrAllRisksFuture = arrAllRisksFuture.flatten()
+    arrAllRisksHistorical = arrAllRisksHistorical.astype('int')
+    arrAllRisksFuture = arrAllRisksFuture.astype('int')
+
+    # bit mask
+	# 1 shortSeason
+	# 2 coldspell
+	#  shortSeason + coldspell
+	# 4 drought risk
+	#  drought risk + shortSeason
+	#  drought risk + coldspell
+	#  drought risk + shortSeason + coldspell
+	# 8 harvest rain
+	#  harvest rain + shortSeason
+	#  harvest rain + coldspell
+	#  harvest rain + shortSeason + coldspell
+	#  harvest rain + drought risk
+	#  harvest rain + shortSeason + drought risk
+	#  harvest rain + coldspell + drought risk
+	#  harvest rain + shortSeason + coldspell + drought risk
+	
+    valShortSeasonRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 1) > 0))
+    valShortSeasonRisksFuture = np.count_nonzero(((arrAllRisksFuture & 1) > 0))
+    valColdSpellRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 2) > 0))
+    valColdSpellRisksFuture = np.count_nonzero(((arrAllRisksFuture & 2) > 0))
+    valDroughtRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 4) > 0))
+    valDroughtRisksFuture = np.count_nonzero(((arrAllRisksFuture & 4) > 0))
+    valHarvestRainRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 8) > 0))
+    valHarvestRainRisksFuture = np.count_nonzero(((arrAllRisksFuture & 8) > 0))
+
     # print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
     # print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
     # print("Average Yield historical T1:",  int(avgYieldhistT1), "[t ha-1]")
@@ -195,6 +241,15 @@ def build() :
     print("Future Yield on baseline rainfed:   ", int(areaYieldrainfed), "[t ha-1]")
     print("Future Yield addition irrigated:    ", int(areaYieldAddirrigated), "[t ha-1]")
     print("Future Yield addition rainfed:      ", int(areaYieldAddrainfed), "[t ha-1]")
+
+    print("Soybean Area Short Season historical: ",valShortSeasonRisksHistorical, "(1x1km pixel)")
+    print("Soybean Area Short Season future:     ",valShortSeasonRisksFuture, "(1x1km pixel)")
+    print("Soybean Area Cold Spell historical:   ",valColdSpellRisksHistorical, "(1x1km pixel)")
+    print("Soybean Area Cold Spell future:       ",valColdSpellRisksFuture, "(1x1km pixel)")
+    print("Soybean Area Drought historical:      ",valDroughtRisksHistorical, "(1x1km pixel)")
+    print("Soybean Area Drought future:          ",valDroughtRisksFuture, "(1x1km pixel)")
+    print("Soybean Area Harvest Rain historical: ",valHarvestRainRisksHistorical, "(1x1km pixel)")
+    print("Soybean Area Harvest Rain future:     ",valHarvestRainRisksFuture, "(1x1km pixel)")
 
 @dataclass
 class AsciiHeader:
