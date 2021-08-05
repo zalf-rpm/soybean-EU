@@ -1,6 +1,7 @@
 title: 'G'
 yTitle: 0.88
 xTitle: 0.11
+factor: 100.0
 renderAs: densitySpread
 densityReduction: 20
 densityFactor: 1000
@@ -8,8 +9,8 @@ lineLabel: 'S historical'
 lineLabelAnchorX: 0.37
 lineLabelAnchorY: 0.91
 lineLabelLoc: 'upper left'
-lineColor: darkblue
-xLabel: 'Risk'
+lineColor: mediumpurple
+xLabel: 'Rel. occurrence [%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

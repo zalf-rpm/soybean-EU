@@ -6,8 +6,8 @@ renderAs: occurrenceSpread
 occurrenceIndex: 6
 densityReduction: 20
 lineLabel: '000 future'
-lineColor: limegreen
-xLabel: '[%]'
+lineColor: thistle
+xLabel: 'Rel. occurrence [%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

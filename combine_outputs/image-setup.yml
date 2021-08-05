@@ -53,10 +53,10 @@
                 bboxToAnchorXext: 1
                 bboxToAnchorYext: 1
                 merge: 
-                    - file: 'density_short_season_future.asc.gz'
                     - file: 'density_short_season_historical.asc.gz'
-                    - file: 'density_drought_risk_future.asc.gz'
+                    - file: 'density_short_season_future.asc.gz'
                     - file: 'density_drought_risk_historical.asc.gz'
+                    - file: 'density_drought_risk_future.asc.gz'
             - file: dev_allRisks_future.asc.gz
 - image: 
     name: mirca_mask
