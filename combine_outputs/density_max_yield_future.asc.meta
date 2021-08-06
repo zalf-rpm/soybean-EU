@@ -6,7 +6,7 @@ renderAs: densitySpread
 densityReduction: 20
 lineColor: limegreen
 lineLabel: future
-xLabel: 'Av. Yield [t ha–1]'
+xLabel: 'Av. Yield [t ha$^{\rm –1}$]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stu_eu_layer_grid.csv'
 YaxisMappingRefColumn: Row

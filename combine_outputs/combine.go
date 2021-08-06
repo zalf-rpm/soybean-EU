@@ -284,7 +284,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"B",
-		"Average yield [t ha–1]",
+		"Average yield [t ha$^{\\rm –1}$]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
@@ -299,7 +299,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"C",
-		"Average yield [t ha–1]",
+		"Average yield [t ha$^{\\rm –1}$]",
 		"jet",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
