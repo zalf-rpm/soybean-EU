@@ -4,15 +4,18 @@
 import sys
 
 project="soyeu" 
-WeatherFolder=["0/0_0", "2/GFDL-CM3_45", "2/GISS-E2-R_45","2/HadGEM2-ES_45","2/MIROC5_45","2/MPI-ESM-MR_45"]
+#WeatherFolder=["0/0_0", "2/GFDL-CM3_45", "2/GISS-E2-R_45","2/HadGEM2-ES_45","2/MIROC5_45","2/MPI-ESM-MR_45"]
+WeatherFolder=["2/GFDL-CM3_85", "2/GISS-E2-R_85","2/HadGEM2-ES_85","2/MIROC5_85","2/MPI-ESM-MR_85"]
 plotNrs=["10001", "10002"]
 AutoIrrigation=["1","0"] 
 AutoIrrigationFolder=["Ir","noIr"]
-resultfolder=["0_0_0", "2_GFDL-CM3_45", "2_GISS-E2-R_45","2_HadGEM2-ES_45","2_MIROC5_45","2_MPI-ESM-MR_45"]
+#resultfolder=["0_0_0", "2_GFDL-CM3_45", "2_GISS-E2-R_45","2_HadGEM2-ES_45","2_MIROC5_45","2_MPI-ESM-MR_45"]
+resultfolder=["2_GFDL-CM3_85", "2_GISS-E2-R_85","2_HadGEM2-ES_85","2_MIROC5_85","2_MPI-ESM-MR_85"]
 maturityGroup = ["0", "00","000","0000","i","ii", "iii"]
 paramfolderTmpl="./parameter_{0}"
 resultfolderTemplate = "{0}/{1}/{2}/RESULT" # climateScenario/irrigation/maturityGroup/
-CO2concentration=["360","499","499","499","499","499"]
+#CO2concentration=["360","499","499","499","499","499"]
+CO2concentration=["571","571","571","571","571"]
 batchLine = "project={0} WeatherFolder={1} soilId={2} fcode={3} plotNr={4} Altitude={5} Latitude={6} poligonID={7} AutoIrrigation={8} CO2concentration={9} parameter={10} resultfolder={11}\n"
 
 

@@ -19,16 +19,29 @@ func main() {
 	inputFolderPtr := flag.String("in", "..", "path to input")
 	outFolderPtr := flag.String("out", "..", "path to output")
 	concurrentPtr := flag.Int("concurrent", 10, "concurrent generation")
+	climScenGroupPtr := flag.String("climGroup", "45", "climate scenario group (4.5 = 45 or 8.5 = 85)")
+	co2Ptr := flag.String("co2", "499", "co2 future")
 
 	flag.Parse()
 	inputFolder := *inputFolderPtr
 	outFolder := *outFolderPtr
 	numConcurrent := *concurrentPtr
 
-	scenarioFolder := [...]string{"0_0_0", "2_GFDL-CM3_45", "2_GISS-E2-R_45", "2_HadGEM2-ES_45", "2_MIROC5_45", "2_MPI-ESM-MR_45"}
-	sce := [...]string{"0_0", "GFDL-CM3_45", "GISS-E2-R_45", "HadGEM2-ES_45", "MIROC5_45", "MPI-ESM-MR_45"}
+	scenarioFolder := [...]string{"0_0_0",
+		fmt.Sprintf("2_GFDL-CM3_%s", *climScenGroupPtr),
+		fmt.Sprintf("2_GISS-E2-R_%s", *climScenGroupPtr),
+		fmt.Sprintf("2_HadGEM2-ES_%s", *climScenGroupPtr),
+		fmt.Sprintf("2_MIROC5_%s", *climScenGroupPtr),
+		fmt.Sprintf("2_MPI-ESM-MR_%s", *climScenGroupPtr)}
+	sce := [...]string{"0_0",
+		fmt.Sprintf("GFDL-CM3_%s", *climScenGroupPtr),
+		fmt.Sprintf("GISS-E2-R_%s", *climScenGroupPtr),
+		fmt.Sprintf("HadGEM2-ES_%s", *climScenGroupPtr),
+		fmt.Sprintf("MIROC5_%s", *climScenGroupPtr),
+		fmt.Sprintf("MPI-ESM-MR_%s", *climScenGroupPtr)}
+
 	period := [...]string{"0", "2", "2", "2", "2", "2"}
-	co2 := [...]string{"360", "499", "499", "499", "499", "499"}
+	co2 := [...]string{"360", *co2Ptr, *co2Ptr, *co2Ptr, *co2Ptr, *co2Ptr}
 
 	irrigation := [...]string{"Ir", "noIr"}
 	matG := [...]string{"0", "00", "000", "0000", "i", "ii", "iii"}
@@ -78,7 +91,7 @@ func main() {
 								break
 							}
 							if outfile == nil {
-								outPath := filepath.Join(outFolder, "acc", fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
+								outPath := filepath.Join(outFolder, "acc", *climScenGroupPtr, fmt.Sprintf("EU_SOY_HE_%d.csv", soilRef))
 								makeDir(outPath)
 								file, err := os.OpenFile(outPath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 								if err != nil {
