@@ -115,16 +115,16 @@ def run_producer(config):
 
     period_gcm_co2s = [
         {"id": "C1", "period": "0", "gcm": "0_0", "co2_value": 360},
-        {"id": "C26", "period": "2", "gcm": "GFDL-CM3_45", "co2_value": 499},
-        #{"id": "C28", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 571},
-        {"id": "C30", "period": "2", "gcm": "GISS-E2-R_45", "co2_value": 499},
-        #{"id": "C32", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 571},
-        {"id": "C36", "period": "2", "gcm": "HadGEM2-ES_45", "co2_value": 499},
-        #{"id": "C38", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 571},
-        {"id": "C40", "period": "2", "gcm": "MIROC5_45", "co2_value": 499},
-        #{"id": "C42", "period": "2", "gcm": "MIROC5_85", "co2_value": 571},
-        {"id": "C46", "period": "2", "gcm": "MPI-ESM-MR_45", "co2_value": 499},
-        #{"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571}
+        #{"id": "C26", "period": "2", "gcm": "GFDL-CM3_45", "co2_value": 499},
+        {"id": "C28", "period": "2", "gcm": "GFDL-CM3_85", "co2_value": 571},
+        #{"id": "C30", "period": "2", "gcm": "GISS-E2-R_45", "co2_value": 499},
+        {"id": "C32", "period": "2", "gcm": "GISS-E2-R_85", "co2_value": 571},
+        #{"id": "C36", "period": "2", "gcm": "HadGEM2-ES_45", "co2_value": 499},
+        {"id": "C38", "period": "2", "gcm": "HadGEM2-ES_85", "co2_value": 571},
+        #{"id": "C40", "period": "2", "gcm": "MIROC5_45", "co2_value": 499},
+        {"id": "C42", "period": "2", "gcm": "MIROC5_85", "co2_value": 571},
+        #{"id": "C46", "period": "2", "gcm": "MPI-ESM-MR_45", "co2_value": 499},
+        {"id": "C48", "period": "2", "gcm": "MPI-ESM-MR_85", "co2_value": 571}
     ]
 
     soil = {}
