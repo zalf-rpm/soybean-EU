@@ -36,18 +36,18 @@ PATHS = {
     "localProducer-localMonica": {
         "monica-parameters-path": "C:/Users/berg.ZALF-AD/GitHub/monica-parameters/", # path to monica-parameters
         #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/corrected/", # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "A:/projects/macsur-eu-heat-stress-assessment/climate-data/corrected2/", # mounted path to archive accessable by monica executable
     },
     "localProducer-remoteMonica": {
         "monica-project-data": ".",
         "monica-parameters-path": "D:/zalfrpm/monica-parameters/", # path to monica-parameters
         #"monica-parameters-path": "C:/Users/stella/Documents/GitHub/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/corrected/", # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/corrected2/", # mounted path to archive accessable by monica executable
     },
     "remoteProducer-remoteMonica": {
         "monica-project-data": "/project/soybeanEU/",
         "monica-parameters-path": "/monica-parameters/", # path to monica-parameters
-        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/corrected/" # mounted path to archive accessable by monica executable
+        "monica-path-to-climate-dir": "/monica_data/climate-data/macsur_european_climate_scenarios_v3/testing/corrected2/" # mounted path to archive accessable by monica executable
     }
 }
 # local testing: python .\run-work-producer.py server-port=6004 mode=localProducer-remoteMonica > out_producer.txt
