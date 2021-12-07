@@ -4,16 +4,16 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const filename = "missing.txt"
-const rscript1 = "scriptRotaClusterSMGISS.R"
-const rscript2 = "scriptRotaClusterMGISS.R"
+const rscript1 = "scriptRotaClusterSM.R"
+const rscript2 = "scriptRotaClusterMS.R"
 const cmdline = "exec -B %s:/home/raynalh/scratch,%s:/home/raynalh/scratch/climate singularityR3.6.3_08092020dev.simg Rscript "
 
 // singularity exec -B \
@@ -34,27 +34,31 @@ func main() {
 
 	flag.Parse()
 
+	idList := make([]string, 0, *end+1-*start)
 	// read file with missing sims
 	simsFile, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer simsFile.Close()
-
-	scanner := bufio.NewScanner(simsFile)
-	idList := make([]string, 0, *end+1-*start)
-	linecounter := 0
-	for scanner.Scan() {
-		linecounter++
-		id := scanner.Text()
-		id = strings.TrimSpace(id)
-		if linecounter < *start {
-			continue
+	if err == nil {
+		scanner := bufio.NewScanner(simsFile)
+		linecounter := 0
+		for scanner.Scan() {
+			linecounter++
+			id := scanner.Text()
+			id = strings.TrimSpace(id)
+			if linecounter < *start {
+				continue
+			}
+			if linecounter > *end {
+				break
+			}
+			idList = append(idList, id)
 		}
-		if linecounter > *end {
-			break
+		simsFile.Close()
+	} else {
+		// missing.txt not found - generate ids
+		fmt.Printf("missing.txt not found \n generating numbers from %d to %d ", *start, *end)
+		for id := *start; id <= *end; id++ {
+			idList = append(idList, strconv.Itoa(id))
 		}
-		idList = append(idList, id)
 	}
 	call := fmt.Sprintf(cmdline, *homePath, *climatePath)
 

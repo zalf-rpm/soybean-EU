@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=80
 #SBATCH --partition=compute
 #SBATCH --job-name=stics_sschulz
-#SBATCH --time=99:00:00
+#SBATCH --time=14-99:00:00
 #SBATCH --output=missLegGapSched_%A.out
 #SBATCH --error=missLegGapSched_%A.err
 
@@ -13,7 +13,7 @@ END=$2
 PARALLEL_JOBS=40
 OUTPUT_FOLDER=$3
 
-INTERNAL_OUTPUT_FOLDER=outputsLGGISS
+INTERNAL_OUTPUT_FOLDER=outputsLG
 SOURCE_PATH=/beegfs/rpm/projects/stics/soybeanEU/scratch
 OUT_PATH=/beegfs/rpm/projects/stics/soybeanEU/outputs
 CLIMATE_PATH=/beegfs/rpm/projects/stics/soybeanEU/climate
