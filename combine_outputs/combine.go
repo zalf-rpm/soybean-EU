@@ -254,6 +254,18 @@ func main() {
 	}
 	maxMerged := max(maxHist, maxFuture)
 
+	maxDevModel := maxFromIrrigationGrid(extRow, extCol,
+		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxDevClim := maxFromIrrigationGrid(extRow, extCol,
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}],
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxDev := max(maxDevModel, maxDevClim)
+
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
 	// map of max yield average(30y) over all models and maturity groups
@@ -317,7 +329,7 @@ func main() {
 		"std Deviation",
 		"cool",
 		nil, nil, nil, 1, 0,
-		maxMerged, minColor, outC)
+		maxDev, minColor, outC)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -332,7 +344,7 @@ func main() {
 		"std Deviation",
 		"cool",
 		nil, nil, nil, 1, 0,
-		maxMerged, minColor, outC)
+		maxDev, minColor, outC)
 
 	// waitForNum++
 	// go drawScenarioMaps(gridSourceLookup,
