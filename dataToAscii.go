@@ -1625,8 +1625,6 @@ func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 }
 
 func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup [][]int) {
-	//TODO: this func is bullshit
-	//line := ""
 	size := len(simGrid)
 	for row := 0; row < extRow; row++ {
 
@@ -1635,16 +1633,12 @@ func writeRows(fout Fout, extRow, extCol int, simGrid []int, gridSourceLookup []
 			if refID >= 0 && refID < size {
 				fout.Write(strconv.Itoa(simGrid[refID-1]))
 				fout.Write(" ")
-				//line += fmt.Sprintf("%d ", simGrid[refID-1])
 			} else {
 				fout.Write("-9999 ")
-				//line += "-9999 "
 			}
 		}
 		fout.Write("\n")
-		//line += "\n"
 	}
-	//file.WriteString(line)
 }
 
 // Fout combined file writer
