@@ -1605,7 +1605,7 @@ func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 	cellsize := 1.0
 	// create an ascii file, which contains the header
 	makeDir(name)
-	file, err := os.OpenFile(name+".gz", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	file, err := os.OpenFile(name+".gz", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1664,7 +1664,7 @@ func (f Fout) Close() {
 func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int, minColor string) {
 	metaFilePath := gridFilePath + ".meta"
 	makeDir(metaFilePath)
-	file, err := os.OpenFile(metaFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	file, err := os.OpenFile(metaFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1722,7 +1722,7 @@ func writeOutSowData(path, name string, sowDOYC chan []sowData) {
 					filename := filepath.Join(path, val.climateSenario+"_"+name+".gz")
 					if _, ok := openFiles[filename]; !ok {
 						makeDir(filename)
-						file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+						file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 						if err != nil {
 							log.Fatal(err)
 						}
