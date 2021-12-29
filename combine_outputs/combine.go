@@ -255,8 +255,8 @@ func main() {
 	maxMerged := max(maxHist, maxFuture)
 
 	maxDevModel := maxFromIrrigationGrid(extRow, extCol,
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup)
 	maxDevClim := maxFromIrrigationGrid(extRow, extCol,
