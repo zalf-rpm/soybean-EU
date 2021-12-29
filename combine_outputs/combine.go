@@ -626,6 +626,19 @@ func main() {
 	// 	1, "", outC)
 
 	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.matGroupDeviationGridsAll,
+		asciiOutTemplate,
+		"dev_matG",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "eval"),
+		"Maturity Group: %v %v",
+		"Maturity groups",
+		"",
+		colorList, sidebarLabel, ticklist, 1, 0,
+		len(sidebarLabel)-1, "", outC)
+
+	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
