@@ -19,6 +19,9 @@ const soilRefNumber = 99367
 
 var outputHeader = "Model,soil_ref,first_crop,Crop,period,sce,CO2,TrtNo,ProductionCase,Year,Yield,MaxLAI,SowDOY,EmergDOY,AntDOY,MatDOY,HarvDOY,sum_ET,AWC_30_sow,AWC_60_sow,AWC_90_sow,AWC_30_harv,AWC_60_harv,AWC_90_harv,tradef,sum_irri,sum_Nmin\r\n"
 
+var climScenKey = "45"
+var climateScn []string
+
 func main() {
 
 	sourcePtr := flag.String("source", "./testout/stics", "path to source folder")
@@ -26,6 +29,7 @@ func main() {
 	outFolderPtr := flag.String("output", "./testout/merged", "path to output folder")
 	checkoutputPtr := flag.Bool("checkoutput", false, "check for missing output lines")
 	excludeClimPtr := flag.String("exclude", "", "exlude climate scenario")
+	climScenPtr := flag.String("sce", climScenKey, "climate scenario group")
 
 	flag.Parse()
 
@@ -33,6 +37,16 @@ func main() {
 	overrideFolder := *overridePtr
 	outFolder := *outFolderPtr
 	checkoutput := *checkoutputPtr
+	climScenKey = *climScenPtr
+
+	climateScn = []string{
+		fmt.Sprintf("GISS-E2-R_%s", climScenKey),
+		fmt.Sprintf("GFDL-CM3_%s", climScenKey),
+		fmt.Sprintf("HadGEM2-ES_%s", climScenKey),
+		fmt.Sprintf("MPI-ESM-MR_%s", climScenKey),
+		fmt.Sprintf("MIROC5_%s", climScenKey),
+		"0_0",
+	}
 
 	numSources := 0
 	if len(sourceFolder) > 0 {
@@ -234,14 +248,6 @@ func generateSimKeys(excludeClim string) map[SimKey][]string {
 	for i := 0; i < 30; i++ {
 		year[i] = strconv.FormatInt(int64(1981+i), 10)
 	}
-	climateScn := []string{
-		"GISS-E2-R_45",
-		"GFDL-CM3_45",
-		"HadGEM2-ES_45",
-		"MPI-ESM-MR_45",
-		"MIROC5_45",
-		"0_0",
-	}
 
 	found := -1
 	for c, val := range climateScn {
@@ -300,14 +306,6 @@ func checkForMissingData(id int, lookup map[SimKey][]string, errorLookup map[str
 				errorLookup[missingLinesText] = append(errorLookup[missingLinesText], idAsString)
 			}
 			//missing crop rotation
-			climateScn := []string{
-				"GISS-E2-R_45",
-				"GFDL-CM3_45",
-				"HadGEM2-ES_45",
-				"MPI-ESM-MR_45",
-				"MIROC5_45",
-				"0_0",
-			}
 			allOfList(id, "climateScn", emptyKeyList, climateScn, errorLookup)
 
 			allCrops := []string{
