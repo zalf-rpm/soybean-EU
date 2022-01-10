@@ -1120,6 +1120,58 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
 
+    if meta.renderAs == "violinOccurrenceSpread" : 
+       
+        # if onlyOnce :
+        #     ax.axes.invert_yaxis()          
+        # 
+
+
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+
+        numInArray = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        dReduc = len(numInArray)
+        if meta.densityReduction > 0 :
+            dReduc = meta.densityReduction        
+        numRows = len(numInArray)
+        inCharge = int(numRows / dReduc)
+        if numRows % dReduc > 0 :
+            inCharge += 1
+
+        numXInArray = np.count_nonzero((ascii_data_array == meta.occurrenceIndex), axis=1)
+        occurenceArray = np.array([0] * dReduc)
+        sumArr = 0
+        ocIdx = -1
+        numInt = 0
+        for idx in range(len(numInArray)) : 
+            
+            if idx % inCharge == 0 : 
+                if idx > 0 :
+                    if numInt > 0 :
+                        occurenceArray[ocIdx] = occurenceArray[ocIdx]/numInt
+                    sumArr += int(occurenceArray[ocIdx])
+                ocIdx += 1
+                numInt = 0
+            if numInArray[idx] > 0 :
+                occurenceArray[ocIdx] += int (float(numXInArray[idx]) * 100.0 / float(numInArray[idx]))
+                numInt += 1 
+                
+
+        distr = np.array([0.0] * sumArr)
+        rIdx = -1
+        for idx in range(dReduc) : 
+            val = occurenceArray[idx]
+            for i in range(val) :
+                rIdx += 1
+                distr[rIdx] = idx
+
+        vp = ax.violinplot(distr, [20], widths=2, showmeans=True, showmedians=True, showextrema=True)
+
+        for body in vp['bodies']:
+            body.set_alpha(0.9)
+            ax.set(xlim=(0, len(numInArray)), ylim=(0, len(numInArray)))
+
+
 def readAxisLookup(filename, refCol, tarCol) :
     lookup = dict()
     with open(filename) as sourcefile:
