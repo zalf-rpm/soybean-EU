@@ -530,14 +530,16 @@ class Meta:
     YaxisMappingFile: str
     YaxisMappingRefColumn: str
     YaxisMappingTarColumn: str
+    YaxisMappingTarColumnAsF: bool
     YaxisMappingFormat: str
     XaxisMappingFile: str
     XaxisMappingRefColumn: str
     XaxisMappingTarColumn: str
+    XaxisMappingTarColumnAsF: bool
     XaxisMappingFormat: str
     densityReduction: int
     densityFactor: float
-    occurrenceIndex: int
+    occurrenceIndex: list
     yTitle: float
     xTitle: float
     removeEmptyColumns: bool
@@ -571,17 +573,19 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     YaxisMappingFile = ""
     YaxisMappingRefColumn = ""
     YaxisMappingTarColumn = ""
+    YaxisMappingTarColumnAsF = True
     YaxisMappingFormat = ""
     XaxisMappingFile = ""
     XaxisMappingRefColumn = ""
     XaxisMappingTarColumn = ""
+    XaxisMappingTarColumnAsF = True
     XaxisMappingFormat = ""
     densityReduction = -1
     densityFactor = 1.0
     yTitle = 1
     xTitle = 1
     removeEmptyColumns = False
-    occurrenceIndex = -1
+    occurrenceIndex = None
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -612,7 +616,9 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
             elif item == "densityFactor" :
                 densityFactor = float(doc)
             elif item == "occurrenceIndex" :
-                occurrenceIndex = int(doc)
+                occurrenceIndex = list()
+                for i in doc :
+                    occurrenceIndex.append(int(i))
             elif item == "mintransparent" :
                 mintransparent = float(doc)
             elif item == "transparencyfactor" :
@@ -643,6 +649,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 YaxisMappingRefColumn = doc
             elif item == "YaxisMappingTarColumn" :
                 YaxisMappingTarColumn = doc
+            elif item == "YaxisMappingTarColumnAsF" :
+                YaxisMappingTarColumnAsF = bool(doc)
             elif item == "YaxisMappingFormat" :
                 YaxisMappingFormat = doc
             elif item == "XaxisMappingFile" :
@@ -651,8 +659,10 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 XaxisMappingRefColumn = doc
             elif item == "XaxisMappingTarColumn" :
                 XaxisMappingTarColumn = doc
+            elif item == "XaxisMappingTarColumnAsF" :
+                XaxisMappingTarColumnAsF = bool(doc)
             elif item == "XaxisMappingFormat" :
-                YaxisMappingFormat = doc
+                XaxisMappingFormat = doc
             elif item == "yTitle" :
                 yTitle = float(doc) 
             elif item == "xTitle" :
@@ -680,8 +690,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 showbars, mintransparent, renderAs, transparencyfactor, 
                 lineLabel, lineColor, lineLabelAnchorX, lineLabelAnchorY, lineLabelLoc,
                 xLabel, yLabel,
-                YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingFormat,
-                XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingFormat,
+                YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingTarColumnAsF,YaxisMappingFormat,
+                XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingTarColumnAsF,XaxisMappingFormat,
                 densityReduction, densityFactor, occurrenceIndex,
                 yTitle,xTitle,removeEmptyColumns)
 
@@ -998,26 +1008,28 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 ax.yaxis.set_tick_params(which='major', pad=axtickpad)
                 ax.xaxis.set_tick_params(which='major', pad=axtickpad)
 
-            def applyTickLabelMapping(file, ref, tar, textformat, axis):
-                if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
-                    lookup = readAxisLookup(file, ref, tar)
-                    def update_ticks_fromLookup(val, pos):
-                        if val in lookup :
-                            if len(textformat) > 0 :
-                                newVal = lookup[val]
-                                return textformat.format(newVal)
-                            return str(lookup[val])
-                        return ''
-                    axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+            # def applyTickLabelMapping(file, ref, tar, tarAsFloat, textformat, axis):
+            #     if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+            #         lookup = readAxisLookup(file, ref, tar, tarAsFloat)
+            #         def update_ticks_fromLookup(val, pos):
+            #             if val in lookup :
+            #                 if len(textformat) > 0 :
+            #                     newVal = lookup[val]
+            #                     return textformat.format(newVal)
+            #                 return str(lookup[val])
+            #             return ''
+            #         axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
 
             applyTickLabelMapping(meta.YaxisMappingFile,
                                 meta.YaxisMappingRefColumn, 
                                 meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
                                 meta.YaxisMappingFormat, 
                                 ax.yaxis)
             applyTickLabelMapping(meta.XaxisMappingFile,
                                 meta.XaxisMappingRefColumn, 
                                 meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
                                 meta.XaxisMappingFormat, 
                                 ax.xaxis)
             if len(meta.yLabel) > 0 :
@@ -1036,8 +1048,11 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
             ax.axes.invert_yaxis()                    
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
 
+        occIndex = 0
+        if meta.occurrenceIndex != None :
+            occIndex = meta.occurrenceIndex[0]
         numInArray = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
-        numXInArray = np.count_nonzero((ascii_data_array == meta.occurrenceIndex), axis=1)
+        numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
         occurenceArray = np.array([0.0] * len(numInArray))
         for idx in range(len(numInArray)) : 
             if numInArray[idx] > 0 :
@@ -1088,26 +1103,28 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 ax.yaxis.set_tick_params(which='major', pad=axtickpad)
                 ax.xaxis.set_tick_params(which='major', pad=axtickpad)
 
-            def applyTickLabelMapping(file, ref, tar, textformat, axis):
-                if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
-                    lookup = readAxisLookup(file, ref, tar)
-                    def update_ticks_fromLookup(val, pos):
-                        if val in lookup :
-                            if len(textformat) > 0 :
-                                newVal = lookup[val]
-                                return textformat.format(newVal)
-                            return str(lookup[val])
-                        return ''
-                    axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+            # def applyTickLabelMapping(file, ref, tar, textformat, axis):
+            #     if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+            #         lookup = readAxisLookup(file, ref, tar)
+            #         def update_ticks_fromLookup(val, pos):
+            #             if val in lookup :
+            #                 if len(textformat) > 0 :
+            #                     newVal = lookup[val]
+            #                     return textformat.format(newVal)
+            #                 return str(lookup[val])
+            #             return ''
+            #         axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
 
             applyTickLabelMapping(meta.YaxisMappingFile,
                                 meta.YaxisMappingRefColumn, 
                                 meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
                                 meta.YaxisMappingFormat, 
                                 ax.yaxis)
             applyTickLabelMapping(meta.XaxisMappingFile,
                                 meta.XaxisMappingRefColumn, 
                                 meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
                                 meta.XaxisMappingFormat, 
                                 ax.xaxis)
             if len(meta.yLabel) > 0 :
@@ -1122,57 +1139,152 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
 
     if meta.renderAs == "violinOccurrenceSpread" : 
        
-        # if onlyOnce :
-        #     ax.axes.invert_yaxis()          
-        # 
-
-
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
 
-        numInArray = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
-        dReduc = len(numInArray)
+        numInRowC = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numberOfBucketsC = len(numInRowC)
         if meta.densityReduction > 0 :
-            dReduc = meta.densityReduction        
-        numRows = len(numInArray)
-        inCharge = int(numRows / dReduc)
-        if numRows % dReduc > 0 :
-            inCharge += 1
+            numberOfBucketsC = meta.densityReduction        
+        numRowsC = len(numInRowC)
+        inBucketC = int(numRowsC / numberOfBucketsC)
+        if numRowsC % numberOfBucketsC > 0 :
+            inBucketC += 1
+        
+        def calculateDistribution(occIndex, numberOfBuckets, inBucket, numRows, numInRow) : 
+            numRows = len(numInRow)
+            numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
+            occurenceArray = np.array([0] * numberOfBuckets)
+            currBucketIdx = 0
+            numAllInBucket = 0
+            numOfType = 0
+            for idx in range(numRows) : 
+                if numInRow[idx] > 0 :
+                    numAllInBucket += numInRow[idx]
+                    numOfType += numXInArray[idx]
+                if (((idx + 1) % inBucket) == 0) or ((idx + 1) == numRows) : 
+                    if numAllInBucket > 0 :
+                        occurenceArray[currBucketIdx] = numOfType * 100 / numAllInBucket
+                    currBucketIdx += 1
+                    numAllInBucket = 0
+                    numOfType = 0
+            sumArr = np.sum(occurenceArray)
+            distr = np.array([0] * sumArr)
+            rIdx = -1
+            for idx in range(numberOfBuckets) : 
+                val = occurenceArray[idx]
+                for i in range(val) :
+                    rIdx += 1
+                    distr[rIdx] = idx
+            return distr
 
-        numXInArray = np.count_nonzero((ascii_data_array == meta.occurrenceIndex), axis=1)
-        occurenceArray = np.array([0] * dReduc)
-        sumArr = 0
-        ocIdx = -1
-        numInt = 0
-        for idx in range(len(numInArray)) : 
-            
-            if idx % inCharge == 0 : 
-                if idx > 0 :
-                    if numInt > 0 :
-                        occurenceArray[ocIdx] = occurenceArray[ocIdx]/numInt
-                    sumArr += int(occurenceArray[ocIdx])
-                ocIdx += 1
-                numInt = 0
-            if numInArray[idx] > 0 :
-                occurenceArray[ocIdx] += int (float(numXInArray[idx]) * 100.0 / float(numInArray[idx]))
-                numInt += 1 
+        listOfVPlots = list()
+        listOfVPlotIdx = list()
+        offset = 2
+        offestDistance = 2
+        if meta.occurrenceIndex != None :
+            for occIndex in meta.occurrenceIndex :
+                distr = calculateDistribution(occIndex, numberOfBucketsC, inBucketC, numRowsC, numInRowC)
+                listOfVPlots.append(distr)
+                listOfVPlotIdx.append(offset)
+                offset = offset + offestDistance
+        else :
+            print("missing occurence index")
                 
 
-        distr = np.array([0.0] * sumArr)
-        rIdx = -1
-        for idx in range(dReduc) : 
-            val = occurenceArray[idx]
-            for i in range(val) :
-                rIdx += 1
-                distr[rIdx] = idx
+        vp = ax.violinplot(listOfVPlots, listOfVPlotIdx , widths=1.5, showmeans=True, showmedians=False, showextrema=True)
 
-        vp = ax.violinplot(distr, [20], widths=2, showmeans=True, showmedians=True, showextrema=True)
-
+        cIdx = -1
         for body in vp['bodies']:
-            body.set_alpha(0.9)
-            ax.set(xlim=(0, len(numInArray)), ylim=(0, len(numInArray)))
+            cIdx += 1
+            if meta.cMap != None and len(meta.cMap) > cIdx :
+                body.set_facecolor(meta.cMap[cIdx])
+            body.set_alpha(0.7)
+            body.set_edgecolor('black')
+            ax.set(xlim=(0, offset), ylim=(0, numberOfBucketsC))
+        vp['cmeans'].set_edgecolor('black')
+        vp['cmaxes'].set_edgecolor('black')
+        vp['cmins'].set_edgecolor('black')
+        vp['cbars'].set_edgecolor('black')
+        vp['cmeans'].set_linewidth(0.75)
+        vp['cmaxes'].set_linewidth(0.75)
+        vp['cmins'].set_linewidth(0.75)
+        vp['cbars'].set_linewidth(0.75)
 
+        # plotData = np.array(listOfVPlots)
 
-def readAxisLookup(filename, refCol, tarCol) :
+        # quartile1, medians, quartile3 = np.percentile(plotData, [25, 50, 75], axis=1)
+        # def adjacent_values(vals, q1, q3):
+        #     upper_adjacent_value = q3 + (q3 - q1) * 1.5
+        #     upper_adjacent_value = np.clip(upper_adjacent_value, q3, vals[-1])
+
+        #     lower_adjacent_value = q1 - (q3 - q1) * 1.5
+        #     lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1)
+        #     return lower_adjacent_value, upper_adjacent_value
+
+        # whiskers = np.array([
+        #     adjacent_values(sorted_array, q1, q3)
+        #     for sorted_array, q1, q3 in zip(plotData, quartile1, quartile3)])
+        # whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
+
+        # inds = np.arange(1, len(medians) + 1)
+        # ax.scatter(inds, medians, marker='o', color='white', s=30, zorder=3)
+        # ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=5)
+        # ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-', lw=1)
+
+        if onlyOnce :
+            ax.axes.invert_yaxis()
+            # do this only once
+
+            # def update_ticks(val, pos):
+            #     val *= (1/meta.densityFactor)
+            #     val *= meta.factor
+            #     return str(val)
+            # ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
+
+def applyTickLabelMapping(file, ref, tar, tarAsFloat, textformat, axis):
+    if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
+        lookup = readAxisLookup(file, ref, tar, tarAsFloat)
+        def update_ticks_fromLookup(val, pos):
+            if val in lookup :
+                if len(textformat) > 0 :
+                    newVal = lookup[val]
+                    return textformat.format(newVal)
+                return str(lookup[val])
+            return ''
+        axis.set_major_formatter(mticker.FuncFormatter(update_ticks_fromLookup))
+
+def readAxisLookup(filename, refCol, tarCol, asFloat) :
     lookup = dict()
     with open(filename) as sourcefile:
         firstLine = True
@@ -1186,7 +1298,10 @@ def readAxisLookup(filename, refCol, tarCol) :
                 tarColIdx = header[tarCol]
                 continue
             out = loadLine(line,refColIdx,tarColIdx )
-            lookup[float(out[0])] = float(out[1])
+            if asFloat :
+                lookup[float(out[0])] = float(out[1])
+            else :
+                lookup[float(out[0])] = out[1]
     return lookup
 
 def loadLine(line, refColIdx, tarColIdx) :
