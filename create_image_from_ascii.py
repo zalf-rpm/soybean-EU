@@ -543,6 +543,9 @@ class Meta:
     yTitle: float
     xTitle: float
     removeEmptyColumns: bool
+    violinOffset: int
+    violinOffsetDistance: int
+    violinHatch: str
 
 def readMeta(meta_path, ascii_nodata, showCBar) :
     title="" 
@@ -586,6 +589,9 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     xTitle = 1
     removeEmptyColumns = False
     occurrenceIndex = None
+    violinOffset = 2
+    violinOffsetDistance = 2
+    violinHatch = ""
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -633,6 +639,13 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 lineLabel = doc
             elif item == "lineColor" :
                 lineColor = doc
+
+            elif item == "violinOffset":
+                violinOffset = int(doc)
+            elif item == "violinOffsetDistance":
+                violinOffsetDistance = int(doc)
+            elif item == "violinHatch":
+                violinHatch = doc
             elif item == "lineLabelAnchorX":
                 lineLabelAnchorX = float(doc)
             elif item == "lineLabelAnchorY":
@@ -693,7 +706,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingTarColumnAsF,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingTarColumnAsF,XaxisMappingFormat,
                 densityReduction, densityFactor, occurrenceIndex,
-                yTitle,xTitle,removeEmptyColumns)
+                yTitle,xTitle,removeEmptyColumns,     
+                violinOffset,violinOffsetDistance, violinHatch)
 
 
 def createSubPlot(image, out_path, pdf=None) :
@@ -1179,13 +1193,19 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
 
         listOfVPlots = list()
         listOfVPlotIdx = list()
-        offset = 2
-        offestDistance = 2
+        vplotColorList = list()
+        offset = meta.violinOffset
+        offestDistance = meta.violinOffsetDistance
+        cIdx = 0
         if meta.occurrenceIndex != None :
             for occIndex in meta.occurrenceIndex :
                 distr = calculateDistribution(occIndex, numberOfBucketsC, inBucketC, numRowsC, numInRowC)
-                listOfVPlots.append(distr)
-                listOfVPlotIdx.append(offset)
+                if len(distr) > 0 :
+                    listOfVPlots.append(distr)
+                    listOfVPlotIdx.append(offset)
+                    if meta.cMap != None and len(meta.cMap) > cIdx :
+                        vplotColorList.append(meta.cMap[cIdx])
+                cIdx +=1
                 offset = offset + offestDistance
         else :
             print("missing occurence index")
@@ -1196,11 +1216,15 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
         cIdx = -1
         for body in vp['bodies']:
             cIdx += 1
-            if meta.cMap != None and len(meta.cMap) > cIdx :
-                body.set_facecolor(meta.cMap[cIdx])
-            body.set_alpha(0.7)
+            if len(vplotColorList) > cIdx :
+                body.set_facecolor(vplotColorList[cIdx])
+            body.set_linewidth(0.5)
+            body.set_alpha(0.5)
             body.set_edgecolor('black')
             ax.set(xlim=(0, offset), ylim=(0, numberOfBucketsC))
+            if len(meta.violinHatch) > 0:
+                body.set_hatch(meta.violinHatch)
+            
         vp['cmeans'].set_edgecolor('black')
         vp['cmaxes'].set_edgecolor('black')
         vp['cmins'].set_edgecolor('black')
@@ -1210,36 +1234,9 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
         vp['cmins'].set_linewidth(0.75)
         vp['cbars'].set_linewidth(0.75)
 
-        # plotData = np.array(listOfVPlots)
-
-        # quartile1, medians, quartile3 = np.percentile(plotData, [25, 50, 75], axis=1)
-        # def adjacent_values(vals, q1, q3):
-        #     upper_adjacent_value = q3 + (q3 - q1) * 1.5
-        #     upper_adjacent_value = np.clip(upper_adjacent_value, q3, vals[-1])
-
-        #     lower_adjacent_value = q1 - (q3 - q1) * 1.5
-        #     lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1)
-        #     return lower_adjacent_value, upper_adjacent_value
-
-        # whiskers = np.array([
-        #     adjacent_values(sorted_array, q1, q3)
-        #     for sorted_array, q1, q3 in zip(plotData, quartile1, quartile3)])
-        # whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
-
-        # inds = np.arange(1, len(medians) + 1)
-        # ax.scatter(inds, medians, marker='o', color='white', s=30, zorder=3)
-        # ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=5)
-        # ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-', lw=1)
-
         if onlyOnce :
             ax.axes.invert_yaxis()
             # do this only once
-
-            # def update_ticks(val, pos):
-            #     val *= (1/meta.densityFactor)
-            #     val *= meta.factor
-            #     return str(val)
-            # ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
 
             if meta.yTicklist :
                 ax.set_yticks(meta.yTicklist)
