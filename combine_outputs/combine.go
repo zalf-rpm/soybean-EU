@@ -438,19 +438,19 @@ func main() {
 	// 	nil, nil, nil, 1.0,
 	// 	0, 1, minColor, outC)
 
-	// colorListRainRisk := []string{"lightgrey", "green"}
-	// waitForNum++
-	// go drawMaps(gridSourceLookup,
-	// 	p.harvestRainDeviationGridsSumAll,
-	// 	asciiOutCombinedTemplate,
-	// 	"dev_harvest_rain",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"(Dev) Rain during/before harvest: %v",
-	// 	"",
-	// 	"plasma",
-	// 	colorListRainRisk, nil, nil, 1.0, 0,
-	// 	1, "", outC)
+	colorListRainRisk := []string{"lightgrey", "green"}
+	waitForNum++
+	go drawMaps(gridSourceLookup,
+		p.harvestRainDeviationGridsSumAll,
+		asciiOutCombinedTemplate,
+		"dev_harvest_rain",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(Dev) Rain during/before harvest: %v",
+		"",
+		"plasma",
+		colorListRainRisk, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
@@ -545,19 +545,19 @@ func main() {
 		colorListDroughtRisk, nil, nil, 1.0, 0,
 		1, "", outC)
 
-	// waitForNum++
-	// colorListColdSpell := []string{"lightgrey", "blueviolet"}
-	// go drawMaps(gridSourceLookup,
-	// 	p.coldSpellGrid,
-	// 	asciiOutCombinedTemplate,
-	// 	"coldSpell",
-	// 	extCol, extRow,
-	// 	filepath.Join(asciiOutFolder, "dev"),
-	// 	"Cold snap in Summer: %v",
-	// 	"",
-	// 	"jet",
-	// 	colorListColdSpell, nil, nil, 1.0, 0,
-	// 	1, "", outC)
+	waitForNum++
+	colorListColdSpell := []string{"lightgrey", "blueviolet"}
+	go drawMaps(gridSourceLookup,
+		p.coldSpellGrid,
+		asciiOutCombinedTemplate,
+		"coldSpell",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Cold snap in Summer: %v",
+		"",
+		"jet",
+		colorListColdSpell, nil, nil, 1.0, 0,
+		1, "", outC)
 
 	// waitForNum++
 	// go drawMaps(gridSourceLookup,
