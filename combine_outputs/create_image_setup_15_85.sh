@@ -42,7 +42,22 @@ cp ./violin_drought_risk_historical.asc.meta ${TARGETFOLDER}/violin_drought_risk
 cp ./violin_drought_risk_future85.asc.meta ${TARGETFOLDER}/violin_drought_risk_future85.asc.meta
 cp ./violin_drought_risk_future45.asc.meta ${TARGETFOLDER}/violin_drought_risk_future45.asc.meta
 
-# TODO add risk harvest rain and cold spell 
+# risk harvest rain 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_historical.asc.gz ${TARGETFOLDER}/violin_harvest_rain_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/violin_harvest_rain_future85.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/violin_harvest_rain_future45.asc.gz
+cp ./violin_harvest_rain_historical.asc.meta ${TARGETFOLDER}/violin_harvest_rain_historical.asc.meta
+cp ./violin_harvest_rain_future85.asc.meta ${TARGETFOLDER}/violin_harvest_rain_future85.asc.meta
+cp ./violin_harvest_rain_future45.asc.meta ${TARGETFOLDER}/violin_harvest_rain_future45.asc.meta
+
+# risk cold spell 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_historical.asc.gz ${TARGETFOLDER}/violin_coldSpell_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/violin_coldSpell_future85.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/violin_coldSpell_future45.asc.gz
+cp ./violin_coldSpell_historical.asc.meta ${TARGETFOLDER}/violin_coldSpell_historical.asc.meta
+cp ./violin_coldSpell_future85.asc.meta ${TARGETFOLDER}/violin_coldSpell_future85.asc.meta
+cp ./violin_coldSpell_future45.asc.meta ${TARGETFOLDER}/violin_coldSpell_future45.asc.meta
+
 
 # irrigation map
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/irrgated_areas.asc.meta ${TARGETFOLDER}/irrgated_areas.asc.meta
