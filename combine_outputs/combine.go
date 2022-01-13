@@ -327,7 +327,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"a)",
 		"std Deviation",
-		"cool",
+		"YlGnBu",
 		nil, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
