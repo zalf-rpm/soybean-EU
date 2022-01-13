@@ -1164,9 +1164,12 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
         if numRowsC % numberOfBucketsC > 0 :
             inBucketC += 1
         
-        def calculateDistribution(occIndex, numberOfBuckets, inBucket, numRows, numInRow) : 
+        def calculateDistribution(occIndex, numberOfBuckets, inBucket, numRows, numInRow, allIndex = False) : 
             numRows = len(numInRow)
-            numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
+            if allIndex :
+                numXInArray = np.count_nonzero((ascii_data_array > 0), axis=1)
+            else :
+                numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
             occurenceArray = np.array([0] * numberOfBuckets)
             currBucketIdx = 0
             numAllInBucket = 0
@@ -1208,9 +1211,14 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
                 cIdx +=1
                 offset = offset + offestDistance
         else :
-            print("missing occurence index")
+            distr = calculateDistribution(-1, numberOfBucketsC, inBucketC, numRowsC, numInRowC, allIndex=True)
+            if len(distr) > 0 :
+                listOfVPlots.append(distr)
+                listOfVPlotIdx.append(offset)
+                if meta.cMap != None and len(meta.cMap) > 0 :
+                    vplotColorList.append(meta.cMap[0])
+            offset = offset + offestDistance
                 
-
         vp = ax.violinplot(listOfVPlots, listOfVPlotIdx , widths=1.5, showmeans=True, showmedians=False, showextrema=True)
 
         cIdx = -1
