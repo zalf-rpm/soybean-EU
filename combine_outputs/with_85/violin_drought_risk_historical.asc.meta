@@ -1,0 +1,33 @@
+title: 'risk distribution'
+yTitle: 0.99
+xTitle: 0.5
+factor: 1.0
+renderAs: violinOccurrenceSpread
+violinOffset: 8
+violinOffsetDistance: 2
+
+colorlist: 
+ - 'orange'
+
+xLabel: 'Risks'
+yLabel: 'Latitude'
+YaxisMappingFile: 'stu_eu_layer_grid.csv'
+YaxisMappingRefColumn: Row
+YaxisMappingTarColumn: latitude
+YaxisMappingFormat: '{:2.0f}°'
+yTicklist: 
+ - 715
+ - 1807
+ - 2867
+ - 4017
+
+XaxisMappingFile: 'violin_x_risks.csv'
+XaxisMappingRefColumn: Index
+XaxisMappingTarColumn: RiskName
+XaxisMappingTarColumnAsF: false
+XaxisMappingFormat: '{}'
+xTicklist: 
+ - 4
+ - 10
+ - 16
+ - 22
