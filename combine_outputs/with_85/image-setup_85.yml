@@ -26,26 +26,83 @@
 #      - file: 'violin_max_yield_historical.asc.gz'
 #      - file: 'violin_max_yield_future45.asc.gz'
 #      - file: 'violin_max_yield_future85.asc.gz'
+# - image: 
+#     name: violin_risks
+#     sizeX: 6
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.95
+#     adLeft: 0.15
+#     adhspace: 0.0
+#     adwspace: 0.0
+#     merge: 
+#      - file: 'violin_coldSpell_historical.asc.gz'
+#      - file: 'violin_coldSpell_future45.asc.gz'
+#      - file: 'violin_coldSpell_future85.asc.gz'
+#      - file: 'violin_drought_risk_historical.asc.gz'
+#      - file: 'violin_drought_risk_future45.asc.gz'
+#      - file: 'violin_drought_risk_future85.asc.gz'
+#      - file: 'violin_harvest_rain_historical.asc.gz'
+#      - file: 'violin_harvest_rain_future45.asc.gz'
+#      - file: 'violin_harvest_rain_future85.asc.gz'
+#      - file: 'violin_short_season_historical.asc.gz'
+#      - file: 'violin_short_season_future45.asc.gz'
+#      - file: 'violin_short_season_future85.asc.gz'
+# - image: 
+#     name: summary_final
+#     sizeX: 10
+#     sizeY: 10
+#     adjBottom: 0.05
+#     adjTop: 0.99
+#     adRight: 0.80
+#     adLeft: 0.05
+#     adhspace: 0.12
+#     adwspace: 0.01
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: dev_max_yield_historical.asc.gz 
+#             - file: dev_max_yield_future45.asc.gz
+#             - file: dev_max_yield_future85.asc.gz
+#         - row:
+#             - sharedColorBar : True
+#             - file: dev_maturity_groups_historical.asc.gz
+#             - file: dev_maturity_groups_future45.asc.gz
+#             - file: dev_maturity_groups_future85.asc.gz
+#         - row:
+#             - sharedColorBar : True
+#             - file: dev_allRisks_historical.asc.gz
+#             - file: dev_allRisks_future45.asc.gz
+#             - file: dev_allRisks_future85.asc.gz
+
 - image: 
-    name: violin_risks
-    sizeX: 6
+    name: std_deviation_climate_scn
+    sizeX: 8
     sizeY: 4
     adjBottom: 0.15
     adjTop: 0.95
-    adRight: 0.95
-    adLeft: 0.15
+    adRight: 0.80
+    adLeft: 0.05
     adhspace: 0.0
     adwspace: 0.0
-    merge: 
-     - file: 'violin_coldSpell_historical.asc.gz'
-     - file: 'violin_coldSpell_future45.asc.gz'
-     - file: 'violin_coldSpell_future85.asc.gz'
-     - file: 'violin_drought_risk_historical.asc.gz'
-     - file: 'violin_drought_risk_future45.asc.gz'
-     - file: 'violin_drought_risk_future85.asc.gz'
-     - file: 'violin_harvest_rain_historical.asc.gz'
-     - file: 'violin_harvest_rain_future45.asc.gz'
-     - file: 'violin_harvest_rain_future85.asc.gz'
-     - file: 'violin_short_season_historical.asc.gz'
-     - file: 'violin_short_season_future_45.asc.gz'
-     - file: 'violin_short_season_future_85.asc.gz'
+    rows:
+        - row:
+            - sharedColorBar : True
+            - file: avg_over_climScen_stdDev_future45.asc.gz
+            - file: avg_over_climScen_stdDev_future85.asc.gz
+- image: 
+    name: std_deviation_model
+    sizeX: 10
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.80
+    adLeft: 0.05
+    adhspace: 0.0
+    adwspace: 0.01
+    rows:
+        - row:
+            - sharedColorBar : True
+            - file: avg_over_models_stdDev_future45.asc.gz
+            - file: avg_over_models_stdDev_future85.asc.gz

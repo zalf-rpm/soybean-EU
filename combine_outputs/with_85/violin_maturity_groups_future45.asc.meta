@@ -1,5 +1,5 @@
 title: 'maturity groups distribution'
-yTitle: 1.0
+yTitle: 0.99
 xTitle: 0.5
 factor: 1.0
 renderAs: violinOccurrenceSpread
@@ -16,7 +16,6 @@ occurrenceIndex:
  - 7
 
 colorlist: 
- - 'lightgrey'
  - 'maroon'
  - 'orangered'
  - 'gold'
