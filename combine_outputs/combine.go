@@ -259,12 +259,18 @@ func main() {
 		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup)
+	maxDevHist := maxFromIrrigationGrid(extRow, extCol,
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+	maxDev := max(maxDevModel, maxDevHist)
 	maxDevClim := maxFromIrrigationGrid(extRow, extCol,
 		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}],
 		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}],
 		&gridSourceLookup,
 		&irrLookup)
-	maxDev := max(maxDevModel, maxDevClim)
+	maxDev = max(maxDev, maxDevClim)
 
 	p.setMaxAllAvgYield(float64(findMaxValueInScenarioList(p.maxYieldGridsAll, p.maxYieldDeviationGridsAll)))
 	p.setSumMaxDeathOccurrence(findMaxValueInScenarioList(p.coolweatherDeathGridsAll, p.coolweatherDeathDeviationGridsAll))
@@ -346,6 +352,20 @@ func main() {
 		nil, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&irrLookup,
+		"%s_stdDev.asc",
+		"historical",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"b)",
+		"hist.std Deviation over model",
+		"cool",
+		nil, nil, nil, 1, 0,
+		maxDev, minColor, outC)
 	// waitForNum++
 	// go drawScenarioMaps(gridSourceLookup,
 	// 	p.maxYieldGridsAll,
@@ -1688,10 +1708,14 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 		return climateSenario == "0_0"
 	}
 	mergedKeys := make([]ScenarioKeyTuple, 0, 4)
+	historicKeys := make([]ScenarioKeyTuple, 0, 2)
 	climSceKeys := make([]ScenarioKeyTuple, 0, 10)
 	for simKey := range p.maxYieldGrids {
 		if isFuture(simKey.climateSenario) || isHistorical(simKey.climateSenario) {
 			mergedKeys = append(mergedKeys, simKey)
+			if isHistorical(simKey.climateSenario) {
+				historicKeys = append(historicKeys, simKey)
+			}
 		} else {
 			climSceKeys = append(climSceKeys, simKey)
 		}
@@ -1850,6 +1874,19 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			deviationModels[climSceKey][rIdx] = int(stat.StdDev(stdDevModel, nil))
 		}
 	}
+	for _, histKey := range historicKeys {
+		if _, ok := p.deviationModelsAvgOverClimScen[histKey]; !ok {
+			p.deviationModelsAvgOverClimScen[histKey] = newSmallGridLookup(maxRefNo, 0)
+		}
+		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+			stdDevModel := make([]float64, 0, numSource)
+			for sIdx := 0; sIdx < numSource; sIdx++ {
+				stdDevModel = append(stdDevModel, float64(p.maxYieldDeviationGrids[histKey][sIdx][rIdx]))
+			}
+			p.deviationModelsAvgOverClimScen[histKey][rIdx] = int(stat.StdDev(stdDevModel, nil))
+		}
+	}
+
 	for treatmentNo, count := range counterByTreatment {
 		futureKey := ScenarioKeyTuple{
 			treatNo:        treatmentNo,
