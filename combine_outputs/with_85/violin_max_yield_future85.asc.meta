@@ -5,7 +5,7 @@ factor: 1.0
 renderAs: violinOccurrenceSpread
 violinOffset: 6
 violinOffsetDistance: 2
-
+violinHatch: '...'
 colorlist: 
  - 'orangered'
 

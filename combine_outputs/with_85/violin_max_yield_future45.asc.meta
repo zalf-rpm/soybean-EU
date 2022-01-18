@@ -5,7 +5,7 @@ factor: 1.0
 renderAs: violinOccurrenceSpread
 violinOffset: 4
 violinOffsetDistance: 2
-
+violinHatch: '///'
 colorlist: 
  - 'gold'
 
