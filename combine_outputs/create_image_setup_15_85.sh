@@ -109,5 +109,15 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGET
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
+sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
+sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.gz ${TARGETFOLDER}/all_historical_stdDev.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta ${TARGETFOLDER}/all_historical_stdDev.asc.meta
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev45.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev85.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
+sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta

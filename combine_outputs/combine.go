@@ -2057,6 +2057,16 @@ func (p *ProcessedData) factorInRisks(maxRefNo int) {
 	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
 	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
 
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
+
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
+
 }
 
 func getBestGuessMaturityGroup(matGroupDistribution []int) int {
