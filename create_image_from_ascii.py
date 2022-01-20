@@ -3,8 +3,6 @@
 
 import sys
 import os
-import math
-import statistics 
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -16,12 +14,12 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.ticker as mticker
 from scipy import interpolate as spy
 from datetime import datetime
-import collections
 import errno
 import gzip
 from ruamel_yaml import YAML
 from dataclasses import dataclass
 import typing
+from matplotlib.patches import Patch
 
 PATHS = {
     "local": {
@@ -163,6 +161,7 @@ class Merge:
     transparencyfactor: list
     content: list
     inserts: list
+    customLegend: list
 
 @dataclass
 class Insert:
@@ -178,6 +177,12 @@ class File:
     meta: str
     inserts: list
 
+@dataclass
+class CustomLegend:
+    text: str
+    color: str
+    hatch: str
+
 def readSetup(filename, root, files) :
     imageList = list()
     indexImg = 0
@@ -192,7 +197,19 @@ def readSetup(filename, root, files) :
         metapath = os.path.join(root, metafilename)
         inserts = list()
         return File(filepath, metapath, inserts)   
-
+    def readCustomLegend(doc) :
+        text = ""
+        color = "white"
+        hatch = ""
+        for entries in doc :
+            for entry in entries :
+                if entry == "text" :
+                    text = entries["text"]
+                if entry == "color" :
+                    color = entries["color"]
+                if entry == "hatch" :
+                    hatch = entries["hatch"]
+        return CustomLegend(text, color, hatch)
     def readRows(doc) : 
         rowContent = list()
         for rows in doc :
@@ -221,19 +238,22 @@ def readSetup(filename, root, files) :
         mintransparency = list()
         transparencyfactorList = list()
         inserts = list()
+        customLegend = list()
         for entry in doc :
             for f in entry:
                 if f == "file" :
                     mergeContent.append(readFile(entry["file"]))
                     mintransparency.append(1.0)
                     transparencyfactorList.append(1.0)
+                if f == "customLegend" :
+                    customLegend.append(readCustomLegend(entry["customLegend"]))
                 if f == "mintransparent" :
                     val = float(entry["mintransparent"])
                     mintransparency[len(mintransparency) - 1] = val
                 if f == "transparencyfactor" :
                     val = float(entry["transparencyfactor"])
                     transparencyfactorList[len(transparencyfactorList) - 1] = val
-        return Merge(mintransparency, transparencyfactorList, mergeContent, inserts)
+        return Merge(mintransparency, transparencyfactorList, mergeContent, inserts, customLegend)
 
     def readInsert(doc) :
         height = "30%"
@@ -720,6 +740,7 @@ def createSubPlot(image, out_path, pdf=None) :
     metaInsertLs = dict()
     subPositions = dict()
     subtitles = list()
+    customLegendls = dict()
 
     def readContent(content) :
         asciiHeaderList = list()
@@ -780,6 +801,8 @@ def createSubPlot(image, out_path, pdf=None) :
             asciiHeaderInsertLs[(nplotRows, nplotCols)] = asciiHeaderInsert
             metaInsertLs[(nplotRows, nplotCols)] = metaInsert
             subPositions[(nplotRows, nplotCols)] = subPosi
+            if type(content) is Merge :
+                customLegendls[(nplotRows, nplotCols)] = content.customLegend
             break
         elif type(content) is Row :
             nplotRows += 1
@@ -799,6 +822,8 @@ def createSubPlot(image, out_path, pdf=None) :
                     subPositions[(nplotRows, numCol)] = subPosi
                     for m in metaLs[(nplotRows, numCol)] :
                         m.showbars = showBar
+                    if type(content) is Merge :
+                        customLegendls[(nplotRows, nplotCols)] = content.customLegend
             if numCol > nplotCols : 
                 nplotCols = numCol
                 
@@ -822,6 +847,7 @@ def createSubPlot(image, out_path, pdf=None) :
             ax = axs[idxRow-1][idxCol-1]
             asciiHeaders = asciiHeaderLs[(idxRow,idxCol)]
             metas = metaLs[(idxRow,idxCol)]
+            customLegend = customLegendls[(idxRow,idxCol)]
             for idxMerg in range(len(asciiHeaders)) :
                 asciiHeader = asciiHeaders[idxMerg]
                 meta = metas[idxMerg]
@@ -829,7 +855,7 @@ def createSubPlot(image, out_path, pdf=None) :
                 if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
                     subtitle = subtitles[idxRow-1]
                 onlyOnce = (idxMerg == len(asciiHeaders)-1)
-                plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce)
+                plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, customLegend=customLegend)
             if (len(metaInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(asciiHeaderInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(subPositions[(idxRow,idxCol)]) > 0) :
@@ -873,7 +899,7 @@ def createSubPlot(image, out_path, pdf=None) :
     plt.savefig(out_path, dpi=250)
     plt.close(fig)
 
-def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axlabelpad = None, axtickpad = None) :
+def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, customLegend=None, fontsize = 10, axlabelpad = None, axtickpad = None) :
     # Read in the ascii data array
     ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
     
@@ -1241,8 +1267,19 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, fontsize = 10, axl
         vp['cmaxes'].set_linewidth(0.75)
         vp['cmins'].set_linewidth(0.75)
         vp['cbars'].set_linewidth(0.75)
+        
 
         if onlyOnce :
+            if customLegend :
+                # legend
+                legend_elements = list()
+                for element in customLegend :
+                    legend_elements.append( Patch(facecolor=element.color, 
+                                                hatch=element.hatch, 
+                                                edgecolor='black',
+                                                label=element.text))                    
+                ax.legend(handles=legend_elements, fontsize=6, loc='upper right')                
+
             ax.axes.invert_yaxis()
             # do this only once
 
