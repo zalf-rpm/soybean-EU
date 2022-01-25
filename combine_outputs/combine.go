@@ -332,6 +332,7 @@ func main() {
 		maxMerged, minColor, outC)
 
 	waitForNum++
+	colorListDevCaoM := []string{"yellow", "orange", "green", "blue"}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
 		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
@@ -343,11 +344,12 @@ func main() {
 		"a)",
 		"std Deviation",
 		"YlGnBu",
-		"",
-		nil, nil, nil, 1, 0,
+		"LinearSegmented",
+		colorListDevCaoM, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
 	waitForNum++
+	colorListDevMaoC := []string{"cyan", "violet", "green", "blue"}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}],
 		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}],
@@ -359,8 +361,8 @@ func main() {
 		"b)",
 		"std Deviation",
 		"cool",
-		"",
-		nil, nil, nil, 1, 0,
+		"LinearSegmented",
+		colorListDevMaoC, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
 	waitForNum++
