@@ -295,6 +295,7 @@ func main() {
 		"",
 		"",
 		"jet",
+		"",
 		colorListIrrigArea, nil, nil, 1, 0,
 		1, "", outC)
 
@@ -310,6 +311,7 @@ func main() {
 		"B",
 		"Average yield [t ha$^{\\rm –1}$]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
 
@@ -325,6 +327,7 @@ func main() {
 		"C",
 		"Average yield [t ha$^{\\rm –1}$]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMerged, minColor, outC)
 
@@ -340,6 +343,7 @@ func main() {
 		"a)",
 		"std Deviation",
 		"YlGnBu",
+		"",
 		nil, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
@@ -355,10 +359,12 @@ func main() {
 		"b)",
 		"std Deviation",
 		"cool",
+		"",
 		nil, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
 	waitForNum++
+	colorListDevMaC := []string{"pink", "orangered", "green", "blue"}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}],
 		p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}],
@@ -370,7 +376,8 @@ func main() {
 		"c)",
 		"std Deviation over all models and scn",
 		"cool",
-		nil, nil, nil, 1, 0,
+		"LinearSegmented",
+		colorListDevMaC, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 
 	waitForNum++
@@ -385,7 +392,8 @@ func main() {
 		"c)",
 		"hist.std Deviation over model",
 		"cool",
-		nil, nil, nil, 1, 0,
+		"LinearSegmented",
+		colorListDevMaC, nil, nil, 1, 0,
 		maxDev, minColor, outC)
 	// waitForNum++
 	// go drawScenarioMaps(gridSourceLookup,
@@ -411,6 +419,7 @@ func main() {
 		"(Dev )Max Yield: %v %v",
 		"Yield in t",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, NONEVALUE,
 		int(p.maxAllAvgYield), minColor, outC)
 
@@ -490,6 +499,7 @@ func main() {
 		"(Dev) Rain during/before harvest: %v",
 		"",
 		"plasma",
+		"",
 		colorListRainRisk, nil, nil, 1.0, 0,
 		1, "", outC)
 
@@ -583,6 +593,7 @@ func main() {
 		"(dev) drought risk: %v",
 		"",
 		"plasma",
+		"",
 		colorListDroughtRisk, nil, nil, 1.0, 0,
 		1, "", outC)
 
@@ -597,6 +608,7 @@ func main() {
 		"Cold snap in Summer: %v",
 		"",
 		"jet",
+		"",
 		colorListColdSpell, nil, nil, 1.0, 0,
 		1, "", outC)
 
@@ -650,6 +662,7 @@ func main() {
 		"(Dev) Short season: %v",
 		"",
 		"plasma",
+		"",
 		colorListShortSeason, nil, nil, 1.0, 0,
 		1, "", outC)
 
@@ -676,6 +689,7 @@ func main() {
 		"Maturity Group: %v %v",
 		"Maturity groups",
 		"",
+		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
 
@@ -691,6 +705,7 @@ func main() {
 		"E",
 		"Maturity groups",
 		"",
+		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
 
@@ -705,6 +720,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"F",
 		"Maturity groups",
+		"",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
 		len(sidebarLabel)-1, "", outC)
@@ -733,6 +749,7 @@ func main() {
 		"000 future",
 		"[t ha–1]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMerged000, minColor, outC)
 	waitForNum++
@@ -747,6 +764,7 @@ func main() {
 		"000 historical",
 		"[t ha–1]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMerged000, minColor, outC)
 
@@ -774,6 +792,7 @@ func main() {
 		"II future",
 		"[t ha–1]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMergedII, minColor, outC)
 	waitForNum++
@@ -788,6 +807,7 @@ func main() {
 		"II historical",
 		"[t ha–1]",
 		"jet",
+		"",
 		nil, nil, nil, 0.001, 0,
 		maxMergedII, minColor, outC)
 
@@ -843,6 +863,7 @@ func main() {
 		"J",
 		"Risk factors",
 		"",
+		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
 		16, "", outC,
 		p.shortSeasonDeviationGridSumAll["fut_avg"],
@@ -858,6 +879,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"H",
 		"Risk factors",
+		"",
 		"",
 		riskColorList, sidebarRiskLabel, ristTicklist, 1, 0,
 		16, "", outC,
@@ -2820,7 +2842,7 @@ func climateScenarioShortToName(climateScenarioShort string) string {
 	return climateScenarioShort
 }
 
-func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 
 	for simKey, simVal := range grids {
 		//simkey = treatmentNo, climateSenario, maturityGroup, comment
@@ -2831,12 +2853,12 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
 		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey.climateSenario), simKey.comment)
-		writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 	}
 	outC <- filenameDescPart
 }
 
-func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow, minRow, minCol int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow, minRow, minCol int, asciiOutFolder, titleFormat, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 	//simkey = treatmentNo, climateSenario, maturityGroup, comment
 	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
 	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
@@ -2846,12 +2868,12 @@ func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int,
 
 	file.Close()
 	title := titleFormat
-	writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 
 	outC <- filenameDescPart
 }
 
-func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
+func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
 
 	simValuesLen := len(simValues)
 	numRefs := len(simValues[0])
@@ -2878,7 +2900,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 
 	writeRows(file, extRow, extCol, merged, gridSourceLookup)
 	file.Close()
-	writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 
 	outC <- filenameDescPart
 }
@@ -2902,7 +2924,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 // 	outC <- "debug models" + filenameDescPart
 // }
 
-func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
 
 	for simKey, simVal := range grids {
 		//simkey = treatmentNo, climateSenario, maturityGroup, comment
@@ -2913,7 +2935,7 @@ func drawMaps(gridSourceLookup [][]int, grids map[string][]int, filenameFormat, 
 		writeRows(file, extRow, extCol, simVal, gridSourceLookup)
 		file.Close()
 		title := fmt.Sprintf(titleFormat, climateScenarioShortToName(simKey))
-		writeMetaFile(gridFilePath, title, labelText, colormap, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 
 	}
 	outC <- filenameDescPart
@@ -2945,7 +2967,7 @@ func writeAGridHeader(name string, nCol, nRow int) (fout Fout) {
 	return fout
 }
 
-func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int, minColor string) {
+func writeMetaFile(gridFilePath, title, labeltext, colormap, colorlistType string, colorlist []string, cbarLabel []string, ticklist []float64, factor float64, maxValue, minValue int, minColor string) {
 	metaFilePath := gridFilePath + ".meta"
 	makeDir(metaFilePath)
 	file, err := os.OpenFile(metaFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
@@ -2978,6 +3000,9 @@ func writeMetaFile(gridFilePath, title, labeltext, colormap string, colorlist []
 		for _, tick := range ticklist {
 			file.WriteString(fmt.Sprintf(" - %f\n", tick))
 		}
+	}
+	if len(colorlistType) > 0 {
+		file.WriteString(fmt.Sprintf("colorlisttype: %s\n", colorlistType))
 	}
 	file.WriteString(fmt.Sprintf("factor: %f\n", factor))
 	if maxValue != NONEVALUE {
