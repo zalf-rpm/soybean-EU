@@ -990,7 +990,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
                 if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
                     subtitle = subtitles[idxRow-1]
                 onlyOnce = (idxMerg == len(asciiHeaders)-1)
-                plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=customLegend)
+                plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=customLegend)
             if (len(metaInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(asciiHeaderInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(subPositions[(idxRow,idxCol)]) > 0) :
@@ -1024,7 +1024,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
                     meta = metas[idxMerg]
                     subtitle = ""
                     onlyOnce = (idxMerg == len(asciiHeaders)-1)
-                    plotLayer(fig, inset_ax, asciiHeader, meta, subtitle, onlyOnce, projectionID, fontsize, axlabelpad, axtickpad)
+                    plotLayer(fig, inset_ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, fontsize, axlabelpad, axtickpad)
 
 
     # save image and pdf 
@@ -1034,7 +1034,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
     plt.savefig(out_path, dpi=png_dpi)
     plt.close(fig)
 
-def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=None, fontsize = 10, axlabelpad = None, axtickpad = None) :
+def plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=None, fontsize = 10, axlabelpad = None, axtickpad = None) :
     # Read in the ascii data array
     ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
     colorM = None
@@ -1346,25 +1346,8 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, projectionID, cust
             inBucketC += 1
         
         def calculateDistribution(occIndex, numberOfBuckets, inBucket, numRows, numInRow, allIndex = False) : 
-            numRows = len(numInRow)
-            if allIndex :
-                numXInArray = np.count_nonzero((ascii_data_array > 0), axis=1)
-            else :
-                numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
-            occurenceArray = np.array([0] * numberOfBuckets)
-            currBucketIdx = 0
-            numAllInBucket = 0
-            numOfType = 0
-            for idx in range(numRows) : 
-                if numInRow[idx] > 0 :
-                    numAllInBucket += numInRow[idx]
-                    numOfType += numXInArray[idx]
-                if (((idx + 1) % inBucket) == 0) or ((idx + 1) == numRows) : 
-                    if numAllInBucket > 0 :
-                        occurenceArray[currBucketIdx] = numOfType * 100 / numAllInBucket
-                    currBucketIdx += 1
-                    numAllInBucket = 0
-                    numOfType = 0
+
+            occurenceArray = calculateOccurrence(ascii_data_array, occIndex, numberOfBuckets, inBucket, numRows, numInRow, allIndex)
             sumArr = np.sum(occurenceArray)
             distr = np.array([0] * sumArr)
             rIdx = -1
@@ -1468,6 +1451,138 @@ def plotLayer(fig, ax, asciiHeader, meta, subtitle, onlyOnce, projectionID, cust
             for item in ([ax.xaxis.label, ax.yaxis.label] +
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
+
+    if meta.renderAs == "stackedArea" : 
+        if onlyOnce :
+            # do this only once
+            ax.axes.invert_yaxis()
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+
+        numInRowC = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numberOfBucketsC = len(numInRowC)
+        if meta.densityReduction > 0 :
+            numberOfBucketsC = meta.densityReduction        
+        numRowsC = len(numInRowC)
+        inBucketC = int(numRowsC / numberOfBucketsC)
+        if numRowsC % numberOfBucketsC > 0 :
+            inBucketC += 1
+        
+        stackedPlots = list()
+        stackedColorList = list()
+        cIdx = 0
+        if meta.occurrenceIndex != None :
+            for occIndex in meta.occurrenceIndex :
+                distr = calculateOccurrence(ascii_data_array, occIndex, numberOfBucketsC, inBucketC, numRowsC, numInRowC)
+                if len(distr) > 0 :
+                    stackedPlots.append(distr)
+                    if meta.cMap != None and len(meta.cMap) > cIdx :
+                        stackedColorList.append(meta.cMap[cIdx])
+                cIdx +=1
+        else :
+            print("error missing 'occurrenceIndex'")
+
+        x = np.arange(numberOfBucketsC)
+
+        # Basic stacked bar chart.
+        yLeft = [0] * numberOfBucketsC
+        for idx in range(0, len(meta.occurrenceIndex)) :
+            ax.barh(x, stackedPlots[idx], color=stackedColorList[idx], left=yLeft)
+            for bucket in range(len(stackedPlots[idx])) :
+                yLeft[bucket] += stackedPlots[idx][bucket]
+
+        if meta.showbars :
+            axins = inset_axes(ax,
+            width="5%",  # width = 5% of parent_bbox width
+            height="90%",  # height : 50%
+            loc='lower left',
+            bbox_to_anchor=(1.05, 0., 1, 1),
+            bbox_transform=ax.transAxes,
+            borderpad=0,
+            )
+
+            norm = matplotlib.colors.Normalize(vmin=0, vmax=len(meta.occurrenceIndex))
+            if meta.ticklist :
+                # Place a colorbar next to the map
+                cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=colorM),
+                        orientation='vertical', 
+                        ticks=meta.ticklist,
+                        shrink=0.5, aspect=14, cax=axins)
+            else :
+                # Place a colorbar next to the map
+                cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=colorM),
+                        orientation='vertical', 
+                        shrink=0.5, aspect=14, cax=axins)
+            if len(meta.label) > 0 :
+                #cbar.ax.set_label(meta.label)
+                cbar.ax.set_title(meta.label, loc='left', fontsize=fontsize) 
+            if meta.cbarLabel :
+                cbar.ax.set_yticklabels(meta.cbarLabel) 
+
+        ax.axes.xaxis.set_visible(False)
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+
+        if onlyOnce :
+            # do this only once
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(val)
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
+
+
+def calculateOccurrence(ascii_data_array, occIndex, numberOfBuckets, inBucket, numRows, numInRow, allIndex = False) : 
+    numRows = len(numInRow)
+    if allIndex :
+        numXInArray = np.count_nonzero((ascii_data_array > 0), axis=1)
+    else :
+        numXInArray = np.count_nonzero((ascii_data_array == occIndex), axis=1)
+    occurenceArray = np.array([0] * numberOfBuckets)
+    currBucketIdx = 0
+    numAllInBucket = 0
+    numOfType = 0
+    for idx in range(numRows) : 
+        if numInRow[idx] > 0 :
+            numAllInBucket += numInRow[idx]
+            numOfType += numXInArray[idx]
+        if (((idx + 1) % inBucket) == 0) or ((idx + 1) == numRows) : 
+            if numAllInBucket > 0 :
+                occurenceArray[currBucketIdx] = round(float(numOfType) * 100.0 / float(numAllInBucket))
+            currBucketIdx += 1
+            numAllInBucket = 0
+            numOfType = 0
+    return occurenceArray
 
 def applyTickLabelMapping(file, ref, tar, tarAsFloat, textformat, axis):
     if len(file) > 0 and len(ref) > 0 and len(tar) > 0 :
