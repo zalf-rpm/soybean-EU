@@ -27,6 +27,14 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_historical.asc.gz 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/violin_maturity_groups_future85.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/violin_maturity_groups_future45.asc.gz
 
+#maturity stacked chart
+cp ./with_85/stacked_maturity_groups_future45.asc.meta ${TARGETFOLDER}/stacked_maturity_groups_future45.asc.meta
+cp ./with_85/stacked_maturity_groups_future85.asc.meta ${TARGETFOLDER}/stacked_maturity_groups_future85.asc.meta
+cp ./with_85/stacked_maturity_groups_historical.asc.meta ${TARGETFOLDER}/stacked_maturity_groups_historical.asc.meta
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_historical.asc.gz ${TARGETFOLDER}/stacked_maturity_groups_historical.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/stacked_maturity_groups_future85.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/stacked_maturity_groups_future45.asc.gz
+
 # risk violin plots
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_historical.asc.gz ${TARGETFOLDER}/violin_short_season_historical.asc.gz 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGETFOLDER}/violin_short_season_future85.asc.gz
@@ -101,23 +109,33 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARG
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.meta ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.meta ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
+sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
+sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
 
 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
+sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
 sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
 
-cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.gz ${TARGETFOLDER}/all_historical_stdDev.asc.gz
-cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta ${TARGETFOLDER}/all_historical_stdDev.asc.meta
+sed -i 's/yellow/cyan/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
+sed -i 's/yellow/cyan/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
+sed -i 's/orange/violet/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
+sed -i 's/orange/violet/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
+
+# cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.gz ${TARGETFOLDER}/all_historical_stdDev.asc.gz
+# cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta ${TARGETFOLDER}/all_historical_stdDev.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev45.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev45.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev85.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev85.asc.meta
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+# sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
+sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+
+sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+sed -i 's/orangered/violet/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/orangered/violet/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta

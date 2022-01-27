@@ -1486,7 +1486,7 @@ def plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projection
         # Basic stacked bar chart.
         yLeft = [0] * numberOfBucketsC
         for idx in range(0, len(meta.occurrenceIndex)) :
-            ax.barh(x, stackedPlots[idx], color=stackedColorList[idx], left=yLeft)
+            ax.barh(x, stackedPlots[idx], height=1, color=stackedColorList[idx], left=yLeft)
             for bucket in range(len(stackedPlots[idx])) :
                 yLeft[bucket] += stackedPlots[idx][bucket]
 
