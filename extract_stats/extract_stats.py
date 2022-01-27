@@ -6,19 +6,33 @@ from dataclasses import dataclass
 import os
 import numpy as np
 import math
+import sys
 
 def build() :
     "main"
 
-    asciiYieldfutuT1 = "./extract_stats/eval/dev_max_yield_future_trnoT1.asc.gz"
-    asciiYieldfutuT2 = "./extract_stats/eval/dev_max_yield_future_trnoT2.asc.gz"
-    asciiYieldhistT1 = "./extract_stats/eval/dev_max_yield_historical_trnoT1.asc.gz"
-    asciiYieldhistT2 = "./extract_stats/eval/dev_max_yield_historical_trnoT2.asc.gz"
-    irrigatedArea = "./extract_stats/eval/irrgated_areas.asc.gz"
+    asciiYieldfutuT1 = "./extract_stats/{0}/dev_max_yield_future_trnoT1.asc.gz"
+    asciiYieldfutuT2 = "./extract_stats/{0}/dev_max_yield_future_trnoT2.asc.gz"
+    asciiYieldhistT1 = "./extract_stats/{0}/dev_max_yield_historical_trnoT1.asc.gz"
+    asciiYieldhistT2 = "./extract_stats/{0}/dev_max_yield_historical_trnoT2.asc.gz"
+    irrigatedArea = "./extract_stats/{0}/irrgated_areas.asc.gz"
 
-    asciiAllRisksHistorical = "./extract_stats/eval/dev_allRisks_historical.asc.gz"
-    asciiAllRisksFuture = "./extract_stats/eval/dev_allRisks_future.asc.gz"
+    asciiAllRisksHistorical = "./extract_stats/{0}/dev_allRisks_historical.asc.gz"
+    asciiAllRisksFuture = "./extract_stats/{0}/dev_allRisks_future.asc.gz"
 
+    asciiAllStdHistorical = "./extract_stats/{0}/all_historical_stdDev.asc.gz"
+    asciiAllStdFuture = "./extract_stats/{0}/all_future_stdDev.asc.gz"
+
+    asciiClimAvgModelStdFuture = "./extract_stats/{0}/avg_over_models_stdDev.asc.gz"
+    asciiModelAvgClimStdFuture = "./extract_stats/{0}/avg_over_climScen_stdDev.asc.gz"
+
+    folder = "eval4.5"
+    if len(sys.argv) > 1 and __name__ == "__main__":
+        for arg in sys.argv[1:]:
+            k, v = arg.split("=")
+            if k == "folder":
+                folder = v
+    
     def readFile(file) :
         print("File:", file)
         header = readAsciiHeader(file)
@@ -31,14 +45,18 @@ def build() :
         #print("evaluated area:", np.count_nonzero(~np.isnan(ascii_data_array)), "(1x1km pixel)")
         return ascii_data_array
 
-    arrAllRisksHistorical = readFile(asciiAllRisksHistorical)
-    arrAllRisksFuture = readFile(asciiAllRisksFuture)
-    arrYieldfutuT1 = readFile(asciiYieldfutuT1)
-    arrYieldfutuT2 = readFile(asciiYieldfutuT2)
-    arrYieldhistT1 = readFile(asciiYieldhistT1)
-    arrYieldhistT2 = readFile(asciiYieldhistT2)
-    irrigated = readFile(irrigatedArea)
+    arrAllRisksHistorical = readFile(asciiAllRisksHistorical.format(folder))
+    arrAllRisksFuture = readFile(asciiAllRisksFuture.format(folder))
+    arrYieldfutuT1 = readFile(asciiYieldfutuT1.format(folder))
+    arrYieldfutuT2 = readFile(asciiYieldfutuT2.format(folder))
+    arrYieldhistT1 = readFile(asciiYieldhistT1.format(folder))
+    arrYieldhistT2 = readFile(asciiYieldhistT2.format(folder))
+    irrigated = readFile(irrigatedArea.format(folder))
 
+    allstdHist = readFile(asciiAllStdHistorical.format(folder))
+    allstdFuture = readFile(asciiAllStdFuture.format(folder))
+    stdClimAvgModelFuture = readFile(asciiClimAvgModelStdFuture.format(folder))
+    stdModelAvgClimFuture = readFile(asciiModelAvgClimStdFuture.format(folder))
 
 # # for visualization
 #     print("max:")
@@ -51,13 +69,13 @@ def build() :
  # 1) Durchschnittlicher Ertrag pro Hektar, einem für die beregneten, einmal für die unberegneten und einmal für alle Soja-Flächen. 
  # AVG max yield - irrigated/rainfed historical - future
 
-    avgYieldfutuT1 = np.nanmean(arrYieldfutuT1)
-    avgYieldfutuT2 = np.nanmean(arrYieldfutuT2)
-    avgYieldhistT1 = np.nanmean(arrYieldhistT1)
-    avgYieldhistT2 = np.nanmean(arrYieldhistT2)
+    # avgYieldfutuT1 = np.nanmean(arrYieldfutuT1)
+    # avgYieldfutuT2 = np.nanmean(arrYieldfutuT2)
+    # avgYieldhistT1 = np.nanmean(arrYieldhistT1)
+    # avgYieldhistT2 = np.nanmean(arrYieldhistT2)
 
-    avgYieldfuture = np.nanmean(np.concatenate((arrYieldfutuT1, arrYieldfutuT2), axis=None))
-    avgYieldhistorcal = np.nanmean(np.concatenate((arrYieldhistT1, arrYieldhistT2), axis=None))
+    # avgYieldfuture = np.nanmean(np.concatenate((arrYieldfutuT1, arrYieldfutuT2), axis=None))
+    # avgYieldhistorcal = np.nanmean(np.concatenate((arrYieldhistT1, arrYieldhistT2), axis=None))
 
 # MICRA
     # create a mask 
@@ -99,10 +117,10 @@ def build() :
  # 2) Die Soja-Fläche in der Baseline und die Soja-Fläche in der Zukunft 
  # Area historical - future (irr/rainfed)
 
-    areaYieldfutuT1 = np.count_nonzero(~np.isnan(arrYieldfutuT1))
-    areaYieldfutuT2 = np.count_nonzero(~np.isnan(arrYieldfutuT2))
-    areaYieldhistT1 = np.count_nonzero(~np.isnan(arrYieldhistT1))
-    areaYieldhistT2 = np.count_nonzero(~np.isnan(arrYieldhistT2))
+    # areaYieldfutuT1 = np.count_nonzero(~np.isnan(arrYieldfutuT1))
+    # areaYieldfutuT2 = np.count_nonzero(~np.isnan(arrYieldfutuT2))
+    # areaYieldhistT1 = np.count_nonzero(~np.isnan(arrYieldhistT1))
+    # areaYieldhistT2 = np.count_nonzero(~np.isnan(arrYieldhistT2))
 
     areaYieldirrgatedFuture = np.count_nonzero(~np.isnan(irrigatedFuture))
     areaYieldirrgatedhistorical = np.count_nonzero(~np.isnan(irrigatedhistorical))
@@ -129,8 +147,8 @@ def build() :
             avg = sum / counter
         return avg
 
-    areaYieldT1 = avgIntersection(arrYieldfutuT1, arrYieldhistT1)
-    areaYieldT2 = avgIntersection(arrYieldfutuT2, arrYieldhistT2)
+    # areaYieldT1 = avgIntersection(arrYieldfutuT1, arrYieldhistT1)
+    # areaYieldT2 = avgIntersection(arrYieldfutuT2, arrYieldhistT2)
 
     areaYieldirrigated = avgIntersection(irrigatedFuture,irrigatedhistorical)
     areaYieldrainfed = avgIntersection(rainfedFuture, rainfedhistorical)
@@ -150,8 +168,8 @@ def build() :
             avg = sum / counter
         return avg
 
-    areaYieldAddT1 = avgIntersectionOuter(arrYieldfutuT1, arrYieldhistT1)
-    areaYieldAddT2 = avgIntersectionOuter(arrYieldfutuT2, arrYieldhistT2)
+    # areaYieldAddT1 = avgIntersectionOuter(arrYieldfutuT1, arrYieldhistT1)
+    # areaYieldAddT2 = avgIntersectionOuter(arrYieldfutuT2, arrYieldhistT2)
 
     areaYieldAddirrigated = avgIntersectionOuter(irrigatedFuture,irrigatedhistorical)
     areaYieldAddrainfed = avgIntersectionOuter(rainfedFuture, rainfedhistorical)
@@ -195,6 +213,13 @@ def build() :
     valDroughtRisksFuture = np.count_nonzero(((arrAllRisksFuture & 4) > 0))
     valHarvestRainRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 8) > 0))
     valHarvestRainRisksFuture = np.count_nonzero(((arrAllRisksFuture & 8) > 0))
+
+# std deviation historic and future
+    avgAllStdDevFuture = np.nanmean(allstdFuture)
+    avgAllStdDevhistorical = np.nanmean(allstdHist)
+    avgstdClimAvgModelFuture = np.nanmean(stdClimAvgModelFuture)
+    avgstdModelAvgClimFuture = np.nanmean(stdModelAvgClimFuture)
+
 
     # print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
     # print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
@@ -250,6 +275,12 @@ def build() :
     print("Soybean Area Drought future:          ",valDroughtRisksFuture, "(1x1km pixel)")
     print("Soybean Area Harvest Rain historical: ",valHarvestRainRisksHistorical, "(1x1km pixel)")
     print("Soybean Area Harvest Rain future:     ",valHarvestRainRisksFuture, "(1x1km pixel)")
+
+    print("Standart deviation all historical: ", int(avgAllStdDevhistorical))
+    print("Standart deviation all future:     ", int(avgAllStdDevFuture))
+    
+    print("Standart deviation Climate avg over Model: ", int(avgstdClimAvgModelFuture))
+    print("Standart deviation Model avg Climate:      ", int(avgstdModelAvgClimFuture))
 
 @dataclass
 class AsciiHeader:
