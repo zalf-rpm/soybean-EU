@@ -1,0 +1,23 @@
+title: 'yield avg 8.5'
+yTitle: 0.88
+xTitle: 0.05
+factor: 1.0
+renderAs: avgBarPlot
+densityReduction: 50
+colorlist: 
+ - 'orangered'
+xLabel: 'Average yield [t ha$^{\rm –1}$]'
+yLabel: 'Latitude'
+YaxisMappingFile: 'stacked_y_lat_buckets.csv'
+YaxisMappingRefColumn: Bucket
+YaxisMappingTarColumn: Latitude
+YaxisMappingFormat: '{:2.0f}°'
+yTicklist: 
+ - 1
+ - 15
+ - 28
+ - 41
+xTicklist: 
+ - 500
+ - 2000
+ - 3500

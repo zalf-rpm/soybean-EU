@@ -779,6 +779,15 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     maxValue *= factor
     minValue *= factor
 
+    def replaceLinebreaks(str ) :
+        cpStr = str.replace("\\n", "\n") 
+        return cpStr
+
+    title = replaceLinebreaks(title)
+    label = replaceLinebreaks(label)
+    lineLabel  = replaceLinebreaks(lineLabel)
+    xLabel = replaceLinebreaks(xLabel)
+    yLabel = replaceLinebreaks(yLabel)
     if colormap == "temperature" :
     # add ticklist, add colorlist if not already given
         if cMap == None :
@@ -990,7 +999,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
                 if len(subtitles) >= idxRow and len(subtitles[idxRow-1]) > 0 :
                     subtitle = subtitles[idxRow-1]
                 onlyOnce = (idxMerg == len(asciiHeaders)-1)
-                plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=customLegend)
+                plotLayer(fig, ax, idxCol, nplotCols, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=customLegend)
             if (len(metaInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(asciiHeaderInsertLs[(idxRow,idxCol)]) > 0 and 
                 len(subPositions[(idxRow,idxCol)]) > 0) :
@@ -1024,7 +1033,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
                     meta = metas[idxMerg]
                     subtitle = ""
                     onlyOnce = (idxMerg == len(asciiHeaders)-1)
-                    plotLayer(fig, inset_ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, fontsize, axlabelpad, axtickpad)
+                    plotLayer(fig, inset_ax, idxCol, nplotCols, asciiHeader, meta, subtitle, onlyOnce, projectionID, fontsize=fontsize, axlabelpad=axlabelpad, axtickpad=axtickpad)
 
 
     # save image and pdf 
@@ -1034,7 +1043,7 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
     plt.savefig(out_path, dpi=png_dpi)
     plt.close(fig)
 
-def plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=None, fontsize = 10, axlabelpad = None, axtickpad = None) :
+def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, projectionID, customLegend=None, fontsize = 10, axlabelpad = None, axtickpad = None) :
     # Read in the ascii data array
     ascii_data_array = np.loadtxt(asciiHeader.ascii_path, dtype=np.float, skiprows=6)
     colorM = None
@@ -1561,6 +1570,182 @@ def plotLayer(fig, ax, idxCol, asciiHeader, meta, subtitle, onlyOnce, projection
                             ax.get_xticklabels() + ax.get_yticklabels()):
                 item.set_fontsize(fontsize)
 
+    if meta.renderAs == "avgBarPlot" : 
+        if onlyOnce :
+            # do this only once
+            ax.axes.invert_yaxis()
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        ascii_data_array[ascii_data_array == 0] = np.nan
+        numInRowC = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numberOfBucketsC = len(numInRowC)
+        if meta.densityReduction > 0 :
+            numberOfBucketsC = meta.densityReduction        
+        numRowsC = len(numInRowC)
+        inBucketC = int(numRowsC / numberOfBucketsC)
+        if numRowsC % numberOfBucketsC > 0 :
+            inBucketC += 1
+        
+        def calculateAvg(ascii_data_array, numberOfBuckets, inBucket, numRows, numInRow) : 
+            numRows = len(numInRow)
+            sumInArray = np.nansum(ascii_data_array, axis=1)
+            avgArray = np.array([0] * numberOfBuckets)
+            currBucketIdx = 0
+            numAllInBucket = 0
+            sumOfBucket = 0
+            for idx in range(numRows) : 
+                if numInRow[idx] > 0 :
+                    numAllInBucket += numInRow[idx]
+                    sumOfBucket += sumInArray[idx]
+                if (((idx + 1) % inBucket) == 0) or ((idx + 1) == numRows) : 
+                    if numAllInBucket > 0 :
+                        avgArray[currBucketIdx] = int(sumOfBucket / numAllInBucket)
+                    currBucketIdx += 1
+                    numAllInBucket = 0
+                    sumOfBucket = 0
+            return avgArray
+        avgArr = calculateAvg(ascii_data_array, numberOfBucketsC, inBucketC, numRowsC, numInRowC)
+
+        x = np.arange(np.max(numberOfBucketsC))
+
+        # Basic bar chart.
+        if meta.cMap :
+            meta.cMap[0]
+            ax.barh(x, avgArr, height=1, color=meta.cMap[0])
+        else :
+            ax.barh(x, avgArr, height=1)
+
+        ax.axes.xaxis.set_visible(True)
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+        
+        if onlyOnce :
+            # do this only once
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(int(val))
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                if idxCol == numCols :
+                    ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
+
+    if meta.renderAs == "avgCurvePlot" : 
+        if onlyOnce :
+            # do this only once
+            ax.axes.invert_yaxis()
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        ascii_data_array[ascii_data_array == 0] = np.nan
+        numInRowC = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numberOfBucketsC = len(numInRowC)
+        if meta.densityReduction > 0 :
+            numberOfBucketsC = meta.densityReduction        
+        numRowsC = len(numInRowC)
+        inBucketC = int(numRowsC / numberOfBucketsC)
+        if numRowsC % numberOfBucketsC > 0 :
+            inBucketC += 1
+        
+        def calculateAvg(ascii_data_array, numberOfBuckets, inBucket, numRows, numInRow) : 
+            numRows = len(numInRow)
+            sumInArray = np.nansum(ascii_data_array, axis=1)
+            avgArray = np.array([0] * numberOfBuckets)
+            currBucketIdx = 0
+            numAllInBucket = 0
+            sumOfBucket = 0
+            for idx in range(numRows) : 
+                if numInRow[idx] > 0 :
+                    numAllInBucket += numInRow[idx]
+                    sumOfBucket += sumInArray[idx]
+                if (((idx + 1) % inBucket) == 0) or ((idx + 1) == numRows) : 
+                    if numAllInBucket > 0 :
+                        avgArray[currBucketIdx] = int(sumOfBucket / numAllInBucket)
+                    currBucketIdx += 1
+                    numAllInBucket = 0
+                    sumOfBucket = 0
+            return avgArray
+        avgArr = calculateAvg(ascii_data_array, numberOfBucketsC, inBucketC, numRowsC, numInRowC)
+
+        #y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
+        y = np.arange(np.max(numberOfBucketsC))
+        if len(meta.lineColor) > 0 :
+            ax.plot(avgArr, y, label=meta.lineLabel, color=meta.lineColor)
+        else :
+            ax.plot(avgArr, y, label=meta.lineLabel)
+
+        ax.axes.xaxis.set_visible(True)
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+
+        if len(meta.lineLabel) > 0 :
+            ax.legend(fontsize=6, handlelength=1)
+            
+        if onlyOnce :
+            # do this only once
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(int(val))
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                if idxCol == numCols :
+                    ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
 
 def calculateOccurrence(ascii_data_array, occIndex, numberOfBuckets, inBucket, numRows, numInRow, allIndex = False) : 
     numRows = len(numInRow)

@@ -114,6 +114,7 @@ asciigrid/
 pdf-out_debug/
 png_debug/
 asciigrids_debug/
+asciigrids_debug_old/
 climate/
 envs/
 fromcluster/
@@ -139,5 +140,7 @@ testout_copy/
 asciigrids/
 asciigrids_old/
 eval/
+eval8.5/
+eval4.5/
 cut_date_15_climS_85/
 cut_date_15_climS_45/

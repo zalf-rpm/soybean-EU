@@ -19,6 +19,25 @@ cp ./with_85/violin_max_yield_historical.asc.meta ${TARGETFOLDER}/violin_max_yie
 cp ./with_85/violin_max_yield_future85.asc.meta ${TARGETFOLDER}/violin_max_yield_future85.asc.meta
 cp ./with_85/violin_max_yield_future45.asc.meta ${TARGETFOLDER}/violin_max_yield_future45.asc.meta
 
+# average bar chart
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_historical.asc.gz ${TARGETFOLDER}/bar_max_yield_historical.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/bar_max_yield_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/bar_max_yield_future85.asc.gz
+cp ./with_85/bar_max_yield_historical.asc.meta ${TARGETFOLDER}/bar_max_yield_historical.asc.meta
+cp ./with_85/bar_max_yield_future45.asc.meta ${TARGETFOLDER}/bar_max_yield_future45.asc.meta
+cp ./with_85/bar_max_yield_future85.asc.meta ${TARGETFOLDER}/bar_max_yield_future85.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/bar_max_yield_historical.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/bar_max_yield_future45.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/bar_max_yield_future85.asc.meta
+
+# average yield line chart
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_historical.asc.gz ${TARGETFOLDER}/line_max_yield_historical.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/line_max_yield_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/line_max_yield_future85.asc.gz
+cp ./with_85/line_max_yield_historical.asc.meta ${TARGETFOLDER}/line_max_yield_historical.asc.meta
+cp ./with_85/line_max_yield_future45.asc.meta ${TARGETFOLDER}/line_max_yield_future45.asc.meta
+cp ./with_85/line_max_yield_future85.asc.meta ${TARGETFOLDER}/line_max_yield_future85.asc.meta
+
 # maturity violin plots
 cp ./with_85/violin_maturity_groups_historical.asc.meta ${TARGETFOLDER}/violin_maturity_groups_historical.asc.meta
 cp ./with_85/violin_maturity_groups_future85.asc.meta ${TARGETFOLDER}/violin_maturity_groups_future85.asc.meta
@@ -73,52 +92,52 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/irrgated_areas.asc.gz ${TARGETFOLDER}/
 # all yield heatmap
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_historical.asc.meta ${TARGETFOLDER}/dev_max_yield_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_historical.asc.gz ${TARGETFOLDER}/dev_max_yield_historical.asc.gz
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/dev_max_yield_historical.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/dev_max_yield_historical.asc.meta
 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_future.asc.meta ${TARGETFOLDER}/dev_max_yield_future85.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/dev_max_yield_future85.asc.gz
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/dev_max_yield_future85.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/dev_max_yield_future85.asc.meta
 
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_max_yield_future.asc.meta ${TARGETFOLDER}/dev_max_yield_future45.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_max_yield_future.asc.gz ${TARGETFOLDER}/dev_max_yield_future45.asc.gz
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/dev_max_yield_future45.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_max_yield_future45.asc.meta
 
 # all maturity group heatmaps
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_historical.asc.meta ${TARGETFOLDER}/dev_maturity_groups_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_historical.asc.gz ${TARGETFOLDER}/dev_maturity_groups_historical.asc.gz
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/dev_maturity_groups_historical.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/dev_maturity_groups_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_future.asc.meta ${TARGETFOLDER}/dev_maturity_groups_future85.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/dev_maturity_groups_future85.asc.gz
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/dev_maturity_groups_future85.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/dev_maturity_groups_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_maturity_groups_future.asc.meta ${TARGETFOLDER}/dev_maturity_groups_future45.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/dev_maturity_groups_future45.asc.gz
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/dev_maturity_groups_future45.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_maturity_groups_future45.asc.meta
 # all risk heatmaps
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_historical.asc.meta ${TARGETFOLDER}/dev_allRisks_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_historical.asc.gz ${TARGETFOLDER}/dev_allRisks_historical.asc.gz
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/dev_allRisks_historical.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/dev_allRisks_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_future.asc.meta ${TARGETFOLDER}/dev_allRisks_future85.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_future.asc.gz ${TARGETFOLDER}/dev_allRisks_future85.asc.gz
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/dev_allRisks_future85.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/dev_allRisks_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_future.asc.meta ${TARGETFOLDER}/dev_allRisks_future45.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_future.asc.gz ${TARGETFOLDER}/dev_allRisks_future45.asc.gz
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/dev_allRisks_future45.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_allRisks_future45.asc.meta
 
 # all std
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.meta ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.meta ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: C/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.meta
 
 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.gz ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_models_stdDev.asc.meta ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
-sed -i 's/title: .*/title: B/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
 
 sed -i 's/yellow/cyan/g' ${TARGETFOLDER}/avg_over_models_stdDev_future45.asc.meta
 sed -i 's/yellow/cyan/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.meta
@@ -132,10 +151,26 @@ cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETF
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev85.asc.gz
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 # sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
-sed -i 's/title: .*/title: A/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 
 sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
 sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 sed -i 's/orangered/violet/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
 sed -i 's/orangered/violet/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+
+
+# density plots
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_drought_risk_historical.asc.gz ${TARGETFOLDER}/density_drought_risk_historical.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_drought_risk_future.asc.gz ${TARGETFOLDER}/density_drought_risk_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_drought_risk_future.asc.gz ${TARGETFOLDER}/density_drought_risk_future85.asc.gz 
+cp ./with_85/density_drought_risk_historical.asc.meta ${TARGETFOLDER}/density_drought_risk_historical.asc.meta
+cp ./with_85/density_drought_risk_future45.asc.meta ${TARGETFOLDER}/density_drought_risk_future45.asc.meta
+cp ./with_85/density_drought_risk_future85.asc.meta ${TARGETFOLDER}/density_drought_risk_future85.asc.meta
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_historical.asc.gz ${TARGETFOLDER}/density_short_season_historical.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGETFOLDER}/density_short_season_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGETFOLDER}/density_short_season_future85.asc.gz 
+cp ./with_85/density_short_season_historical.asc.meta ${TARGETFOLDER}/density_short_season_historical.asc.meta
+cp ./with_85/density_short_season_future45.asc.meta ${TARGETFOLDER}/density_short_season_future45.asc.meta
+cp ./with_85/density_short_season_future85.asc.meta ${TARGETFOLDER}/density_short_season_future85.asc.meta
