@@ -174,3 +174,18 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGE
 cp ./with_85/density_short_season_historical.asc.meta ${TARGETFOLDER}/density_short_season_historical.asc.meta
 cp ./with_85/density_short_season_future45.asc.meta ${TARGETFOLDER}/density_short_season_future45.asc.meta
 cp ./with_85/density_short_season_future85.asc.meta ${TARGETFOLDER}/density_short_season_future85.asc.meta
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_historical.asc.gz ${TARGETFOLDER}/density_coldSpell_historical.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/density_coldSpell_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/density_coldSpell_future85.asc.gz
+cp ./with_85/density_coldSpell_future45.asc.meta ${TARGETFOLDER}/density_coldSpell_future45.asc.meta
+cp ./with_85/density_coldSpell_future85.asc.meta ${TARGETFOLDER}/density_coldSpell_future85.asc.meta
+cp ./with_85/density_coldSpell_historical.asc.meta ${TARGETFOLDER}/density_coldSpell_historical.asc.meta
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_historical.asc.gz ${TARGETFOLDER}/density_harvest_rain_historical.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/density_harvest_rain_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/density_harvest_rain_future85.asc.gz
+cp ./with_85/density_harvest_rain_future45.asc.meta ${TARGETFOLDER}/density_harvest_rain_future45.asc.meta
+cp ./with_85/density_harvest_rain_future85.asc.meta ${TARGETFOLDER}/density_harvest_rain_future85.asc.meta
+cp ./with_85/density_harvest_rain_historical.asc.meta ${TARGETFOLDER}/density_harvest_rain_historical.asc.meta
+

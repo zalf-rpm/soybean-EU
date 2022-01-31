@@ -1160,8 +1160,8 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         ax.axes.yaxis.set_visible(False)
     
     if meta.renderAs == "densitySpread" : 
-        if onlyOnce :
-            ax.axes.invert_yaxis()                    
+        # if onlyOnce :
+        #     ax.axes.invert_yaxis()                    
         ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
         arithemticMean = np.nanmean(ascii_data_array, axis=1)
         arithemticMean = np.nan_to_num(arithemticMean)
@@ -1194,6 +1194,10 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             else :
                 ax.legend(fontsize=6, handlelength=1, bbox_to_anchor=(meta.lineLabelAnchorX, meta.lineLabelAnchorY), loc=meta.lineLabelLoc)
         
+        ax.axes.xaxis.set_visible(False)
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+
         if onlyOnce :
             # do this only once
 
@@ -1699,6 +1703,87 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             ax.plot(avgArr, y, label=meta.lineLabel, color=meta.lineColor)
         else :
             ax.plot(avgArr, y, label=meta.lineLabel)
+
+        ax.axes.xaxis.set_visible(True)
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+
+        if len(meta.lineLabel) > 0 :
+            ax.legend(fontsize=6, handlelength=1)
+            
+        if onlyOnce :
+            # do this only once
+            def update_ticks(val, pos):
+                val *= (1/meta.densityFactor)
+                val *= meta.factor
+                return str(int(val))
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if meta.xTicklist :
+                ax.set_xticks(meta.xTicklist)
+
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+                ax.xaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+            applyTickLabelMapping(meta.XaxisMappingFile,
+                                meta.XaxisMappingRefColumn, 
+                                meta.XaxisMappingTarColumn, 
+                                meta.XaxisMappingTarColumnAsF,
+                                meta.XaxisMappingFormat, 
+                                ax.xaxis)
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+            if len(meta.xLabel) > 0 :
+                if idxCol == numCols :
+                    ax.set_xlabel(meta.xLabel, labelpad=axlabelpad) 
+            if len(meta.title) > 0 :
+                ax.set_title(meta.title, y=meta.yTitle, x=meta.xTitle)   
+            for item in ([ax.xaxis.label, ax.yaxis.label] +
+                            ax.get_xticklabels() + ax.get_yticklabels()):
+                item.set_fontsize(fontsize)
+
+    if meta.renderAs == "densityCurvePlot" : 
+        if onlyOnce :
+            if idxCol == 1 :  
+                # do this only once
+                ax.axes.invert_yaxis()
+
+        ascii_data_array[ascii_data_array == asciiHeader.ascii_nodata] = np.nan
+        
+        numInRowC = np.count_nonzero(~np.isnan(ascii_data_array), axis=1)
+        numberOfBucketsC = len(numInRowC)
+        if meta.densityReduction > 0 :
+            numberOfBucketsC = meta.densityReduction        
+        numRowsC = len(numInRowC)
+        inBucketC = int(numRowsC / numberOfBucketsC)
+        if numRowsC % numberOfBucketsC > 0 :
+            inBucketC += 1
+        
+        occurenceArray = calculateOccurrence(ascii_data_array, -1, numberOfBucketsC, inBucketC, numRowsC, numInRowC, allIndex=True)
+
+
+        y = np.arange(np.max(numberOfBucketsC))
+        if len(meta.lineColor) > 0 :
+            ax.plot(occurenceArray, y, label=meta.lineLabel, color=meta.lineColor)
+        else :
+            ax.plot(occurenceArray, y, label=meta.lineLabel)
+
+        x = np.arange(np.max(numberOfBucketsC))
+
+        # Basic bar chart.
+        # if len(meta.lineColor) > 0 :
+        #     ax.barh(x, occurenceArray, height=1, color=meta.lineColor)
+        # else :
+        #     ax.barh(x, occurenceArray, height=1)
 
         ax.axes.xaxis.set_visible(True)
         if idxCol != 1 :
