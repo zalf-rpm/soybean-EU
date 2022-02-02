@@ -189,3 +189,52 @@ cp ./with_85/density_harvest_rain_future45.asc.meta ${TARGETFOLDER}/density_harv
 cp ./with_85/density_harvest_rain_future85.asc.meta ${TARGETFOLDER}/density_harvest_rain_future85.asc.meta
 cp ./with_85/density_harvest_rain_historical.asc.meta ${TARGETFOLDER}/density_harvest_rain_historical.asc.meta
 
+# maturity violin plots
+cp ./with_85/violin_maturity_groups_historical.asc.meta ${TARGETFOLDER}/one_violin_maturity_groups_historical.asc.meta
+cp ./with_85/violin_maturity_groups_future85.asc.meta ${TARGETFOLDER}/one_violin_maturity_groups_future85.asc.meta
+cp ./with_85/violin_maturity_groups_future45.asc.meta ${TARGETFOLDER}/one_violin_maturity_groups_future45.asc.meta
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_historical.asc.gz ${TARGETFOLDER}/one_violin_maturity_groups_historical.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/one_violin_maturity_groups_future85.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_maturity_groups_future.asc.gz ${TARGETFOLDER}/one_violin_maturity_groups_future45.asc.gz
+# risk violin plots
+# risk cold spell 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_historical.asc.gz ${TARGETFOLDER}/one_violin_coldSpell_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/one_violin_coldSpell_future85.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/coldSpell_future.asc.gz ${TARGETFOLDER}/one_violin_coldSpell_future45.asc.gz
+cp ./with_85/violin_coldSpell_historical.asc.meta ${TARGETFOLDER}/one_violin_coldSpell_historical.asc.meta
+cp ./with_85/violin_coldSpell_future85.asc.meta ${TARGETFOLDER}/one_violin_coldSpell_future85.asc.meta
+cp ./with_85/violin_coldSpell_future45.asc.meta ${TARGETFOLDER}/one_violin_coldSpell_future45.asc.meta
+# risk drought
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_drought_risk_historical.asc.gz ${TARGETFOLDER}/one_violin_drought_risk_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_drought_risk_future.asc.gz ${TARGETFOLDER}/one_violin_drought_risk_future85.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_drought_risk_future.asc.gz ${TARGETFOLDER}/one_violin_drought_risk_future45.asc.gz
+cp ./with_85/violin_drought_risk_historical.asc.meta ${TARGETFOLDER}/one_violin_drought_risk_historical.asc.meta
+cp ./with_85/violin_drought_risk_future85.asc.meta ${TARGETFOLDER}/one_violin_drought_risk_future85.asc.meta
+cp ./with_85/violin_drought_risk_future45.asc.meta ${TARGETFOLDER}/one_violin_drought_risk_future45.asc.meta
+# risk harvest rain 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_historical.asc.gz ${TARGETFOLDER}/one_violin_harvest_rain_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/one_violin_harvest_rain_future85.asc.gz 
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_harvest_rain_future.asc.gz ${TARGETFOLDER}/one_violin_harvest_rain_future45.asc.gz
+cp ./with_85/violin_harvest_rain_historical.asc.meta ${TARGETFOLDER}/one_violin_harvest_rain_historical.asc.meta
+cp ./with_85/violin_harvest_rain_future85.asc.meta ${TARGETFOLDER}/one_violin_harvest_rain_future85.asc.meta
+cp ./with_85/violin_harvest_rain_future45.asc.meta ${TARGETFOLDER}/one_violin_harvest_rain_future45.asc.meta
+# risk short season
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_historical.asc.gz ${TARGETFOLDER}/one_violin_short_season_historical.asc.gz 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGETFOLDER}/one_violin_short_season_future85.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_short_season_future.asc.gz ${TARGETFOLDER}/one_violin_short_season_future45.asc.gz
+cp ./with_85/violin_short_season_historical.asc.meta ${TARGETFOLDER}/one_violin_short_season_historical.asc.meta
+cp ./with_85/one_violin_short_season_future85.asc.meta ${TARGETFOLDER}/one_violin_short_season_future85.asc.meta
+cp ./with_85/violin_short_season_future45.asc.meta ${TARGETFOLDER}/one_violin_short_season_future45.asc.meta
+
+sed -i 's/violinOffset: .*/violinOffset: 48/g' ${TARGETFOLDER}/one_violin_coldSpell_historical.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 50/g' ${TARGETFOLDER}/one_violin_coldSpell_future45.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 52/g' ${TARGETFOLDER}/one_violin_coldSpell_future85.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 54/g' ${TARGETFOLDER}/one_violin_drought_risk_historical.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 56/g' ${TARGETFOLDER}/one_violin_drought_risk_future45.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 58/g' ${TARGETFOLDER}/one_violin_drought_risk_future85.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 60/g' ${TARGETFOLDER}/one_violin_harvest_rain_historical.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 62/g' ${TARGETFOLDER}/one_violin_harvest_rain_future45.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 64/g' ${TARGETFOLDER}/one_violin_harvest_rain_future85.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 66/g' ${TARGETFOLDER}/one_violin_short_season_historical.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 68/g' ${TARGETFOLDER}/one_violin_short_season_future45.asc.meta
+sed -i 's/violinOffset: .*/violinOffset: 70/g' ${TARGETFOLDER}/one_violin_short_season_future85.asc.meta
