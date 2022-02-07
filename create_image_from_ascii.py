@@ -1779,27 +1779,21 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         
         occurenceArray = calculateOccurrence(ascii_data_array, -1, numberOfBucketsC, inBucketC, numRowsC, numInRowC, allIndex=True)
 
-
         y = np.arange(np.max(numberOfBucketsC))
+        lines = ax.plot(occurenceArray, y, label=meta.lineLabel)
         if len(meta.lineColor) > 0 :
-            ax.plot(occurenceArray, y, label=meta.lineLabel, color=meta.lineColor)
-        else :
-            ax.plot(occurenceArray, y, label=meta.lineLabel)
-
-        x = np.arange(np.max(numberOfBucketsC))
-
-        # Basic bar chart.
-        # if len(meta.lineColor) > 0 :
-        #     ax.barh(x, occurenceArray, height=1, color=meta.lineColor)
-        # else :
-        #     ax.barh(x, occurenceArray, height=1)
+            for line in lines : 
+                line.set_color(meta.lineColor)
+        if len(meta.lineHatch) > 0 :
+            for line in lines : 
+                line.set_linestyle(meta.lineHatch)
 
         ax.axes.xaxis.set_visible(True)
         if idxCol != 1 :
             ax.axes.yaxis.set_visible(False)
 
         if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=1)
+            ax.legend(fontsize=6, handlelength=2.5)
             
         if onlyOnce :
             # do this only once
