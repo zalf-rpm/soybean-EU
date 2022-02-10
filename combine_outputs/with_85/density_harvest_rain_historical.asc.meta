@@ -1,9 +1,9 @@
-title: 'R'
+title: 'harvest rain'
 yTitle: 0.88
 xTitle: 0.11
 renderAs: densityCurvePlot
 densityReduction: 50
-lineColor: 'yellowgreen'
+lineColor: 'limegreen'
 xLabel: 'Rel. occurrence [%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stacked_y_lat_buckets.csv'

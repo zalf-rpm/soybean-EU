@@ -1,11 +1,9 @@
-title: 'x'
-yTitle: 0.88
-xTitle: 0.07
 factor: 1.0
 renderAs: avgCurvePlot
 densityReduction: 50
-lineColor: 'gold'
+lineColor: 'black'
 lineLabel: '4.5'
+lineHatch: '--'
 xLabel: 'Average yield [t ha$^{\rm –1}$]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stacked_y_lat_buckets.csv'

@@ -1,13 +1,14 @@
-title: 'S'
+title: 'short season'
 yTitle: 0.88
 xTitle: 0.11
 renderAs: densityCurvePlot
 densityReduction: 50
 lineLabel: '4.5'
+lineHatch: '--'
 lineLabelAnchorX: 0.37
 lineLabelAnchorY: 0.91
 lineLabelLoc: 'upper left'
-lineColor: 'gold'
+lineColor: 'cyan'
 xLabel: 'Rel. occurrence [%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stacked_y_lat_buckets.csv'

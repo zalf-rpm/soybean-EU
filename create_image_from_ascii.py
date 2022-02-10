@@ -595,6 +595,7 @@ class Meta:
     transparencyfactor: float
     lineLabel: str
     lineColor: str
+    lineHatch: str
     lineLabelAnchorX: float
     lineLabelAnchorY: float
     lineLabelLoc: str
@@ -668,6 +669,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     violinOffset = 2
     violinOffsetDistance = 2
     violinHatch = ""
+    lineHatch = ""
 
     with open(meta_path, 'rt', encoding='utf-8') as meta:
        # documents = yaml.load(meta, Loader=yaml.FullLoader)
@@ -724,6 +726,8 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
                 violinOffsetDistance = int(doc)
             elif item == "violinHatch":
                 violinHatch = doc
+            elif item == "lineHatch":
+                lineHatch = doc
             elif item == "lineLabelAnchorX":
                 lineLabelAnchorX = float(doc)
             elif item == "lineLabelAnchorY":
@@ -796,7 +800,7 @@ def readMeta(meta_path, ascii_nodata, showCBar) :
     return Meta(title, label, colormap, minColor, cMap, colorlisttype,
                 cbarLabel, factor, ticklist,yTicklist,xTicklist, maxValue, maxLoaded, minValue, minLoaded, 
                 showbars, mintransparent, renderAs, transparencyfactor, 
-                lineLabel, lineColor, lineLabelAnchorX, lineLabelAnchorY, lineLabelLoc,
+                lineLabel, lineColor, lineHatch, lineLabelAnchorX, lineLabelAnchorY, lineLabelLoc,
                 xLabel, yLabel,
                 YaxisMappingFile,YaxisMappingRefColumn,YaxisMappingTarColumn,YaxisMappingTarColumnAsF,YaxisMappingFormat,
                 XaxisMappingFile,XaxisMappingRefColumn,XaxisMappingTarColumn,XaxisMappingTarColumnAsF,XaxisMappingFormat,
@@ -1699,17 +1703,22 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
 
         #y = np.linspace(0, len(arithemticMean)-1, len(arithemticMean))
         y = np.arange(np.max(numberOfBucketsC))
+        lines = ax.plot(avgArr, y, label=meta.lineLabel)
         if len(meta.lineColor) > 0 :
-            ax.plot(avgArr, y, label=meta.lineLabel, color=meta.lineColor)
-        else :
-            ax.plot(avgArr, y, label=meta.lineLabel)
+            for line in lines : 
+                line.set_color(meta.lineColor)
+            #  = ax.plot(avgArr, y, label=meta.lineLabel, color=meta.lineColor, hatch=meta.lineHatch)
+        if len(meta.lineHatch) > 0 :
+            for line in lines : 
+                line.set_linestyle(meta.lineHatch)
+
 
         ax.axes.xaxis.set_visible(True)
         if idxCol != 1 :
             ax.axes.yaxis.set_visible(False)
 
         if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=1)
+            ax.legend(fontsize=6, handlelength=2.5)
             
         if onlyOnce :
             # do this only once
@@ -1770,27 +1779,21 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         
         occurenceArray = calculateOccurrence(ascii_data_array, -1, numberOfBucketsC, inBucketC, numRowsC, numInRowC, allIndex=True)
 
-
         y = np.arange(np.max(numberOfBucketsC))
+        lines = ax.plot(occurenceArray, y, label=meta.lineLabel)
         if len(meta.lineColor) > 0 :
-            ax.plot(occurenceArray, y, label=meta.lineLabel, color=meta.lineColor)
-        else :
-            ax.plot(occurenceArray, y, label=meta.lineLabel)
-
-        x = np.arange(np.max(numberOfBucketsC))
-
-        # Basic bar chart.
-        # if len(meta.lineColor) > 0 :
-        #     ax.barh(x, occurenceArray, height=1, color=meta.lineColor)
-        # else :
-        #     ax.barh(x, occurenceArray, height=1)
+            for line in lines : 
+                line.set_color(meta.lineColor)
+        if len(meta.lineHatch) > 0 :
+            for line in lines : 
+                line.set_linestyle(meta.lineHatch)
 
         ax.axes.xaxis.set_visible(True)
         if idxCol != 1 :
             ax.axes.yaxis.set_visible(False)
 
         if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=1)
+            ax.legend(fontsize=6, handlelength=2.5)
             
         if onlyOnce :
             # do this only once

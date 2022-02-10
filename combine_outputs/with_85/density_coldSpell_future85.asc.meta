@@ -1,9 +1,10 @@
-title: 'C'
-yTitle: 0.88
-xTitle: 0.11
+title: 'cold snap'
+yTitle: 0.99
+xTitle: 0.5
 renderAs: densityCurvePlot
 densityReduction: 50
-lineColor: 'orangered'
+lineColor: 'mediumpurple'
+lineHatch: ':'
 xLabel: 'Rel. occurrence [%]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stacked_y_lat_buckets.csv'
