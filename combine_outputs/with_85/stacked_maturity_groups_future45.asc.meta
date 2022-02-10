@@ -1,4 +1,4 @@
-title: 'B'
+title: 'b'
 yTitle: 0.88
 xTitle: 0.05
 factor: 1.0
@@ -24,7 +24,6 @@ colorlist:
  - 'deeppink'
  - 'white'
 
-xLabel: '%'
 yLabel: 'Latitude'
 labeltext: 'Maturity groups %'
 cbarLabel: 
@@ -57,3 +56,7 @@ yTicklist:
  - 15
  - 28
  - 41
+XaxisMappingTarColumnAsF: False
+xTicklist: 
+ - 50
+ - 100
