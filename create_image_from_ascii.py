@@ -1535,7 +1535,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             if meta.cbarLabel :
                 cbar.ax.set_yticklabels(meta.cbarLabel) 
 
-        ax.axes.xaxis.set_visible(False)
+        ax.axes.xaxis.set_visible(True)
         if idxCol != 1 :
             ax.axes.yaxis.set_visible(False)
 
@@ -1544,7 +1544,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             def update_ticks(val, pos):
                 val *= (1/meta.densityFactor)
                 val *= meta.factor
-                return str(val)
+                return '{:,g}'.format(val)
             ax.xaxis.set_major_formatter(mticker.FuncFormatter(update_ticks))
 
             if meta.yTicklist :
