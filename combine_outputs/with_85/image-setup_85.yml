@@ -98,8 +98,20 @@
           - file: 'density_harvest_rain_future45.asc.gz'
           - file: 'density_harvest_rain_future85.asc.gz'
         - merge:
-          - file: 'density_short_season_historical.asc.gz'
+          - customLegend: 
+             - color: black
+             - text: 'historical'
+             - hatch: '-'
+          - file: 'density_short_season_historical.asc.gz'   
+          - customLegend: 
+             - color: black
+             - text: '4.5'
+             - hatch: '--'
           - file: 'density_short_season_future45.asc.gz'
+          - customLegend: 
+             - color: black
+             - text: '8.5'
+             - hatch: ':'
           - file: 'density_short_season_future85.asc.gz'
 
 

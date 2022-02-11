@@ -25,7 +25,7 @@ colorlist:
  - 'white'
 
 yLabel: 'Latitude'
-labeltext: 'Maturity groups %'
+labeltext: 'Maturity \ngroups %'
 cbarLabel: 
  - 'III'
  - 'II'

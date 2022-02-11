@@ -20,6 +20,7 @@ from ruamel_yaml import YAML
 from dataclasses import dataclass
 import typing
 from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
@@ -965,8 +966,8 @@ def createSubPlot(image, out_path, png_dpi, projectionID, pdf=None) :
                     for m in metaLs[(nplotRows, numCol)] :
                         #m.showbars = showBar
                         m.showbars = (shareCBar and numCol == lastCol) or (not shareCBar and m.showbars)
-                    if type(content) is Merge :
-                        customLegendls[(nplotRows, nplotCols)] = content.customLegend
+                    if type(col) is Merge :
+                        customLegendls[(nplotRows, numCol)] = col.customLegend
             if numCol > nplotCols : 
                 nplotCols = numCol
                 
@@ -1135,7 +1136,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         if meta.showbars :
             axins = inset_axes(ax,
             width="5%",  # width = 5% of parent_bbox width
-            height="90%",  # height : 50%
+            height="89%",  # height : 50%
             loc='lower left',
             bbox_to_anchor=(1.05, 0., 1, 1),
             bbox_transform=ax.transAxes,
@@ -1149,7 +1150,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
                 cbar = fig.colorbar(img_plot, orientation='vertical', shrink=0.5, aspect=14, cax=axins)
             if len(meta.label) > 0 :
                 #cbar.ax.set_label(meta.label)
-                cbar.ax.set_title(meta.label, loc='left') 
+                cbar.ax.set_title(meta.label, loc='left', fontsize=fontsize) 
             if meta.cbarLabel :
                 cbar.ax.set_yticklabels(meta.cbarLabel) 
 
@@ -1510,7 +1511,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         if meta.showbars :
             axins = inset_axes(ax,
             width="5%",  # width = 5% of parent_bbox width
-            height="90%",  # height : 50%
+            height="89%",  # height : 50%
             loc='lower left',
             bbox_to_anchor=(1.05, 0., 1, 1),
             bbox_transform=ax.transAxes,
@@ -1718,7 +1719,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             ax.axes.yaxis.set_visible(False)
 
         if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=2.5)
+            ax.legend(fontsize=6, handlelength=3.5)
             
         if onlyOnce :
             # do this only once
@@ -1792,10 +1793,19 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         if idxCol != 1 :
             ax.axes.yaxis.set_visible(False)
 
-        if len(meta.lineLabel) > 0 :
-            ax.legend(fontsize=6, handlelength=2.5)
+        # if len(meta.lineLabel) > 0 :
+        #     ax.legend(fontsize=6, handlelength=2.5)
             
         if onlyOnce :
+            if customLegend :
+                # legend
+                custom_lines = list()
+                custom_label = list()
+                for element in customLegend :
+                    custom_lines.append(Line2D([0], [0], color=element.color, ls=element.hatch, lw=1.3))
+                    custom_label.append(element.text)                    
+                ax.legend(custom_lines, custom_label, fontsize=6, handlelength=3, loc='lower right')    
+
             # do this only once
             def update_ticks(val, pos):
                 val *= (1/meta.densityFactor)

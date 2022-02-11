@@ -3,7 +3,7 @@ renderAs: avgCurvePlot
 densityReduction: 50
 lineColor: 'black'
 lineLabel: 'historical'
-xLabel: 'Average yield [t ha$^{\rm –1}$]'
+xLabel: 'Average yield [kg ha$^{\rm –1}$]'
 yLabel: 'Latitude'
 YaxisMappingFile: 'stacked_y_lat_buckets.csv'
 YaxisMappingRefColumn: Bucket
