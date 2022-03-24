@@ -1160,10 +1160,31 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
             ax.set_title(subtitle)    
     
         #ax.set_axis_off()
-        ax.grid(True, alpha=0.5)
+        
+        ax.grid(False)
         ax.axes.xaxis.set_visible(False)
-        ax.axes.yaxis.set_visible(False)
-    
+        ax.axes.yaxis.set_visible(True)
+  
+        if idxCol != 1 :
+            ax.axes.yaxis.set_visible(False)
+
+        if onlyOnce :
+
+            if meta.yTicklist :
+                ax.set_yticks(meta.yTicklist)
+            if axtickpad != None :
+                ax.yaxis.set_tick_params(which='major', pad=axtickpad)
+
+            applyTickLabelMapping(meta.YaxisMappingFile,
+                                meta.YaxisMappingRefColumn, 
+                                meta.YaxisMappingTarColumn, 
+                                meta.YaxisMappingTarColumnAsF,
+                                meta.YaxisMappingFormat, 
+                                ax.yaxis)
+
+            if len(meta.yLabel) > 0 :
+                ax.set_ylabel(meta.yLabel, labelpad=axlabelpad) 
+
     if meta.renderAs == "densitySpread" : 
         # if onlyOnce :
         #     ax.axes.invert_yaxis()                    

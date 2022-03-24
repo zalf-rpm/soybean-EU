@@ -24,22 +24,22 @@
 #         - hatch: '...'
 #      - file: 'violin_maturity_groups_future85.asc.gz'
 
-- image: 
-    name: stacked_maturity
-    sizeX: 8
-    sizeY: 4
-    adjBottom: 0.15
-    adjTop: 0.95
-    adRight: 0.80
-    adLeft: 0.08
-    adhspace: 0.12
-    adwspace: 0.01
-    rows:
-        - row:
-            - sharedColorBar : True
-            - file: 'stacked_maturity_groups_historical.asc.gz'
-            - file: 'stacked_maturity_groups_future45.asc.gz'
-            - file: 'stacked_maturity_groups_future85.asc.gz'
+# - image: 
+#     name: stacked_maturity
+#     sizeX: 8
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.80
+#     adLeft: 0.08
+#     adhspace: 0.12
+#     adwspace: 0.01
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: 'stacked_maturity_groups_historical.asc.gz'
+#             - file: 'stacked_maturity_groups_future45.asc.gz'
+#             - file: 'stacked_maturity_groups_future85.asc.gz'
 
 # - image: 
 #     name: bars_yield
@@ -58,61 +58,61 @@
 #             - file: 'bar_max_yield_future45.asc.gz'
 #             - file: 'bar_max_yield_future85.asc.gz'
 
-- image: 
-    name: lines_yield
-    sizeX: 4
-    sizeY: 4
-    adjBottom: 0.15
-    adjTop: 0.95
-    adRight: 0.95
-    adLeft: 0.15
-    adhspace: 0.12
-    adwspace: 0.01
-    merge: 
-        - file: 'line_max_yield_historical.asc.gz'
-        - file: 'line_max_yield_future45.asc.gz'
-        - file: 'line_max_yield_future85.asc.gz'
+# - image: 
+#     name: lines_yield
+#     sizeX: 4
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.95
+#     adLeft: 0.15
+#     adhspace: 0.12
+#     adwspace: 0.01
+#     merge: 
+#         - file: 'line_max_yield_historical.asc.gz'
+#         - file: 'line_max_yield_future45.asc.gz'
+#         - file: 'line_max_yield_future85.asc.gz'
 
-- image: 
-    name: lines_risks_colors
-    sizeX: 10
-    sizeY: 4
-    adjBottom: 0.15
-    adjTop: 0.95
-    adRight: 0.95
-    adLeft: 0.08
-    adhspace: 0.12
-    adwspace: 0.01
-    rows:
-      - row:
-        - merge:
-          - file: 'density_coldSpell_historical.asc.gz'
-          - file: 'density_coldSpell_future45.asc.gz'
-          - file: 'density_coldSpell_future85.asc.gz'      
-        - merge:
-          - file: 'density_drought_risk_historical.asc.gz'
-          - file: 'density_drought_risk_future45.asc.gz'
-          - file: 'density_drought_risk_future85.asc.gz'
-        - merge:
-          - file: 'density_harvest_rain_historical.asc.gz'
-          - file: 'density_harvest_rain_future45.asc.gz'
-          - file: 'density_harvest_rain_future85.asc.gz'
-        - merge:
-          - customLegend: 
-             - color: black
-             - text: 'historical'
-             - hatch: '-'
-          - file: 'density_short_season_historical.asc.gz'   
-          - customLegend: 
-             - color: black
-             - text: '4.5'
-             - hatch: '--'
-          - file: 'density_short_season_future45.asc.gz'
-          - customLegend: 
-             - color: black
-             - text: '8.5'
-             - hatch: ':'
-          - file: 'density_short_season_future85.asc.gz'
+# - image: 
+#     name: lines_risks_colors
+#     sizeX: 10
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.95
+#     adLeft: 0.08
+#     adhspace: 0.12
+#     adwspace: 0.01
+#     rows:
+#       - row:
+#         - merge:
+#           - file: 'density_coldSpell_historical.asc.gz'
+#           - file: 'density_coldSpell_future45.asc.gz'
+#           - file: 'density_coldSpell_future85.asc.gz'      
+#         - merge:
+#           - file: 'density_drought_risk_historical.asc.gz'
+#           - file: 'density_drought_risk_future45.asc.gz'
+#           - file: 'density_drought_risk_future85.asc.gz'
+#         - merge:
+#           - file: 'density_harvest_rain_historical.asc.gz'
+#           - file: 'density_harvest_rain_future45.asc.gz'
+#           - file: 'density_harvest_rain_future85.asc.gz'
+#         - merge:
+#           - customLegend: 
+#              - color: black
+#              - text: 'historical'
+#              - hatch: '-'
+#           - file: 'density_short_season_historical.asc.gz'   
+#           - customLegend: 
+#              - color: black
+#              - text: '4.5'
+#              - hatch: '--'
+#           - file: 'density_short_season_future45.asc.gz'
+#           - customLegend: 
+#              - color: black
+#              - text: '8.5'
+#              - hatch: ':'
+#           - file: 'density_short_season_future85.asc.gz'
 
 
 # - image: 
@@ -193,7 +193,7 @@
 #     adjBottom: 0.05
 #     adjTop: 0.99
 #     adRight: 0.80
-#     adLeft: 0.05
+#     adLeft: 0.06
 #     adhspace: 0.12
 #     adwspace: 0.01
 #     rows:
@@ -210,7 +210,7 @@
 #     adjBottom: 0.05
 #     adjTop: 0.99
 #     adRight: 0.80
-#     adLeft: 0.05
+#     adLeft: 0.06
 #     adhspace: 0.12
 #     adwspace: 0.01
 #     rows:
@@ -227,7 +227,7 @@
 #     adjBottom: 0.05
 #     adjTop: 0.99
 #     adRight: 0.80
-#     adLeft: 0.05
+#     adLeft: 0.06
 #     adhspace: 0.12
 #     adwspace: 0.01
 #     rows:
@@ -284,29 +284,29 @@
 #             - file: all_future_stdDev45.asc.gz
 #             - file: all_future_stdDev85.asc.gz
 
-# - image: 
-#     name: std_deviation
-#     sizeX: 10
-#     sizeY: 8
-#     adjBottom: 0.15
-#     adjTop: 0.95
-#     adRight: 0.80
-#     adLeft: 0.05
-#     adhspace: 0.12
-#     adwspace: 0.01
-#     rows:
-#         - row:
-#             - title: '4.5'
-#             - sharedColorBar : True
-#             - file: all_future_stdDev45.asc.gz
-#             - file: avg_over_models_stdDev_future45.asc.gz            
-#             - file: avg_over_climScen_stdDev_future45.asc.gz
-#         - row:
-#             - title: '8.5'
-#             - sharedColorBar : True
-#             - file: all_future_stdDev85.asc.gz
-#             - file: avg_over_models_stdDev_future85.asc.gz            
-#             - file: avg_over_climScen_stdDev_future85.asc.gz
+- image: 
+    name: std_deviation
+    sizeX: 10
+    sizeY: 8
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.80
+    adLeft: 0.06
+    adhspace: 0.12
+    adwspace: 0.01
+    rows:
+        - row:
+            - title: '4.5'
+            - sharedColorBar : True
+            - file: all_future_stdDev45.asc.gz
+            - file: avg_over_models_stdDev_future45.asc.gz            
+            - file: avg_over_climScen_stdDev_future45.asc.gz
+        - row:
+            - title: '8.5'
+            - sharedColorBar : True
+            - file: all_future_stdDev85.asc.gz
+            - file: avg_over_models_stdDev_future85.asc.gz            
+            - file: avg_over_climScen_stdDev_future85.asc.gz
 
 
 # - image: 
