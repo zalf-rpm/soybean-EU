@@ -12,10 +12,10 @@ YaxisMappingRefColumn: Bucket
 YaxisMappingTarColumn: Latitude
 YaxisMappingFormat: '{:2.0f}°'
 yTicklist: 
- - 1
- - 15
- - 28
- - 41
+ - 8
+ - 21
+ - 35
+ - 49
 xTicklist: 
  - 0
  - 50

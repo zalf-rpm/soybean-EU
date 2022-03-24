@@ -24,22 +24,22 @@
 #         - hatch: '...'
 #      - file: 'violin_maturity_groups_future85.asc.gz'
 
-# - image: 
-#     name: stacked_maturity
-#     sizeX: 8
-#     sizeY: 4
-#     adjBottom: 0.15
-#     adjTop: 0.95
-#     adRight: 0.80
-#     adLeft: 0.08
-#     adhspace: 0.12
-#     adwspace: 0.01
-#     rows:
-#         - row:
-#             - sharedColorBar : True
-#             - file: 'stacked_maturity_groups_historical.asc.gz'
-#             - file: 'stacked_maturity_groups_future45.asc.gz'
-#             - file: 'stacked_maturity_groups_future85.asc.gz'
+- image: 
+    name: stacked_maturity
+    sizeX: 8
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.80
+    adLeft: 0.08
+    adhspace: 0.12
+    adwspace: 0.01
+    rows:
+        - row:
+            - sharedColorBar : True
+            - file: 'stacked_maturity_groups_historical.asc.gz'
+            - file: 'stacked_maturity_groups_future45.asc.gz'
+            - file: 'stacked_maturity_groups_future85.asc.gz'
 
 # - image: 
 #     name: bars_yield
@@ -58,20 +58,20 @@
 #             - file: 'bar_max_yield_future45.asc.gz'
 #             - file: 'bar_max_yield_future85.asc.gz'
 
-# - image: 
-#     name: lines_yield
-#     sizeX: 4
-#     sizeY: 4
-#     adjBottom: 0.15
-#     adjTop: 0.95
-#     adRight: 0.95
-#     adLeft: 0.15
-#     adhspace: 0.12
-#     adwspace: 0.01
-#     merge: 
-#         - file: 'line_max_yield_historical.asc.gz'
-#         - file: 'line_max_yield_future45.asc.gz'
-#         - file: 'line_max_yield_future85.asc.gz'
+- image: 
+    name: lines_yield
+    sizeX: 4
+    sizeY: 4
+    adjBottom: 0.15
+    adjTop: 0.95
+    adRight: 0.95
+    adLeft: 0.15
+    adhspace: 0.12
+    adwspace: 0.01
+    merge: 
+        - file: 'line_max_yield_historical.asc.gz'
+        - file: 'line_max_yield_future45.asc.gz'
+        - file: 'line_max_yield_future85.asc.gz'
 
 - image: 
     name: lines_risks_colors
