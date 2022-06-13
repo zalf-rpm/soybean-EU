@@ -3189,17 +3189,25 @@ func maxFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, g
 	return max
 }
 func minFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) (min int) {
-	min = math.MaxInt
 
+	start := true
 	for row := 0; row < extRow; row++ {
 		for col := 0; col < extCol; col++ {
 			refID := (*gridSourceLookup)[row][col]
 			if refID > 0 {
 				if _, ok := (*irrLookup)[GridCoord{row, col}]; ok {
+					if start {
+						start = false
+						min = irrSimGrid[refID-1]
+					}
 					if irrSimGrid[refID-1] < min {
 						min = irrSimGrid[refID-1]
 					}
 				} else {
+					if start {
+						start = false
+						min = noIrrSimGrid[refID-1]
+					}
 					if noIrrSimGrid[refID-1] < min {
 						min = noIrrSimGrid[refID-1]
 					}
