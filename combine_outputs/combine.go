@@ -328,10 +328,18 @@ func main() {
 		"jet",
 		"",
 		colorListIrrigArea, nil, nil, 1, 0,
-		1, "", outC)
+		1, "", outC, nil)
 
 	waitForNum++
+
 	absSowMinMax := math.Abs(float64(minSOWMerged - maxSOWMerged))
+	absSowMin := int(absSowMinMax*(-1)) - 1
+	convertDiffMinValue := func(val int) string {
+		if val == -1 {
+			val = absSowMin
+		}
+		return strconv.Itoa(val)
+	}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.sowingDiffGridsAll[ScenarioKeyTuple{"T2", "diff", "Unlimited water"}],
 		p.sowingDiffGridsAll[ScenarioKeyTuple{"T1", "diff", "Actual"}],
@@ -344,10 +352,16 @@ func main() {
 		"Average \\ difference \\DOY",
 		"coolwarm",
 		"",
-		nil, nil, nil, 1, int(absSowMinMax*(-1))-1,
-		int(absSowMinMax), minColor, outC)
+		nil, nil, nil, 1, absSowMin,
+		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
 
 	waitForNum++
+	convertMinValue := func(val int) string {
+		if val == -1 {
+			val = minSOWMerged - 1
+		}
+		return strconv.Itoa(val)
+	}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
@@ -360,8 +374,8 @@ func main() {
 		"Average \\DOY",
 		"tab20b",
 		"",
-		nil, nil, nil, 1, minSOWMerged,
-		maxSOWMerged, minColor, outC)
+		nil, nil, nil, 1, minSOWMerged-1,
+		maxSOWMerged, minColor, outC, convertMinValue)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -376,8 +390,8 @@ func main() {
 		"Average \\DOY",
 		"tab20b",
 		"",
-		nil, nil, nil, 1, minSOWMerged,
-		maxSOWMerged, minColor, outC)
+		nil, nil, nil, 1, minSOWMerged-1,
+		maxSOWMerged, minColor, outC, convertMinValue)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -393,7 +407,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMerged, minColor, outC)
+		maxMerged, minColor, outC, nil)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -409,7 +423,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMerged, minColor, outC)
+		maxMerged, minColor, outC, nil)
 
 	waitForNum++
 	colorListDevMaoC := []string{"cyan", "violet", "green", "blue"}
@@ -426,7 +440,7 @@ func main() {
 		"YlGnBu",
 		"LinearSegmented",
 		colorListDevMaoC, nil, nil, 1, 0,
-		maxDev, minColor, outC)
+		maxDev, minColor, outC, nil)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -442,7 +456,7 @@ func main() {
 		"cool",
 		"LinearSegmented",
 		colorListDevMaoC, nil, nil, 1, 0,
-		maxDev, minColor, outC)
+		maxDev, minColor, outC, nil)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -458,7 +472,7 @@ func main() {
 		"cool",
 		"LinearSegmented",
 		colorListDevMaoC, nil, nil, 1, 0,
-		maxDev, minColor, outC)
+		maxDev, minColor, outC, nil)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -474,7 +488,7 @@ func main() {
 		"cool",
 		"LinearSegmented",
 		colorListDevMaoC, nil, nil, 1, 0,
-		maxDev, minColor, outC)
+		maxDev, minColor, outC, nil)
 	// waitForNum++
 	// go drawScenarioMaps(gridSourceLookup,
 	// 	p.maxYieldGridsAll,
@@ -787,7 +801,7 @@ func main() {
 		"",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
-		len(sidebarLabel)-1, "", outC)
+		len(sidebarLabel)-1, "", outC, nil)
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
@@ -803,7 +817,7 @@ func main() {
 		"",
 		"",
 		colorList, sidebarLabel, ticklist, 1, 0,
-		len(sidebarLabel)-1, "", outC)
+		len(sidebarLabel)-1, "", outC, nil)
 
 	maxHist000 := maxFromIrrigationGrid(extRow, extCol,
 		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}],
@@ -831,7 +845,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMerged000, minColor, outC)
+		maxMerged000, minColor, outC, nil)
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}],
@@ -846,7 +860,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMerged000, minColor, outC)
+		maxMerged000, minColor, outC, nil)
 
 	maxHistII := maxFromIrrigationGrid(extRow, extCol,
 		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}],
@@ -874,7 +888,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMergedII, minColor, outC)
+		maxMergedII, minColor, outC, nil)
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}],
@@ -889,7 +903,7 @@ func main() {
 		"jet",
 		"",
 		nil, nil, nil, 0.001, 0,
-		maxMergedII, minColor, outC)
+		maxMergedII, minColor, outC, nil)
 
 	sidebarRiskLabel := []string{
 		"none",
@@ -1669,7 +1683,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 					}
 					p.shortSeasonGrid[futureSimKey][sIdx][rIdx] = p.shortSeasonGrid[futureSimKey][sIdx][rIdx] + p.shortSeasonGrid[scenariokey][sIdx][rIdx]
 					p.shortSeasonDeviationGrid[futureSimKey][sIdx][rIdx] = p.shortSeasonDeviationGrid[futureSimKey][sIdx][rIdx] + p.shortSeasonDeviationGrid[scenariokey][sIdx][rIdx]
-					if p.sowingScenGrids[scenariokey][sIdx][rIdx] >= 0 {
+					if p.sowingScenGrids[scenariokey][sIdx][rIdx] > 0 {
 						numSowingGrids++
 						if p.sowingScenGrids[futureSimKey][sIdx][rIdx] < 0 {
 							p.sowingScenGrids[futureSimKey][sIdx][rIdx] = 0
@@ -1972,7 +1986,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 					}
 					p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] = p.coolweatherDeathDeviationGridsAll[mergedKey][rIdx] + p.coolweatherDeathDeviationGrids[mergedKey][sIdx][rIdx]
 				}
-				if p.sowingScenGrids[mergedKey][sIdx][rIdx] >= 0 {
+				if p.sowingScenGrids[mergedKey][sIdx][rIdx] > 0 {
 					numsowingScenGrids++
 					if p.sowingScenGridsAll[mergedKey][rIdx] < 0 {
 						p.sowingScenGridsAll[mergedKey][rIdx] = 0
@@ -3010,13 +3024,17 @@ func drawScenarioMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][]int
 	outC <- filenameDescPart
 }
 
-func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow, minRow, minCol int, asciiOutFolder, titleFormat, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
+func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int, irrLookup *map[GridCoord]bool, filenameFormat, filenameDescPart string, extCol, extRow, minRow, minCol int, asciiOutFolder, titleFormat, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, outFormat func(int) string) {
 	//simkey = treatmentNo, climateSenario, maturityGroup, comment
 	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
 	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 	file := writeAGridHeader(gridFilePath, extCol, extRow)
 
-	writeIrrigatedRows(file, extRow, extCol, irrSimVal, noIrrSimVal, gridSourceLookup, irrLookup)
+	formater := outFormat
+	if outFormat == nil {
+		formater = defaultOutFormat
+	}
+	writeIrrigatedRows(file, extRow, extCol, irrSimVal, noIrrSimVal, gridSourceLookup, irrLookup, formater)
 
 	file.Close()
 	title := titleFormat
@@ -3217,20 +3235,23 @@ func minFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, g
 	return min
 }
 
-func writeIrrigatedRows(fout Fout, extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) {
+func defaultOutFormat(val int) string {
+	return strconv.Itoa(val)
+}
+func writeIrrigatedRows(fout Fout, extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool, outFormat func(int) string) {
 	for row := 0; row < extRow; row++ {
 		for col := 0; col < extCol; col++ {
 			refID := (*gridSourceLookup)[row][col]
 			if refID > 0 {
 				if _, ok := (*irrLookup)[GridCoord{row, col}]; ok {
 					if irrSimGrid != nil {
-						fout.Write(strconv.Itoa(irrSimGrid[refID-1]))
+						fout.Write(outFormat(irrSimGrid[refID-1]))
 					} else {
 						fout.Write("1")
 					}
 				} else {
 					if noIrrSimGrid != nil {
-						fout.Write(strconv.Itoa(noIrrSimGrid[refID-1]))
+						fout.Write(outFormat(noIrrSimGrid[refID-1]))
 					} else {
 						fout.Write("0")
 					}
