@@ -1911,7 +1911,6 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.shortSeasonGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.sowingScenGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
-			p.sowingDiffGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 		}
 
 		for simKey := range p.allYieldGrids {
@@ -2038,8 +2037,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 	}
 
 	for diffKey, diffvalue := range diffKeys {
+		p.sowingDiffGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -1)
 		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
-
 			p.sowingDiffGridsAll[diffKey][rIdx] = p.sowingScenGridsAll[diffvalue[0]][rIdx] - p.sowingScenGridsAll[diffvalue[1]][rIdx]
 		}
 	}
