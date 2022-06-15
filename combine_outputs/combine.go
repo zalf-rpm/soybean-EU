@@ -265,17 +265,18 @@ func main() {
 		&gridSourceLookup,
 		&irrLookup)
 	maxSOWMerged := max(maxHistSOW, maxFutureSOW)
+	fmt.Printf("Sow Max Date : %d", maxSOWMerged)
 
 	minHistSOW := minFromIrrigationGrid(extRow, extCol,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup)
+		&irrLookup, -1)
 	minFutureSOW := minFromIrrigationGrid(extRow, extCol,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup)
+		&irrLookup, -1)
 	min := func(v1, v2 int) (out int) {
 		out = v1
 		if v2 < v1 {
@@ -284,6 +285,7 @@ func main() {
 		return out
 	}
 	minSOWMerged := min(minHistSOW, minFutureSOW)
+	fmt.Printf("Sow Min Date : %d", minSOWMerged)
 
 	maxDevModel := maxFromIrrigationGrid(extRow, extCol,
 		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
@@ -350,7 +352,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"Sow Diff",
 		"Average \\ difference \\DOY",
-		"coolwarm",
+		"tab20b",
 		"",
 		nil, nil, nil, 1, absSowMin,
 		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
@@ -1044,11 +1046,14 @@ type ProcessedData struct {
 	sumMediumOccurrence         int
 	sumHighOccurrence           int
 	matGroupIDGrids             map[string]int
+	invMatGroupIDGrids          map[int]string
 
-	maxYieldGrids                      map[ScenarioKeyTuple][][]int
-	matGroupGrids                      map[ScenarioKeyTuple][][]int
-	maxYieldDeviationGrids             map[ScenarioKeyTuple][][]int
-	matGroupDeviationGrids             map[ScenarioKeyTuple][][]int
+	maxYieldGrids                 map[ScenarioKeyTuple][][]int
+	matGroupGrids                 map[ScenarioKeyTuple][][]int
+	maxYieldDeviationGrids        map[ScenarioKeyTuple][][]int
+	matGroupDeviationGrids        map[ScenarioKeyTuple][][]int
+	maxYieldDeviationGridsCompare map[ScenarioKeyTuple][]int
+
 	harvestRainGrids                   map[ScenarioKeyTuple][][]int
 	harvestRainDeviationGrids          map[ScenarioKeyTuple][][]int
 	coolweatherDeathGrids              map[ScenarioKeyTuple][][]int
@@ -1142,10 +1147,17 @@ func (p *ProcessedData) initProcessedData() {
 		"soybean/00":   5,
 		"soybean/000":  6,
 		"soybean/0000": 7}
+
+	p.invMatGroupIDGrids = make(map[int]string, len(p.matGroupIDGrids))
+	for k, v := range p.matGroupIDGrids {
+		p.invMatGroupIDGrids[v] = k
+	}
+
 	p.maxYieldGrids = make(map[ScenarioKeyTuple][][]int)
 	p.matGroupGrids = make(map[ScenarioKeyTuple][][]int)
 	p.maxYieldDeviationGrids = make(map[ScenarioKeyTuple][][]int)
 	p.matGroupDeviationGrids = make(map[ScenarioKeyTuple][][]int)
+	p.maxYieldDeviationGridsCompare = make(map[ScenarioKeyTuple][]int)
 
 	p.harvestRainGrids = make(map[ScenarioKeyTuple][][]int)
 	p.harvestRainDeviationGrids = make(map[ScenarioKeyTuple][][]int)
@@ -1756,10 +1768,6 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			}
 		}
 	}
-	invMatGroupIDGrids := make(map[int]string, len(p.matGroupIDGrids))
-	for k, v := range p.matGroupIDGrids {
-		invMatGroupIDGrids[v] = k
-	}
 
 	for simKey, currGridYield := range p.allYieldGrids {
 		for idx, sourceGrid := range currGridYield {
@@ -1770,7 +1778,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			//currGridHarvest := p.lateHarvestGrid[simKey][idx]
 			for ref := 0; ref < maxRefNo; ref++ {
 				if p.matGroupDeviationGrids[scenarioKey][idx][ref] > 0 {
-					matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
+					matGroup := p.invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][idx][ref]]
 					matGroupKey := SimKeyTuple{simKey.treatNo, simKey.climateSenario, matGroup, simKey.comment}
 					//if currGridHarvest[ref] < minLateHarvest &&
 					if float64(sourceGrid[ref]) > float64(p.maxYieldGrids[scenarioKey][idx][ref])*0.9 &&
@@ -1782,6 +1790,26 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			}
 		}
 	}
+	// per model ... I don't think I want that per Model
+	// isHistorical := func(climateSenario string) bool {
+	// 	return climateSenario == "0_0"
+	// }
+	// for scenarioKey, sourceGrids := range p.matGroupDeviationGrids {
+	// 	if !isHistorical(scenarioKey.climateSenario) {
+	// 		histScen := ScenarioKeyTuple{scenarioKey.treatNo, "0_0", scenarioKey.comment}
+	// 		if _, ok := p.maxYieldDeviationGridsCompare[scenarioKey]; !ok {
+	// 			p.maxYieldDeviationGridsCompare[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
+	// 		}
+	// 		for idx := range sourceGrids {
+	// 			for ref := 0; ref < maxRefNo; ref++ {
+	// 				matGroup := invMatGroupIDGrids[p.matGroupDeviationGrids[histScen][idx][ref]]
+	// 				matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
+	// 				p.maxYieldDeviationGridsCompare[scenarioKey][idx][ref] = p.allYieldGrids[matGroupKey][idx][ref]
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	for scenarioKey, sourcreGrids := range p.matGroupGrids {
 		if _, ok := p.harvestRainGrids[scenarioKey]; !ok {
 			maxRefNo = len(sourcreGrids[0])
@@ -1811,7 +1839,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 		for sourceID, sourceGrid := range sourcreGrids {
 			for ref := 0; ref < maxRefNo; ref++ {
 				if sourceGrid[ref] > 0 {
-					matGroup := invMatGroupIDGrids[sourceGrid[ref]]
+					matGroup := p.invMatGroupIDGrids[sourceGrid[ref]]
 					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
 					p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
 					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
@@ -1824,7 +1852,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 				}
 
 				if p.matGroupDeviationGrids[scenarioKey][sourceID][ref] > 0 {
-					matGroupDev := invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][sourceID][ref]]
+					matGroupDev := p.invMatGroupIDGrids[p.matGroupDeviationGrids[scenarioKey][sourceID][ref]]
 					matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
 					p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
 					p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
@@ -2254,6 +2282,36 @@ func (p *ProcessedData) factorInRisks(maxRefNo int) {
 	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
 	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
 
+}
+
+func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
+
+	//per model ... I don't think I want that per Model
+	isHistorical := func(climateSenario string) bool {
+		return climateSenario == "0_0"
+	}
+	isFuture := func(climateSenario string) bool {
+		return climateSenario == "fut_avg"
+	}
+
+	for scenarioKey := range p.matGroupDeviationGridsAll {
+
+		if !isHistorical(scenarioKey.climateSenario) && !isFuture(scenarioKey.climateSenario) {
+			histScen := ScenarioKeyTuple{scenarioKey.treatNo, "0_0", scenarioKey.comment}
+			if _, ok := p.maxYieldDeviationGridsCompare[scenarioKey]; !ok {
+				p.maxYieldDeviationGridsCompare[scenarioKey] = newSmallGridLookup(maxRefNo, 0)
+			}
+
+			for ref := 0; ref < maxRefNo; ref++ {
+				for idx := 0; idx < sourceNum; idx++ {
+					matGroup := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[histScen][ref]]
+					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
+					p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKey][idx][ref]
+				}
+				p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / sourceNum
+			}
+		}
+	}
 }
 
 func getBestGuessMaturityGroup(matGroupDistribution []int) int {
@@ -3205,29 +3263,32 @@ func maxFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, g
 	}
 	return max
 }
-func minFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool) (min int) {
+func minFromIrrigationGrid(extRow, extCol int, irrSimGrid, noIrrSimGrid []int, gridSourceLookup *[][]int, irrLookup *map[GridCoord]bool, noData int) (min int) {
 
-	start := true
+	// check if data is > noData, and set inital value
+	minVal := func() func(int) {
+		start := true
+		return func(val int) {
+			if val <= noData {
+				return
+			}
+			if start {
+				start = false
+				min = val
+			} else if val < min {
+				min = val
+			}
+		}
+	}()
+	//iterate throu irrigated and not irrigated grids
 	for row := 0; row < extRow; row++ {
 		for col := 0; col < extCol; col++ {
 			refID := (*gridSourceLookup)[row][col]
 			if refID > 0 {
 				if _, ok := (*irrLookup)[GridCoord{row, col}]; ok {
-					if start {
-						start = false
-						min = irrSimGrid[refID-1]
-					}
-					if irrSimGrid[refID-1] < min {
-						min = irrSimGrid[refID-1]
-					}
+					minVal(irrSimGrid[refID-1])
 				} else {
-					if start {
-						start = false
-						min = noIrrSimGrid[refID-1]
-					}
-					if noIrrSimGrid[refID-1] < min {
-						min = noIrrSimGrid[refID-1]
-					}
+					minVal(noIrrSimGrid[refID-1])
 				}
 			}
 		}
