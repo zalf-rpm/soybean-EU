@@ -213,6 +213,9 @@ func main() {
 	// remove risk areas
 	p.factorInRisks(maxRefNoOverAll)
 
+	// compare yields past/future by maturity group
+	p.compareHistoricalFuture(maxRefNoOverAll, len(sourceFolder))
+
 	// part 3: generate ascii grids
 	waitForNum := 0
 	outC := make(chan string)
@@ -271,12 +274,12 @@ func main() {
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup, -1)
+		&irrLookup, 0)
 	minFutureSOW := minFromIrrigationGrid(extRow, extCol,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup, -1)
+		&irrLookup, 0)
 	min := func(v1, v2 int) (out int) {
 		out = v1
 		if v2 < v1 {
@@ -337,7 +340,7 @@ func main() {
 	absSowMinMax := math.Abs(float64(minSOWMerged - maxSOWMerged))
 	absSowMin := int(absSowMinMax*(-1)) - 1
 	convertDiffMinValue := func(val int) string {
-		if val == -1 {
+		if val <= 0 {
 			val = absSowMin
 		}
 		return strconv.Itoa(val)
@@ -359,7 +362,7 @@ func main() {
 
 	waitForNum++
 	convertMinValue := func(val int) string {
-		if val == -1 {
+		if val <= 0 {
 			val = minSOWMerged - 1
 		}
 		return strconv.Itoa(val)
@@ -421,6 +424,38 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"C",
+		"Average \\nyield [t ha$^{\\rm –1}$]",
+		"jet",
+		"",
+		nil, nil, nil, 0.001, 0,
+		maxMerged, minColor, outC, nil)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_compare_mg_yield",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"yield of hist. MG in future data",
+		"Average \\nyield [t ha$^{\\rm –1}$]",
+		"jet",
+		"",
+		nil, nil, nil, 0.001, 0,
+		maxMerged, minColor, outC, nil)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
+		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		&irrLookup,
+		"%s_historical.asc",
+		"dev_compare_mg_yield",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"yield of future MG in hist. data",
 		"Average \\nyield [t ha$^{\\rm –1}$]",
 		"jet",
 		"",
@@ -2298,23 +2333,57 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 	isFuture := func(climateSenario string) bool {
 		return climateSenario == "fut_avg"
 	}
-
-	for scenarioKey := range p.matGroupDeviationGridsAll {
-
+	clinScen := make(map[string]bool)
+	for scenarioKey := range p.matGroupDeviationGrids {
 		if !isHistorical(scenarioKey.climateSenario) && !isFuture(scenarioKey.climateSenario) {
-			histScen := ScenarioKeyTuple{scenarioKey.treatNo, "0_0", scenarioKey.comment}
-			if _, ok := p.maxYieldDeviationGridsCompare[scenarioKey]; !ok {
-				p.maxYieldDeviationGridsCompare[scenarioKey] = newSmallGridLookup(maxRefNo, 0)
-			}
+			clinScen[scenarioKey.climateSenario] = true
+		}
+	}
+	numScen := len(clinScen)
+	// climate scenarios future compared to historical data
+	for ref := 0; ref < maxRefNo; ref++ {
 
-			for ref := 0; ref < maxRefNo; ref++ {
-				for idx := 0; idx < sourceNum; idx++ {
-					matGroup := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[histScen][ref]]
-					matGroupKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroup, scenarioKey.comment}
-					p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKey][idx][ref]
+		for climScenarioKey := range p.matGroupDeviationGrids {
+
+			if !isHistorical(climScenarioKey.climateSenario) && !isFuture(climScenarioKey.climateSenario) {
+
+				histScen := ScenarioKeyTuple{climScenarioKey.treatNo, "0_0", climScenarioKey.comment}
+				scenarioKey := ScenarioKeyTuple{climScenarioKey.treatNo, "fut_avg", climScenarioKey.comment}
+
+				if _, ok := p.maxYieldDeviationGridsCompare[scenarioKey]; !ok {
+					p.maxYieldDeviationGridsCompare[scenarioKey] = newSmallGridLookup(maxRefNo, 0)
 				}
-				p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / sourceNum
+
+				for idx := 0; idx < sourceNum; idx++ {
+					matGroupHist := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[histScen][ref]]
+					matGroupKeyClimScen := SimKeyTuple{climScenarioKey.treatNo, climScenarioKey.climateSenario, matGroupHist, climScenarioKey.comment}
+
+					p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyClimScen][idx][ref]
+				}
 			}
+		}
+		for scenarioKey := range p.maxYieldDeviationGridsCompare {
+			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / (sourceNum + numScen)
+		}
+	}
+	futureScen := make([]ScenarioKeyTuple, 0, 2)
+	for treatmentKey := range p.maxYieldDeviationGridsCompare {
+		futureScen = append(futureScen, ScenarioKeyTuple{treatmentKey.treatNo, "fut_avg", treatmentKey.comment})
+	}
+
+	for _, futureKey := range futureScen {
+		scenarioKey := ScenarioKeyTuple{futureKey.treatNo, "0_0", futureKey.comment}
+		if _, ok := p.maxYieldDeviationGridsCompare[scenarioKey]; !ok {
+			p.maxYieldDeviationGridsCompare[scenarioKey] = newSmallGridLookup(maxRefNo, 0)
+		}
+
+		for ref := 0; ref < maxRefNo; ref++ {
+			matGroupFut := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[futureKey][ref]]
+			matGroupKeyHist := SimKeyTuple{scenarioKey.treatNo, "0_0", matGroupFut, scenarioKey.comment}
+			for idx := 0; idx < sourceNum; idx++ {
+				p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyHist][idx][ref]
+			}
+			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / sourceNum
 		}
 	}
 }
