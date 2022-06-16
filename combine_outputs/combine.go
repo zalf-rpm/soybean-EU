@@ -1844,7 +1844,9 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					p.harvestRainGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupKey][sourceID][ref]
 					p.coolweatherDeathGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupKey][sourceID][ref]
 					p.shortSeasonGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupKey][sourceID][ref]
-					p.sowingScenGrids[scenarioKey][sourceID][ref] = p.sowingGrids[matGroupKey][sourceID][ref]
+					if val := p.sowingGrids[matGroupKey][sourceID][ref]; val > 0 {
+						p.sowingScenGrids[scenarioKey][sourceID][ref] = val
+					}
 
 				} else {
 					// include regions that have no yield listed
@@ -2081,7 +2083,10 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 	for diffKey, diffvalue := range diffKeys {
 		p.sowingDiffGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -1)
 		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
-			p.sowingDiffGridsAll[diffKey][rIdx] = p.sowingScenGridsAll[diffvalue[0]][rIdx] - p.sowingScenGridsAll[diffvalue[1]][rIdx]
+			//diff only areas with valid values in past and future
+			if p.sowingScenGridsAll[diffvalue[0]][rIdx] > 0 && p.sowingScenGridsAll[diffvalue[1]][rIdx] > 0 {
+				p.sowingDiffGridsAll[diffKey][rIdx] = p.sowingScenGridsAll[diffvalue[0]][rIdx] - p.sowingScenGridsAll[diffvalue[1]][rIdx]
+			}
 		}
 	}
 
@@ -2452,7 +2457,7 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.harvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
 			p.matIsHavestGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
 			p.lateHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, 0)
-			p.sowingGrids[simKey] = newGridLookup(numSoures, maxRefNo, 0)
+			p.sowingGrids[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.coolWeatherImpactGrid[simKey] = newGridLookup(numSoures, maxRefNo, -100)
 			p.coolWeatherDeathGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
