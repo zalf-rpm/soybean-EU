@@ -268,7 +268,7 @@ func main() {
 		&gridSourceLookup,
 		&irrLookup)
 	maxSOWMerged := max(maxHistSOW, maxFutureSOW)
-	fmt.Printf("Sow Max Date : %d", maxSOWMerged)
+	fmt.Printf("Sow Max Date : %d \n", maxSOWMerged)
 
 	minHistSOW := minFromIrrigationGrid(extRow, extCol,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
@@ -288,7 +288,7 @@ func main() {
 		return out
 	}
 	minSOWMerged := min(minHistSOW, minFutureSOW)
-	fmt.Printf("Sow Min Date : %d", minSOWMerged)
+	fmt.Printf("Sow Min Date : %d \n", minSOWMerged)
 
 	maxDevModel := maxFromIrrigationGrid(extRow, extCol,
 		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
@@ -2358,7 +2358,12 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 					matGroupHist := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[histScen][ref]]
 					matGroupKeyClimScen := SimKeyTuple{climScenarioKey.treatNo, climScenarioKey.climateSenario, matGroupHist, climScenarioKey.comment}
 
-					p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyClimScen][idx][ref]
+					if _, ok := p.allYieldGrids[matGroupKeyClimScen]; ok {
+						p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyClimScen][idx][ref]
+					} else {
+						fmt.Println(matGroupKeyClimScen)
+					}
+
 				}
 			}
 		}
