@@ -2366,7 +2366,7 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 			}
 		}
 		for scenarioKey := range p.maxYieldDeviationGridsCompare {
-			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / (sourceNum + numScen)
+			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / (sourceNum * numScen)
 		}
 	}
 	futureScen := make([]ScenarioKeyTuple, 0, 2)
