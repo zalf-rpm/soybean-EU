@@ -2120,7 +2120,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 			//diff only areas with valid values in past and future
 			if p.sowingScenGridsAll[diffvalue[0]][rIdx] > 0 && p.sowingScenGridsAll[diffvalue[1]][rIdx] > 0 {
-				p.sowingDiffGridsAll[diffKey][rIdx] = p.sowingScenGridsAll[diffvalue[0]][rIdx] - p.sowingScenGridsAll[diffvalue[1]][rIdx]
+				p.sowingDiffGridsAll[diffKey][rIdx] = p.sowingScenGridsAll[diffvalue[1]][rIdx] - p.sowingScenGridsAll[diffvalue[0]][rIdx]
 			}
 		}
 	}
