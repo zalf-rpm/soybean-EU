@@ -2358,12 +2358,10 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 					matGroupHist := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[histScen][ref]]
 					matGroupKeyClimScen := SimKeyTuple{climScenarioKey.treatNo, climScenarioKey.climateSenario, matGroupHist, climScenarioKey.comment}
 
+					// matG may be none - so yield is 0
 					if _, ok := p.allYieldGrids[matGroupKeyClimScen]; ok {
 						p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyClimScen][idx][ref]
-					} else {
-						fmt.Println(matGroupKeyClimScen)
 					}
-
 				}
 			}
 		}
@@ -2386,7 +2384,10 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 			matGroupFut := p.invMatGroupIDGrids[p.matGroupDeviationGridsAll[futureKey][ref]]
 			matGroupKeyHist := SimKeyTuple{scenarioKey.treatNo, "0_0", matGroupFut, scenarioKey.comment}
 			for idx := 0; idx < sourceNum; idx++ {
-				p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyHist][idx][ref]
+				// matG may be none - so yield is 0
+				if _, ok := p.allYieldGrids[matGroupKeyHist]; ok {
+					p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] + p.allYieldGrids[matGroupKeyHist][idx][ref]
+				}
 			}
 			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / sourceNum
 		}
