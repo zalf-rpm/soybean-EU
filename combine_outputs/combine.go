@@ -340,7 +340,7 @@ func main() {
 	absSowMinMax := math.Abs(float64(minSOWMerged - maxSOWMerged))
 	absSowMin := int(absSowMinMax*(-1)) - 1
 	convertDiffMinValue := func(val int) string {
-		if val <= 0 {
+		if val < absSowMin {
 			val = absSowMin
 		}
 		return strconv.Itoa(val)
