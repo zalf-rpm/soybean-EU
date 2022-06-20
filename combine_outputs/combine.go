@@ -274,12 +274,12 @@ func main() {
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup, 0)
+		&irrLookup, -365)
 	minFutureSOW := minFromIrrigationGrid(extRow, extCol,
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
 		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
 		&gridSourceLookup,
-		&irrLookup, 0)
+		&irrLookup, -365)
 	min := func(v1, v2 int) (out int) {
 		out = v1
 		if v2 < v1 {
@@ -362,7 +362,7 @@ func main() {
 
 	waitForNum++
 	convertMinValue := func(val int) string {
-		if val <= 0 {
+		if val <= -365 {
 			val = minSOWMerged - 1
 		}
 		return strconv.Itoa(val)
@@ -1989,7 +1989,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.shortSeasonGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
-			p.sowingScenGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
+			p.sowingScenGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -365)
 		}
 
 		for simKey := range p.allYieldGrids {
@@ -2116,7 +2116,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 	}
 
 	for diffKey, diffvalue := range diffKeys {
-		p.sowingDiffGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -1)
+		p.sowingDiffGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -365)
 		for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 			//diff only areas with valid values in past and future
 			if p.sowingScenGridsAll[diffvalue[0]][rIdx] > 0 && p.sowingScenGridsAll[diffvalue[1]][rIdx] > 0 {
