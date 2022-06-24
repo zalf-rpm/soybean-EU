@@ -361,6 +361,29 @@ func main() {
 		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
 
 	waitForNum++
+
+	maxDiffYieldHist := maxFromIrrigationGrid(extRow, extCol,
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist", "Actual"}],
+		&gridSourceLookup,
+		&irrLookup)
+
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist", "Actual"}],
+		&irrLookup,
+		"%s_historical_future.asc",
+		"dev_yield_diff_MGHist",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Yield Diff hist. MG",
+		"yield \\n[t ha$^{\\rm –1}$]",
+		"tab20b",
+		"",
+		nil, nil, nil, 1, -1,
+		maxDiffYieldHist, minColor, outC, nil)
+
+	waitForNum++
 	convertMinValue := func(val int) string {
 		if val <= -365 {
 			val = minSOWMerged - 1
@@ -376,7 +399,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"Sow hist.",
-		"Average \\DOY",
+		"Average \\nDOY",
 		"tab20b",
 		"",
 		nil, nil, nil, 1, minSOWMerged-1,
@@ -392,7 +415,7 @@ func main() {
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
 		"Sow fut.",
-		"Average \\DOY",
+		"Average \\nDOY",
 		"tab20b",
 		"",
 		nil, nil, nil, 1, minSOWMerged-1,
@@ -1118,8 +1141,9 @@ type ProcessedData struct {
 	potentialWaterStressAll               map[string][]int
 	potentialWaterStressDeviationGridsAll map[string][]int
 
-	sowingScenGridsAll map[ScenarioKeyTuple][]int
-	sowingDiffGridsAll map[ScenarioKeyTuple][]int
+	sowingScenGridsAll         map[ScenarioKeyTuple][]int
+	sowingDiffGridsAll         map[ScenarioKeyTuple][]int
+	yieldDiffDeviationGridsAll map[ScenarioKeyTuple][]int
 
 	shortSeasonGridAll          map[ScenarioKeyTuple][]int
 	shortSeasonDeviationGridAll map[ScenarioKeyTuple][]int
@@ -1223,6 +1247,7 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.sowingScenGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.sowingDiffGridsAll = make(map[ScenarioKeyTuple][]int)
+	p.yieldDiffDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
 
 	p.coolweatherDeathGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.coolweatherDeathDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
@@ -2392,6 +2417,24 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 			p.maxYieldDeviationGridsCompare[scenarioKey][ref] = p.maxYieldDeviationGridsCompare[scenarioKey][ref] / sourceNum
 		}
 	}
+
+	// histMG in future
+
+	for key := range p.maxYieldDeviationGridsAll {
+		if isHistorical(key.climateSenario) {
+			// histMG in future
+			histMGInfuture := ScenarioKeyTuple{key.treatNo, "fut_avg", key.comment}
+			diffKey := ScenarioKeyTuple{key.treatNo, "diff_hist", key.comment}
+			p.yieldDiffDeviationGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -1)
+			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+				//diff only areas with valid values in past and future
+				if p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] >= 0 && p.maxYieldDeviationGridsAll[key][rIdx] >= 0 {
+					p.yieldDiffDeviationGridsAll[diffKey][rIdx] = p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
+				}
+			}
+		}
+	}
+
 }
 
 func getBestGuessMaturityGroup(matGroupDistribution []int) int {
