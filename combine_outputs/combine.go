@@ -360,14 +360,36 @@ func main() {
 		nil, nil, nil, 1, absSowMin,
 		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
 
+	minMaxDiffYields := func(irrSimGrid1, noIrrSimGrid1, irrSimGrid2, noIrrSimGrid2 []int, nodata int) int {
+		max := maxFromIrrigationGrid(extRow, extCol,
+			irrSimGrid1,
+			noIrrSimGrid1,
+			&gridSourceLookup,
+			&irrLookup)
+		min := minFromIrrigationGrid(extRow, extCol,
+			irrSimGrid2,
+			noIrrSimGrid2,
+			&gridSourceLookup,
+			&irrLookup, nodata)
+
+		return int(math.Max(math.Abs(float64(min)), float64(max))) + 1
+	}
 	waitForNum++
 
-	maxDiffYieldHist := maxFromIrrigationGrid(extRow, extCol,
+	maxDiffYieldHist := minMaxDiffYields(
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist", "Unlimited water"}],
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist", "Actual"}],
-		&gridSourceLookup,
-		&irrLookup)
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist", "Actual"}],
+		-9999)
 
+	minDiffYieldHist := maxDiffYieldHist*-1 - 10
+	convertDiffYieldHistValue := func(val int) string {
+		if val < minDiffYieldHist {
+			val = minDiffYieldHist
+		}
+		return strconv.Itoa(val)
+	}
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist", "Unlimited water"}],
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist", "Actual"}],
@@ -380,8 +402,63 @@ func main() {
 		"yield \\n[t ha$^{\\rm –1}$]",
 		"tab20b",
 		"",
-		nil, nil, nil, 1, -1,
-		maxDiffYieldHist, minColor, outC, nil)
+		nil, nil, nil, 1, minDiffYieldHist,
+		maxDiffYieldHist, minColor, outC, convertDiffYieldHistValue)
+	waitForNum++
+	maxDiffYield := minMaxDiffYields(p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist_fut", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist_fut", "Actual"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist_fut", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist_fut", "Actual"}],
+		-9999)
+	minDiffYield := maxDiffYieldHist*-1 - 10
+	convertDiffYieldValue := func(val int) string {
+		if val < minDiffYield {
+			val = minDiffYield
+		}
+		return strconv.Itoa(val)
+	}
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist_fut", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "diff_hist_fut", "Actual"}],
+		&irrLookup,
+		"%s_historical_future.asc",
+		"dev_yield_diff",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Yield Diff ",
+		"yield \\n[t ha$^{\\rm –1}$]",
+		"tab20b",
+		"",
+		nil, nil, nil, 1, minDiffYield,
+		maxDiffYield, minColor, outC, convertDiffYieldValue)
+
+	waitForNum++
+	maxShareAdapt := minMaxDiffYields(p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+		-9999)
+	minShareAdapt := maxShareAdapt*-1 - 1
+	converShareAdaptValue := func(val int) string {
+		if val < minShareAdapt {
+			val = minShareAdapt
+		}
+		return strconv.Itoa(val)
+	}
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+		&irrLookup,
+		"%s_historical_future.asc",
+		"dev_share_MG_adaptation",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Share of MG adaptation in total yield gain",
+		"unit",
+		"tab20b",
+		"",
+		nil, nil, nil, 1, minShareAdapt,
+		maxShareAdapt, minColor, outC, converShareAdaptValue)
 
 	waitForNum++
 	convertMinValue := func(val int) string {
@@ -2424,12 +2501,30 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 		if isHistorical(key.climateSenario) {
 			// histMG in future
 			histMGInfuture := ScenarioKeyTuple{key.treatNo, "fut_avg", key.comment}
-			diffKey := ScenarioKeyTuple{key.treatNo, "diff_hist", key.comment}
-			p.yieldDiffDeviationGridsAll[diffKey] = newSmallGridLookup(maxRefNo, -1)
+			diffKeyhist := ScenarioKeyTuple{key.treatNo, "diff_hist", key.comment}
+			diffKeyhistfuture := ScenarioKeyTuple{key.treatNo, "diff_hist_fut", key.comment}
+			shareAdapt := ScenarioKeyTuple{key.treatNo, "share_adapt", key.comment}
+			p.yieldDiffDeviationGridsAll[diffKeyhist] = newSmallGridLookup(maxRefNo, -9999)
+			p.yieldDiffDeviationGridsAll[diffKeyhistfuture] = newSmallGridLookup(maxRefNo, -9999)
+			p.yieldDiffDeviationGridsAll[shareAdapt] = newSmallGridLookup(maxRefNo, -9999)
+
 			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
+				diffHistValid := false
 				//diff only areas with valid values in past and future
 				if p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] >= 0 && p.maxYieldDeviationGridsAll[key][rIdx] >= 0 {
-					p.yieldDiffDeviationGridsAll[diffKey][rIdx] = p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
+					p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] = p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
+					diffHistValid = true
+				}
+				diffHistFutValid := false
+				//--- diff fut_avg - 0_0
+				if p.maxYieldDeviationGridsAll[key][rIdx] >= 0 && p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] >= 0 {
+					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] = p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
+					diffHistFutValid = true
+				}
+
+				// share_adapt = diff_hist / diff_hist_fut
+				if diffHistFutValid && diffHistValid && p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] != 0 {
+					p.yieldDiffDeviationGridsAll[shareAdapt][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
 				}
 			}
 		}
