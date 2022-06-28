@@ -2511,13 +2511,15 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 				diffHistValid := false
 				//diff only areas with valid values in past and future
-				if p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] >= 0 && p.maxYieldDeviationGridsAll[key][rIdx] >= 0 {
+				if (p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] > 0 || p.maxYieldDeviationGridsAll[key][rIdx] > 0) &&
+					(p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] >= 0 && p.maxYieldDeviationGridsAll[key][rIdx] >= 0) {
 					p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] = p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
 					diffHistValid = true
 				}
 				diffHistFutValid := false
 				//--- diff fut_avg - 0_0
-				if p.maxYieldDeviationGridsAll[key][rIdx] >= 0 && p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] >= 0 {
+				if (p.maxYieldDeviationGridsAll[key][rIdx] > 0 || p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] > 0) &&
+					p.maxYieldDeviationGridsAll[key][rIdx] >= 0 && p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] >= 0 {
 					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] = p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
 					diffHistFutValid = true
 				}
