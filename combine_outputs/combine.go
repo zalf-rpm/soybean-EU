@@ -429,20 +429,19 @@ func main() {
 		maxDiffYield, minColor, outC, convertDiffYieldValue)
 
 	waitForNum++
-	maxShareDiff := minMaxDiffYields(
+	maxShareDiff := maxFromIrrigationGrid(extRow, extCol,
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt_diff", "Unlimited water"}],
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt_diff", "Actual"}],
-		-9999)
-	minShareDiff := maxShareDiff*-1 - 1
+		&gridSourceLookup,
+		&irrLookup)
 
 	minShareDiffRef := minFromIrrigationGrid(extRow, extCol,
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt_diff", "Unlimited water"}],
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt_diff", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup, -9999)
-	if minShareDiffRef < 0 {
-		fmt.Println("warning minShareDiffRef is < 0: ", minShareDiffRef)
-	}
+
+	minShareDiff := minShareDiffRef - 1
 
 	converShareDiffValue := func(val int) string {
 		if val < minShareDiff {
@@ -466,11 +465,12 @@ func main() {
 		maxShareDiff, minColor, outC, converShareDiffValue)
 
 	waitForNum++
-	maxShareAdapt := minMaxDiffYields(
+	maxShareAdapt := maxFromIrrigationGrid(extRow, extCol,
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
 		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
-		-9999)
-	minShareAdapt := maxShareAdapt*-1 - 1
+		&gridSourceLookup,
+		&irrLookup)
+	minShareAdapt := -1
 	converShareAdaptValue := func(val int) string {
 		if val < minShareAdapt {
 			val = minShareAdapt
@@ -2561,12 +2561,15 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 				// share_adapt = diff_hist / diff_hist_fut
 				if diffHistFutValid && diffHistValid &&
 					p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 &&
-					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 {
+					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 &&
+					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]-p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 {
+
 					p.yieldDiffDeviationGridsAll[shareAdapt][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] * 100 / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
 				}
 				// share_adapt_diff = diff_hist_fut - diff_hist (result should be >= 0)
 				if diffHistFutValid && diffHistValid && p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] != 0 &&
 					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] != 0 {
+
 					p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] - p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx]
 				}
 			}
