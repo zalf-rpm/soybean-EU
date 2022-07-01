@@ -355,7 +355,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"Sow Diff",
 		"Average \\ difference \\DOY",
-		"tab20b",
+		"jet",
 		"",
 		nil, nil, nil, 1, absSowMin,
 		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
@@ -400,7 +400,7 @@ func main() {
 		"yield \\n[t ha$^{\\rm –1}$]",
 		"tab20b",
 		"",
-		nil, nil, nil, 1, minDiffYieldHist,
+		nil, nil, nil, 0.001, minDiffYieldHist,
 		maxDiffYieldHist, minColor, outC, convertDiffYieldHistValue)
 	waitForNum++
 	maxDiffYield := minMaxDiffYields(p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "diff_hist_fut", "Unlimited water"}],
@@ -425,7 +425,7 @@ func main() {
 		"yield \\n[t ha$^{\\rm –1}$]",
 		"tab20b",
 		"",
-		nil, nil, nil, 1, minDiffYield,
+		nil, nil, nil, 0.001, minDiffYield,
 		maxDiffYield, minColor, outC, convertDiffYieldValue)
 
 	waitForNum++
@@ -459,9 +459,9 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"Share Diff of MG adaptation in total yield gain",
 		"yield \\n[t ha$^{\\rm –1}$]",
-		"tab20b",
+		"gnuplot",
 		"",
-		nil, nil, nil, 1, minShareDiff,
+		nil, nil, nil, 0.001, minShareDiff,
 		maxShareDiff, minColor, outC, converShareDiffValue)
 
 	waitForNum++
@@ -487,7 +487,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"Share of MG adaptation in total yield gain %",
 		"%",
-		"tab20b",
+		"jet",
 		"",
 		nil, nil, nil, 1, minShareAdapt,
 		maxShareAdapt, minColor, outC, converShareAdaptValue)
