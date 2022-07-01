@@ -579,6 +579,20 @@ func main() {
 		maxMerged, minColor, outC, nil)
 
 	waitForNum++
+	go drawScenarioMaps(gridSourceLookup,
+		p.maxYieldDeviationGridsCompare,
+		asciiOutTemplate,
+		"dev_compare_mg_yield",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "eval"),
+		"(Dev )compare Yield: %v %v",
+		"Yield in t",
+		"jet",
+		"",
+		nil, nil, nil, 0.001, NONEVALUE,
+		int(p.maxAllAvgYield), minColor, outC)
+
+	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
 		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
@@ -2385,76 +2399,99 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 
 func (p *ProcessedData) factorInRisks(maxRefNo int) {
 
-	applyRiskFactor := func(target, risk []int, maxRefNo int) {
+	applyRiskFactor := func(target, risk []int, maxRefNo, riskValue int) {
 		for i := 0; i < maxRefNo; i++ {
 			if risk[i] > 0 {
-				target[i] = 0
+				target[i] = riskValue
 			}
 		}
 	}
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
+	// apply cold spell to historic grids
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
 
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
+	// apply harvest rain to historic grids
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
+	// apply cold spell to future
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
+	// apply harvest rain to future
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo)
+	// apply mask to deviation grids
 
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
+	// apply cold spell to historic grids
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	// apply harvest rain to historic grids
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo)
+	// apply cold spell to future
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	// apply harvest rain to future
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 
-	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
-	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo)
+	// apply cold spell to future
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	// apply harvest rain to future
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+
+	// apply mask to diff grids
+	//apply cold spell
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T2", "diff", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T1", "diff", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T2", "diff", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T1", "diff", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, -365)
+
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T2", "diff", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T1", "diff", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T2", "diff", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, -365)
+	applyRiskFactor(p.sowingDiffGridsAll[ScenarioKeyTuple{"T1", "diff", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, -365)
 
 }
 
