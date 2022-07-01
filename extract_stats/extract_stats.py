@@ -260,13 +260,13 @@ def build() :
     print("------------------------------------------- ")
     print(" --------- compare ------------------------ ")
 
-    print("„Average productivity hist. MG in Future - irrigated:    ",int(avgIrrigatedCompareFuture), "[t ha-1]")
-    print("„Average productivity hist. MG in Future - rainfed:    ",int(avgRainfedCompareFuture), "[t ha-1]")
-    print("„Average productivity hist. MG in Future - total:    ",int(avgCompareFutureMasked), "[t ha-1]")
+    print("Average productivity hist. MG in Future - irrigated:    ",int(avgIrrigatedCompareFuture), "[t ha-1]")
+    print("Average productivity hist. MG in Future - rainfed:    ",int(avgRainfedCompareFuture), "[t ha-1]")
+    print("Average productivity hist. MG in Future - total:    ",int(avgCompareFutureMasked), "[t ha-1]")
 
-    print("„Average productivity diff (future-hist) irrigated:    ",int(avgIrrigatedCompareFuture - avgYieldirrigatedhistorical), "[t ha-1]")
-    print("„Average productivity diff (future-hist) rainfed:    ",int(avgRainfedCompareFuture - avgYieldrainfedhistorical), "[t ha-1]")
-    print("„Average productivity diff (future-hist) total:    ",int(avgCompareFutureMasked -avgYieldhistorcalMasked), "[t ha-1]")
+    print("Average productivity diff (future-hist) irrigated:    ",int(avgIrrigatedCompareFuture - avgYieldirrigatedhistorical), "[t ha-1]")
+    print("Average productivity diff (future-hist) rainfed:    ",int(avgRainfedCompareFuture - avgYieldrainfedhistorical), "[t ha-1]")
+    print("Average productivity diff (future-hist) total:    ",int(avgCompareFutureMasked -avgYieldhistorcalMasked), "[t ha-1]")
     
     print("------------------------------------------- ")
 
