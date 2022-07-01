@@ -26,6 +26,11 @@ def build() :
     asciiClimAvgModelStdFuture = "./extract_stats/{0}/avg_over_models_stdDev.asc.gz"
     asciiModelAvgClimStdFuture = "./extract_stats/{0}/avg_over_climScen_stdDev.asc.gz"
 
+    asciiSowDiff = "./extract_stats/{0}/dev_sowing_dif_historical_future.asc.gz"
+
+    asciiCompareMGYieldFutT1 = "./extract_stats/{0}/dev_compare_mg_yield_future_trnoT1.asc.gz"
+    asciiCompareMGYieldFutT2 = "./extract_stats/{0}/dev_compare_mg_yield_future_trnoT2.asc.gz"
+
     folder = "eval4.5"
     if len(sys.argv) > 1 and __name__ == "__main__":
         for arg in sys.argv[1:]:
@@ -57,6 +62,10 @@ def build() :
     allstdFuture = readFile(asciiAllStdFuture.format(folder))
     stdClimAvgModelFuture = readFile(asciiClimAvgModelStdFuture.format(folder))
     stdModelAvgClimFuture = readFile(asciiModelAvgClimStdFuture.format(folder))
+    sowDiff = readFile(asciiSowDiff.format(folder))
+
+    arrCompareMGYieldFutT1 = readFile(asciiCompareMGYieldFutT1.format(folder))
+    arrCompareMGYieldFutT2 = readFile(asciiCompareMGYieldFutT2.format(folder))
 
 # # for visualization
 #     print("max:")
@@ -104,6 +113,8 @@ def build() :
     rainfedFuture = maskedArrayRainfed(arrYieldfutuT1, irrigated)
     rainfedhistorical = maskedArrayRainfed(arrYieldhistT1, irrigated)    
     
+    rainfedCompareFuture = maskedArrayRainfed(arrCompareMGYieldFutT1, irrigated)
+    irrigatedCompareFuture = maskedArrayIrrigated(arrCompareMGYieldFutT2, irrigated)
 
     avgYieldirrigatedFuture = np.nanmean(irrigatedFuture)
     avgYieldirrigatedhistorical = np.nanmean(irrigatedhistorical)
@@ -112,6 +123,10 @@ def build() :
 
     avgYieldfutureMasked = np.nanmean(np.concatenate((irrigatedFuture, rainfedFuture), axis=None))
     avgYieldhistorcalMasked = np.nanmean(np.concatenate((irrigatedhistorical, rainfedhistorical), axis=None))
+
+    avgIrrigatedCompareFuture = np.nanmean(irrigatedCompareFuture) # irrigated
+    avgRainfedCompareFuture = np.nanmean(rainfedCompareFuture) # rainfed 
+    avgCompareFutureMasked = np.nanmean(np.concatenate((avgIrrigatedCompareFuture, avgRainfedCompareFuture), axis=None)) #Total
 
 
  # 2) Die Soja-Fläche in der Baseline und die Soja-Fläche in der Zukunft 
@@ -220,6 +235,9 @@ def build() :
     avgstdClimAvgModelFuture = np.nanmean(stdClimAvgModelFuture)
     avgstdModelAvgClimFuture = np.nanmean(stdModelAvgClimFuture)
 
+# sow diff 
+    avgSowDiff = np.nanmean(sowDiff)
+
 
     # print("Average Yield future T1:    ",  int(avgYieldfutuT1), "[t ha-1]")
     # print("Average Yield future T2:    ",  int(avgYieldfutuT2), "[t ha-1]")
@@ -239,6 +257,17 @@ def build() :
     print("Average Yield future     :    ", int(avgYieldfutureMasked), "[t ha-1]")
     print("Average Yield historical :    ", int(avgYieldhistorcalMasked), "[t ha-1]")
 
+    print("------------------------------------------- ")
+    print(" --------- compare ------------------------ ")
+
+    print("„Average productivity hist. MG in Future - irrigated:    ",int(avgIrrigatedCompareFuture), "[t ha-1]")
+    print("„Average productivity hist. MG in Future - rainfed:    ",int(avgRainfedCompareFuture), "[t ha-1]")
+    print("„Average productivity hist. MG in Future - total:    ",int(avgCompareFutureMasked), "[t ha-1]")
+
+    print("„Average productivity diff (future-hist) irrigated:    ",int(avgIrrigatedCompareFuture - avgYieldirrigatedhistorical), "[t ha-1]")
+    print("„Average productivity diff (future-hist) rainfed:    ",int(avgRainfedCompareFuture - avgYieldrainfedhistorical), "[t ha-1]")
+    print("„Average productivity diff (future-hist) total:    ",int(avgCompareFutureMasked -avgYieldhistorcalMasked), "[t ha-1]")
+    
     print("------------------------------------------- ")
 
     # print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
@@ -281,6 +310,8 @@ def build() :
     
     print("Standart deviation Climate avg over Model: ", int(avgstdClimAvgModelFuture))
     print("Standart deviation Model avg Climate:      ", int(avgstdModelAvgClimFuture))
+
+    print("Average Sowing Diffenence :      ", int(avgSowDiff), "(days)")
 
 @dataclass
 class AsciiHeader:
