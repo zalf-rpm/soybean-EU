@@ -355,7 +355,7 @@ func main() {
 		filepath.Join(asciiOutFolder, "dev"),
 		"Sow Diff",
 		"Average \\ difference \\DOY",
-		"jet",
+		"tab20b",
 		"",
 		nil, nil, nil, 1, absSowMin,
 		int(absSowMinMax)+1, minColor, outC, convertDiffMinValue)
