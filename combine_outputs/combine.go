@@ -2647,8 +2647,9 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 
 					// share_adapt_diff_perc = share_adapt_diff / diff_hist_fut
 					if p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] >= 0 &&
-						p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 {
-						p.yieldDiffDeviationGridsAll[shareAdaptDiffPerc][rIdx] = p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
+						p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 &&
+						p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] < p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] {
+						p.yieldDiffDeviationGridsAll[shareAdaptDiffPerc][rIdx] = p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] * 100 / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
 					} else {
 						p.yieldDiffDeviationGridsAll[shareLoss][rIdx] = 1
 					}
