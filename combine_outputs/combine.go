@@ -464,10 +464,9 @@ func main() {
 		nil, nil, nil, 0.001, minShareDiff,
 		maxShareDiff, minColor, outC, converShareDiffValue)
 
-	waitForNum++
 	maxShareAdapt := maxFromIrrigationGrid(extRow, extCol,
-		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
-		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt_diff_perc", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt_diff_perc", "Actual"}],
 		&gridSourceLookup,
 		&irrLookup)
 	minShareAdapt := -1
@@ -477,21 +476,53 @@ func main() {
 		}
 		return strconv.Itoa(val)
 	}
+	// waitForNum++
+	// go drawIrrigationMaps(&gridSourceLookup,
+	// 	p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
+	// 	p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+	// 	&irrLookup,
+	// 	"%s_historical_future.asc",
+	// 	"dev_share_MG_adaptation",
+	// 	extCol, extRow, minRow, minCol,
+	// 	filepath.Join(asciiOutFolder, "dev"),
+	// 	"Share of MG adaptation in total yield gain %",
+	// 	"%",
+	// 	"jet",
+	// 	"",
+	// 	nil, nil, nil, 1, minShareAdapt,
+	// 	maxShareAdapt, minColor, outC, converShareAdaptValue)
+
+	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt", "Unlimited water"}],
-		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt", "Actual"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_adapt_diff_perc", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_adapt_diff_perc", "Actual"}],
 		&irrLookup,
 		"%s_historical_future.asc",
-		"dev_share_MG_adaptation",
+		"dev_share_MG_adaptation_2ed",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"Share of MG adaptation in total yield gain %",
+		"Share of MG adaptation in total yield gain % (2ed)",
 		"%",
 		"jet",
 		"",
 		nil, nil, nil, 1, minShareAdapt,
 		maxShareAdapt, minColor, outC, converShareAdaptValue)
 
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T2", "share_loss", "Unlimited water"}],
+		p.yieldDiffDeviationGridsAll[ScenarioKeyTuple{"T1", "share_loss", "Actual"}],
+		&irrLookup,
+		"%s_historical_future.asc",
+		"dev_share_loss",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Area of yield loss by adapt. or clim. change",
+		"%",
+		"jet",
+		"",
+		nil, nil, nil, 1, -1,
+		1, minColor, outC, nil)
 	waitForNum++
 	convertMinValue := func(val int) string {
 		if val <= -365 {
@@ -2572,23 +2603,28 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 			histMGInfuture := ScenarioKeyTuple{key.treatNo, "fut_avg", key.comment}
 			diffKeyhist := ScenarioKeyTuple{key.treatNo, "diff_hist", key.comment}
 			diffKeyhistfuture := ScenarioKeyTuple{key.treatNo, "diff_hist_fut", key.comment}
-			shareAdapt := ScenarioKeyTuple{key.treatNo, "share_adapt", key.comment}
+			//shareAdapt := ScenarioKeyTuple{key.treatNo, "share_adapt", key.comment}
 			shareAdaptDiff := ScenarioKeyTuple{key.treatNo, "share_adapt_diff", key.comment}
+			shareAdaptDiffPerc := ScenarioKeyTuple{key.treatNo, "share_adapt_diff_perc", key.comment}
+			shareLoss := ScenarioKeyTuple{key.treatNo, "share_loss", key.comment}
 			p.yieldDiffDeviationGridsAll[diffKeyhist] = newSmallGridLookup(maxRefNo, -9999)
 			p.yieldDiffDeviationGridsAll[diffKeyhistfuture] = newSmallGridLookup(maxRefNo, -9999)
-			p.yieldDiffDeviationGridsAll[shareAdapt] = newSmallGridLookup(maxRefNo, -9999)
+			//p.yieldDiffDeviationGridsAll[shareAdapt] = newSmallGridLookup(maxRefNo, -9999)
 			p.yieldDiffDeviationGridsAll[shareAdaptDiff] = newSmallGridLookup(maxRefNo, -9999)
+			p.yieldDiffDeviationGridsAll[shareAdaptDiffPerc] = newSmallGridLookup(maxRefNo, -9999)
+			p.yieldDiffDeviationGridsAll[shareLoss] = newSmallGridLookup(maxRefNo, -1)
 
 			for rIdx := 0; rIdx < maxRefNo; rIdx++ {
 				diffHistValid := false
 				//diff only areas with valid values in past and future
+				// diff_hist = (hist. MG as fut_avg) - 0_0
 				if (p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] > 0 || p.maxYieldDeviationGridsAll[key][rIdx] > 0) &&
 					(p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] >= 0 && p.maxYieldDeviationGridsAll[key][rIdx] >= 0) {
 					p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] = p.maxYieldDeviationGridsCompare[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
 					diffHistValid = true
 				}
 				diffHistFutValid := false
-				//--- diff fut_avg - 0_0
+				//--- diff_hist_fut = fut_avg - 0_0
 				if (p.maxYieldDeviationGridsAll[key][rIdx] > 0 || p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] > 0) &&
 					p.maxYieldDeviationGridsAll[key][rIdx] >= 0 && p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] >= 0 {
 					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] = p.maxYieldDeviationGridsAll[histMGInfuture][rIdx] - p.maxYieldDeviationGridsAll[key][rIdx]
@@ -2596,19 +2632,28 @@ func (p *ProcessedData) compareHistoricalFuture(maxRefNo, sourceNum int) {
 				}
 
 				// share_adapt = diff_hist / diff_hist_fut
-				if diffHistFutValid && diffHistValid &&
-					p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 &&
-					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 &&
-					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]-p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 {
+				// if diffHistFutValid && diffHistValid &&
+				// 	p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 &&
+				// 	p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 &&
+				// 	p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]-p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] > 0 {
 
-					p.yieldDiffDeviationGridsAll[shareAdapt][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] * 100 / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
-				}
+				// 	p.yieldDiffDeviationGridsAll[shareAdapt][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] * 100 / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
+				// }
+
 				// share_adapt_diff = diff_hist_fut - diff_hist (result should be >= 0)
 				if diffHistFutValid && diffHistValid && p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx] != 0 &&
 					p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] != 0 {
-
 					p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] = p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] - p.yieldDiffDeviationGridsAll[diffKeyhist][rIdx]
+
+					// share_adapt_diff_perc = share_adapt_diff / diff_hist_fut
+					if p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] >= 0 &&
+						p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx] > 0 {
+						p.yieldDiffDeviationGridsAll[shareAdaptDiffPerc][rIdx] = p.yieldDiffDeviationGridsAll[shareAdaptDiff][rIdx] / p.yieldDiffDeviationGridsAll[diffKeyhistfuture][rIdx]
+					} else {
+						p.yieldDiffDeviationGridsAll[shareLoss][rIdx] = 1
+					}
 				}
+
 			}
 		}
 	}
