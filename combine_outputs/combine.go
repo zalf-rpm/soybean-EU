@@ -501,9 +501,9 @@ func main() {
 		"dev_share_MG_adaptation_2ed",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"Share of MG adaptation in total yield gain % (2ed)",
+		"Maturity group \\nshare [%]",
 		"%",
-		"jet",
+		"gnuplot",
 		"",
 		nil, nil, nil, 1, minShareAdapt,
 		maxShareAdapt, minColor, outC, converShareAdaptValue)
