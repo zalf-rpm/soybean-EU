@@ -1,0 +1,10 @@
+yLabel: 'Latitude'
+YaxisMappingFile: 'map_y_lat_ticks.csv'
+YaxisMappingRefColumn: Bucket
+YaxisMappingTarColumn: Latitude
+YaxisMappingFormat: '{:2.0f}°'
+yTicklist: 
+ - 57
+ - 1207
+ - 2267
+ - 3359
