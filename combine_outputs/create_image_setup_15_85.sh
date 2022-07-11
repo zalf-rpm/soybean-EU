@@ -85,7 +85,7 @@ cp ./with_85/violin_coldSpell_historical.asc.meta ${TARGETFOLDER}/violin_coldSpe
 cp ./with_85/violin_coldSpell_future85.asc.meta ${TARGETFOLDER}/violin_coldSpell_future85.asc.meta
 cp ./with_85/violin_coldSpell_future45.asc.meta ${TARGETFOLDER}/violin_coldSpell_future45.asc.meta
 
-
+# share of MG on adaptation
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_share_MG_adaptation_2ed_historical_future.asc.gz ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future85.asc.gz
 cat ${SOURCEFOLDER}/asciigrid_combined/dev/dev_share_MG_adaptation_2ed_historical_future.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future85.asc.meta
 
@@ -101,6 +101,23 @@ sed -i 's/colormap: .*/colormap: gnuplot/g' ${TARGETFOLDER}/dev_share_MG_adaptat
 MAXVALUE=$( ../sync_versions/sync_versions.exe -source1 ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future45.asc.meta -source2 ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future85.asc.meta)
 sed -i "s/maxValue: .*/maxValue: ${MAXVALUE}/g"  ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future45.asc.meta
 sed -i "s/maxValue: .*/maxValue: ${MAXVALUE}/g" ${TARGETFOLDER}/dev_share_MG_adaptation_2ed_historical_future85.asc.meta
+
+
+#Sowing dates
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_sowing_historical.asc.gz ${TARGETFOLDER}/dev_sowing_historical.asc.gz
+cat ${SOURCEFOLDER}/asciigrid_combined/dev/dev_sowing_historical.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_sowing_historical.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/dev_sowing_historical.asc.meta
+
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_sowing_future.asc.gz ${TARGETFOLDER}/dev_sowing_future45.asc.gz
+cat ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_sowing_future.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_sowing_future45.asc.meta
+sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_sowing_future45.asc.meta
+
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_sowing_future.asc.gz ${TARGETFOLDER}/dev_sowing_future85.asc.gz
+cat ${SOURCEFOLDER}/asciigrid_combined/dev/dev_sowing_future.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_sowing_future85.asc.meta
+sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/dev_sowing_future85.asc.meta
+
+
 
 # irrigation map
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/irrgated_areas.asc.meta ${TARGETFOLDER}/irrgated_areas.asc.meta
