@@ -1605,7 +1605,7 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 			numOccurrenceHigh := make(map[SimKeyTuple]int)
 			numOccurrenceMedium := make(map[SimKeyTuple]int)
 			numOccurrenceLow := make(map[SimKeyTuple]int)
-			numOccurrenceHeat := make(map[SimKeyTuple]int)
+			numOccurrenceHeat := make(map[SimKeyTuple]map[int]int)
 			numWetHarvest := make(map[SimKeyTuple]int)
 			coldSpell := make(map[int]float64, 30)
 			var header ClimateHeader
@@ -1674,9 +1674,9 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 								endDOY := simDoyMature[simKey][yearIndex]
 								if IsDateInGrowSeason(startDOY, endDOY, date) {
 									if _, ok := numOccurrenceHeat[simKey]; !ok {
-										numOccurrenceHeat[simKey] = 0
+										numOccurrenceHeat[simKey] = make(map[int]int)
 									}
-									numOccurrenceHeat[simKey]++
+									numOccurrenceHeat[simKey][yearIndex]++
 								}
 							}
 							// check if this date is harvest
@@ -1714,6 +1714,14 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 				if value <= 5.0 {
 					numTmin++
 				}
+			}
+			// heat stress occurence
+			for simKey, simVal := range numOccurrenceHeat {
+				simValSum := 0
+				for _, val := range simVal {
+					simValSum += val
+				}
+				numOccurrenceHeat[simKey][0] = simValSum / len(dateYearOrder[simKey])
 			}
 
 			p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
@@ -1773,8 +1781,8 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 						}
 						// heat stress occurence
 						if _, ok := numOccurrenceHeat[simKey]; ok {
-							p.heatStressImpactGrid[simKey][idxSource][refIDIndex] = numOccurrenceHeat[simKey]
-							p.setMaxHeatStress(numOccurrenceHeat[simKey])
+							p.heatStressImpactGrid[simKey][idxSource][refIDIndex] = numOccurrenceHeat[simKey][0]
+							p.setMaxHeatStress(numOccurrenceHeat[simKey][0])
 						}
 					}
 				}
