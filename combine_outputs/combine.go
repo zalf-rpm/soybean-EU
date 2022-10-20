@@ -920,6 +920,40 @@ func main() {
 		1, "", outC)
 
 	waitForNum++
+
+	sidebarHeatLabel := []string{
+		"none",
+		"Drought",
+		"Heat",
+		"Drought+Heat",
+	}
+
+	heatColorList := []string{
+		"lightgrey", // default
+		"orange",    // drought risk
+		"violet",    // heat risk
+		"deeppink",  // both
+	}
+
+	heatTicklist := make([]float64, len(sidebarHeatLabel))
+	for tick := 0; tick < len(heatTicklist); tick++ {
+		heatTicklist[tick] = float64(tick) + 0.5
+	}
+
+	go drawMaps(gridSourceLookup,
+		p.heatDroughtRiskDeviationGridsAll,
+		asciiOutCombinedTemplate,
+		"dev_drought_heat_risk",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(dev) drought + heat risk: %v",
+		"",
+		"",
+		"",
+		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0,
+		1, "", outC)
+
+	waitForNum++
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
 		p.coldSpellGrid,
@@ -1324,6 +1358,7 @@ type ProcessedData struct {
 	signDroughtYieldLossDeviationGridsAll map[string][]int
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
+	heatDroughtRiskDeviationGridsAll      map[string][]int
 	harvestRainGridsSumAll                map[string][]int
 	harvestRainDeviationGridsSumAll       map[string][]int
 	shortSeasonGridSumAll                 map[string][]int
@@ -1433,6 +1468,7 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.droughtRiskGridsAll = make(map[string][]int)
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
+	p.heatDroughtRiskDeviationGridsAll = make(map[string][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonGridSumAll = make(map[string][]int)
@@ -2224,6 +2260,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.heatDroughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainDeviationGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
@@ -2498,7 +2535,14 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 
 			droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGridsAll[otherKey], simValue, maxRefNo)
 			p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
+
+			heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
+				p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey],
+				maxRefNo)
+			p.heatDroughtRiskDeviationGridsAll[scenarioKey.climateSenario] = heatDroughtGrid
+
 		}
+
 	}
 }
 
@@ -3101,6 +3145,34 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 
 	return newGridDiff
 }
+
+func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGridT1 []int, maxRef int) []int {
+	// calculate the difference between 2 grids, save it to new grid
+	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
+	for ref := 0; ref < maxRef; ref++ {
+		if yieldGridT2[ref] != NONEVALUE && yieldGridT1[ref] != NONEVALUE &&
+			heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
+			newGridDiff[ref] = 0
+			if yieldGridT1[ref] < 2000 {
+				gridT1value := 1
+				if yieldGridT1[ref] > 1 {
+					gridT1value = yieldGridT1[ref]
+				}
+				if yieldGridT2[ref] > (gridT1value + gridT1value/2) {
+					newGridDiff[ref] = 1
+				}
+			}
+			if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
+				newGridDiff[ref]++
+			}
+		} else {
+			newGridDiff[ref] = NONEVALUE
+		}
+	}
+
+	return newGridDiff
+}
+
 func gridMaxVal(gridT2, gridT1 []int, maxRef int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newMaxGrid := newSmallGridLookup(maxRef, NONEVALUE)
