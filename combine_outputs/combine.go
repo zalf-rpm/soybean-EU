@@ -1669,10 +1669,10 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 								}
 							}
 							// check for heat stress during flowering
-							if tmax > 30 {
+							if tmax > 32 {
 								startDOY := simDoyFlower[simKey][yearIndex]
 								endDOY := simDoyMature[simKey][yearIndex]
-								if IsDateInGrowSeason(startDOY, endDOY, date) {
+								if IsDateInGrowSeason(startDOY, endDOY, date) && endDOY-startDOY < 35 {
 									if _, ok := numOccurrenceHeat[simKey]; !ok {
 										numOccurrenceHeat[simKey] = make(map[int]int)
 									}
