@@ -951,7 +951,7 @@ func main() {
 		"",
 		"",
 		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0,
-		1, "", outC)
+		len(sidebarHeatLabel)-1, "", outC)
 
 	waitForNum++
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}

@@ -16,6 +16,7 @@ def build() :
     asciiYieldhistT1 = "./extract_stats/{0}/dev_max_yield_historical_trnoT1.asc.gz"
     asciiYieldhistT2 = "./extract_stats/{0}/dev_max_yield_historical_trnoT2.asc.gz"
     irrigatedArea = "./extract_stats/{0}/irrgated_areas.asc.gz"
+    cropland_mask = "./extract_stats/{0}/crop_land_mask_historical.asc.gz"
 
     asciiAllRisksHistorical = "./extract_stats/{0}/dev_allRisks_historical.asc.gz"
     asciiAllRisksFuture = "./extract_stats/{0}/dev_allRisks_future.asc.gz"
@@ -41,7 +42,7 @@ def build() :
     def readFile(file) :
         print("File:", file)
         header = readAsciiHeader(file)
-        ascii_data_array = np.loadtxt(header.ascii_path, dtype=np.float, skiprows=6)
+        ascii_data_array = np.loadtxt(header.ascii_path, dtype=float, skiprows=6)
         # Set the nodata values to nan
         ascii_data_array[ascii_data_array == header.ascii_nodata] = np.nan
         #print(file)
@@ -57,6 +58,7 @@ def build() :
     arrYieldhistT1 = readFile(asciiYieldhistT1.format(folder))
     arrYieldhistT2 = readFile(asciiYieldhistT2.format(folder))
     irrigated = readFile(irrigatedArea.format(folder))
+    cropland = readFile(cropland_mask.format(folder))
 
     allstdHist = readFile(asciiAllStdHistorical.format(folder))
     allstdFuture = readFile(asciiAllStdFuture.format(folder))
@@ -107,6 +109,16 @@ def build() :
                 if not math.isnan(arr[r][c]) and math.isnan(irrigated[r][c]):
                     resultArray[r][c] = arr[r][c]
         return resultArray
+
+    def maskedArrayCropland(arr, cropland) : 
+        numrows = len(arr)    
+        numcols = len(arr[0])
+        resultArray = np.full((numrows, numcols), np.nan)
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr[r][c]) and not math.isnan(cropland[r][c]):
+                    resultArray[r][c] = arr[r][c] * cropland[r][c]
+        return resultArray
  
     irrigatedFuture = maskedArrayIrrigated(arrYieldfutuT2, irrigated)
     irrigatedhistorical = maskedArrayIrrigated(arrYieldhistT2, irrigated)
@@ -141,6 +153,11 @@ def build() :
     areaYieldirrgatedhistorical = np.count_nonzero(~np.isnan(irrigatedhistorical))
     areaYieldrainfedFuture = np.count_nonzero(~np.isnan(rainfedFuture))
     areaYieldrainfedhistorical = np.count_nonzero(~np.isnan(rainfedhistorical))
+
+    areaYieldirrgatedFutureMasked = np.sum(maskedArrayCropland(~np.isnan(irrigatedFuture),cropland))
+    areaYieldirrgatedhistoricalMasked = np.sum(maskedArrayCropland(~np.isnan(irrigatedhistorical),cropland))
+    areaYieldrainfedFutureMasked = np.sum(maskedArrayCropland(~np.isnan(rainfedFuture),cropland))
+    areaYieldrainfedhistoricalMasked = np.sum(maskedArrayCropland(~np.isnan(rainfedhistorical),cropland))
 
 
  # 3) den durchschnittlichen Ertrag pro Fläche auf den Soja-Flächen der Baseline im Vergleich mit genau diesen Flächen in der Zukunft (flächentreu) und den durchschnittlichen Ertrag pro Fläche auf den Flächen die in der Zukunft neu hinzugekommen sind.
@@ -281,6 +298,12 @@ def build() :
     print("Soybean Area irrgated historical: ", areaYieldirrgatedhistorical, "(1x1km pixel)")
     print("Soybean Area rainfed future:      ", areaYieldrainfedFuture, "(1x1km pixel)")
     print("Soybean Area rainfed historical:  ", areaYieldrainfedhistorical, "(1x1km pixel)")
+
+    #print("Soybean Area Mask rainfed future:     ", areaYieldfutureMasked, "(1x1km pixel)")
+    print("Soybean Cropland Area irrgated future:     ", areaYieldirrgatedFutureMasked, "(1x1km pixel)")
+    print("Soybean Cropland Area irrgated historical: ", areaYieldirrgatedhistoricalMasked, "(1x1km pixel)")
+    print("Soybean Cropland Area rainfed future:      ", areaYieldrainfedFutureMasked, "(1x1km pixel)")
+    print("Soybean Cropland Area rainfed historical: ", areaYieldrainfedhistoricalMasked, "(1x1km pixel)")
 
     print("Soybean Area All future:  ", areaYieldrainfedFuture + areaYieldirrgatedFuture, "(1x1km pixel)")
     print("Soybean Area All historical:  ", areaYieldrainfedhistorical + areaYieldirrgatedhistorical, "(1x1km pixel)")
