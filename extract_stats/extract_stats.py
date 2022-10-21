@@ -117,7 +117,7 @@ def build() :
         for r in range(numrows) :
             for c in range(numcols) :
                 if not math.isnan(arr[r][c]) and not math.isnan(cropland[r][c]):
-                    resultArray[r][c] = arr[r][c] * cropland[r][c]
+                    resultArray[r][c] = arr[r][c] * (cropland[r][c]/100)
         return resultArray
  
     irrigatedFuture = maskedArrayIrrigated(arrYieldfutuT2, irrigated)
@@ -154,10 +154,10 @@ def build() :
     areaYieldrainfedFuture = np.count_nonzero(~np.isnan(rainfedFuture))
     areaYieldrainfedhistorical = np.count_nonzero(~np.isnan(rainfedhistorical))
 
-    areaYieldirrgatedFutureMasked = np.sum(maskedArrayCropland(~np.isnan(irrigatedFuture),cropland))
-    areaYieldirrgatedhistoricalMasked = np.sum(maskedArrayCropland(~np.isnan(irrigatedhistorical),cropland))
-    areaYieldrainfedFutureMasked = np.sum(maskedArrayCropland(~np.isnan(rainfedFuture),cropland))
-    areaYieldrainfedhistoricalMasked = np.sum(maskedArrayCropland(~np.isnan(rainfedhistorical),cropland))
+    areaYieldirrgatedFutureMasked = np.nansum(maskedArrayCropland(~np.isnan(irrigatedFuture),cropland))
+    areaYieldirrgatedhistoricalMasked = np.nansum(maskedArrayCropland(~np.isnan(irrigatedhistorical),cropland))
+    areaYieldrainfedFutureMasked = np.nansum(maskedArrayCropland(~np.isnan(rainfedFuture),cropland))
+    areaYieldrainfedhistoricalMasked = np.nansum(maskedArrayCropland(~np.isnan(rainfedhistorical),cropland))
 
 
  # 3) den durchschnittlichen Ertrag pro Fläche auf den Soja-Flächen der Baseline im Vergleich mit genau diesen Flächen in der Zukunft (flächentreu) und den durchschnittlichen Ertrag pro Fläche auf den Flächen die in der Zukunft neu hinzugekommen sind.
@@ -299,15 +299,17 @@ def build() :
     print("Soybean Area rainfed future:      ", areaYieldrainfedFuture, "(1x1km pixel)")
     print("Soybean Area rainfed historical:  ", areaYieldrainfedhistorical, "(1x1km pixel)")
 
-    #print("Soybean Area Mask rainfed future:     ", areaYieldfutureMasked, "(1x1km pixel)")
-    print("Soybean Cropland Area irrgated future:     ", areaYieldirrgatedFutureMasked, "(1x1km pixel)")
-    print("Soybean Cropland Area irrgated historical: ", areaYieldirrgatedhistoricalMasked, "(1x1km pixel)")
-    print("Soybean Cropland Area rainfed future:      ", areaYieldrainfedFutureMasked, "(1x1km pixel)")
-    print("Soybean Cropland Area rainfed historical: ", areaYieldrainfedhistoricalMasked, "(1x1km pixel)")
-
     print("Soybean Area All future:  ", areaYieldrainfedFuture + areaYieldirrgatedFuture, "(1x1km pixel)")
-    print("Soybean Area All historical:  ", areaYieldrainfedhistorical + areaYieldirrgatedhistorical, "(1x1km pixel)")
+    print("Soybean Area All historical:  ", areaYieldrainfedhistorical + areaYieldirrgatedhistorical, "(1x1km pixel)")    
 
+    #print("Soybean Area Mask rainfed future:     ", areaYieldfutureMasked, "(1x1km pixel)")
+    print("Soybean Cropland Area irrgated future:     ", int(areaYieldirrgatedFutureMasked), "(1x1km pixel)")
+    print("Soybean Cropland Area irrgated historical: ", int(areaYieldirrgatedhistoricalMasked), "(1x1km pixel)")
+    print("Soybean Cropland Area rainfed future:      ", int(areaYieldrainfedFutureMasked), "(1x1km pixel)")
+    print("Soybean Cropland Area rainfed historical: ", int(areaYieldrainfedhistoricalMasked), "(1x1km pixel)")
+
+    print("Soybean Cropland Area All future:  ", int(areaYieldirrgatedFutureMasked + areaYieldrainfedFutureMasked), "(1x1km pixel)")
+    print("Soybean Cropland Area All historical:  ", int(areaYieldirrgatedhistoricalMasked + areaYieldrainfedhistoricalMasked), "(1x1km pixel)")   
 
     # print("Future Yield on baseline T1:", int(areaYieldT1), "[t ha-1]")
     # print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
