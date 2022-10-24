@@ -267,23 +267,8 @@
 #             - file: avg_over_models_stdDev_future45.asc.gz
 #             - file: avg_over_models_stdDev_future85.asc.gz
 
-# - image: 
-#     name: share_MG_adaptation_historical_future
-#     sizeX: 7
-#     sizeY: 4
-#     adjBottom: 0.15
-#     adjTop: 0.95
-#     adRight: 0.80
-#     adLeft: 0.05
-#     adhspace: 0.0
-#     adwspace: 0.01
-#     rows:
-#         - row:
-#             - sharedColorBar : True
-#             - file: dev_share_MG_adaptation_2ed_historical_future45.asc.gz
-#             - file: dev_share_MG_adaptation_2ed_historical_future85.asc.gz
 - image: 
-    name: sowingdates_historical_future
+    name: share_MG_adaptation_historical_future
     sizeX: 7
     sizeY: 4
     adjBottom: 0.15
@@ -295,9 +280,24 @@
     rows:
         - row:
             - sharedColorBar : True
-            - file: dev_sowing_historical.asc.gz
-            - file: dev_sowing_future45.asc.gz
-            - file: dev_sowing_future85.asc.gz
+            - file: dev_share_MG_adaptation_2ed_historical_future45.asc.gz
+            - file: dev_share_MG_adaptation_2ed_historical_future85.asc.gz
+# - image: 
+#     name: sowingdates_historical_future
+#     sizeX: 7
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.80
+#     adLeft: 0.05
+#     adhspace: 0.0
+#     adwspace: 0.01
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: dev_sowing_historical.asc.gz
+#             - file: dev_sowing_future45.asc.gz
+#             - file: dev_sowing_future85.asc.gz
 
 # - image: 
 #     name: std_deviation_model_and_climate
