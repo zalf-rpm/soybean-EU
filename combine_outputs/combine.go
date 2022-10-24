@@ -804,7 +804,7 @@ func main() {
 		"dev_heat_stress_days",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "eval"),
-		"(Dev) heat > 30°C: %v %v",
+		"(Dev) heat > 32°C: %v %v",
 		"avg. days",
 		"plasma", "",
 		nil, nil, nil, 1.0,
@@ -3163,7 +3163,11 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 				}
 			}
 			if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
-				newGridDiff[ref]++
+				if newGridDiff[ref] == 1 {
+					newGridDiff[ref] = 3
+				} else {
+					newGridDiff[ref] = 2
+				}
 			}
 		} else {
 			newGridDiff[ref] = NONEVALUE
