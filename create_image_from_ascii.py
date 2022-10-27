@@ -1136,7 +1136,7 @@ def plotLayer(fig, ax, idxCol, numCols, asciiHeader, meta, subtitle, onlyOnce, p
         if meta.showbars :
             axins = inset_axes(ax,
             width="5%",  # width = 5% of parent_bbox width
-            height="89%",  # height : 50%
+            height="85%",  # height : 50% --if more than 3 lable lines then set to 85% 
             loc='lower left',
             bbox_to_anchor=(1.05, 0., 1, 1),
             bbox_transform=ax.transAxes,
