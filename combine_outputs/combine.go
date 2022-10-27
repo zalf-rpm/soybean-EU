@@ -528,9 +528,8 @@ func main() {
 		"dev_share_MG_adaptation_2ed",
 		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		// "Maturity group \\nshare [%]",
-		"Share of the \\n adaptation neffect [%]",
-		"%",
+		"Maturity group share [%]",
+		"Share of the \\nadaptation \\neffect [%]",
 		"gnuplot",
 		"",
 		nil, nil, nil, 1, minShareAdapt,
@@ -969,6 +968,7 @@ func main() {
 		"Drought",
 		"Heat",
 		"Drought+Heat",
+		"",
 	}
 
 	heatColorList := []string{
@@ -1288,6 +1288,117 @@ func main() {
 		p.harvestRainDeviationGridsSumAll["0_0"],
 	)
 
+	sidebarMoreRiskLabel := []string{
+		"none",
+		"Short season (S)",
+		"Cold snap (C)",
+		"S+C",
+		"Drought (D)",
+		"D+S",
+		"D+C",
+		"D+S+C",
+		"Heat (H)",
+		"H+S",
+		"H+C",
+		"H+S+C",
+		"H+D",
+		"H+S+D",
+		"H+C+D",
+		"H+C+S+D",
+		"Harvest rain (R)",
+		"R+S",
+		"R+C",
+		"R+S+C",
+		"R+D",
+		"R+S+D",
+		"R+C+D",
+		"R+C+S+D",
+		"R+H",
+		"R+S+H",
+		"R+C+H",
+		"R+S+C+H",
+		"R+D+H",
+		"R+S+D+H",
+		"R+C+D+H",
+		"R+C+S+D+H",
+	}
+
+	riskMoreColorList := []string{
+		"lightgrey",            // default
+		"cyan",                 // shortSeason
+		"mediumpurple",         // coldspell
+		"rebeccapurple",        // shortSeason + coldspell
+		"orange",               // drought risk
+		"violet",               // drought risk + shortSeason
+		"pink",                 // drought risk + coldspell
+		"deeppink",             // drought risk + shortSeason + coldspell
+		"yellow",               // heat risk
+		"gold",                 // heat risk + shortSeason
+		"goldenrod",            // heat risk + coldspell
+		"darkgoldenrod",        // heat risk + shortSeason + coldspell
+		"darkkhaki",            // heat risk + drought risk
+		"khaki",                // heat risk + shortSeason + drought risk
+		"palegoldenrod",        // heat risk + coldspell + drought risk
+		"lightgoldenrodyellow", // heat risk + shortSeason + coldspell + drought risk
+		"limegreen",            // harvest rain
+		"lightseagreen",        // harvest rain + shortSeason
+		"seagreen",             // harvest rain + coldspell
+		"darkgreen",            // harvest rain + shortSeason + coldspell
+		"olive",                // harvest rain + drought risk
+		"olivedrab",            // harvest rain + shortSeason + drought risk
+		"darkolivegreen",       // harvest rain + coldspell + drought risk
+		"darkslategray",        // harvest rain + shortSeason + coldspell + drought risk
+		"lightgreen",           // harvest rain + heat risk
+		"greenyellow",          // harvest rain + shortSeason + heat risk
+		"chartreuse",           // harvest rain + coldspell + heat risk
+		"lawngreen",            // harvest rain + shortSeason + coldspell + heat risk
+		"darkseagreen",         // harvest rain + drought risk + heat risk
+		"mediumseagreen",       // harvest rain + shortSeason + drought risk + heat risk
+		"mediumaquamarine",     // harvest rain + coldspell + drought risk + heat risk
+		"mediumspringgreen",    // harvest rain + shortSeason + coldspell + drought risk + heat risk
+	}
+	ristMoreTicklist := make([]float64, len(sidebarMoreRiskLabel))
+	for tick := 0; tick < len(ristTicklist); tick++ {
+		ristTicklist[tick] = float64(tick) + 0.5
+	}
+
+	waitForNum++
+	go drawMergedMaps(gridSourceLookup,
+		"%s_future.asc",
+		"dev_allRisks_5",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Future",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		16, "", outC,
+		p.shortSeasonDeviationGridSumAll["fut_avg"],
+		p.coldSpellGrid["fut_avg"],
+		p.droughtRiskDeviationGridsAll["fut_avg"],
+		p.heatRiskDeviationGridsAll["fut_avg"],
+		p.harvestRainDeviationGridsSumAll["fut_avg"],
+	)
+	waitForNum++
+	go drawMergedMaps(gridSourceLookup,
+		"%s_historical.asc",
+		"dev_allRisks_5",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Historical",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		16, "", outC,
+		p.shortSeasonDeviationGridSumAll["0_0"],
+		p.coldSpellGrid["0_0"],
+		p.droughtRiskDeviationGridsAll["0_0"],
+		p.heatRiskDeviationGridsAll["0_0"],
+		p.harvestRainDeviationGridsSumAll["0_0"],
+	)
+
 	for waitForNum > 0 {
 		progessStatus := <-outC
 		waitForNum--
@@ -1404,6 +1515,7 @@ type ProcessedData struct {
 	signDroughtYieldLossDeviationGridsAll map[string][]int
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
+	heatRiskDeviationGridsAll             map[string][]int
 	heatDroughtRiskDeviationGridsAll      map[string][]int
 	harvestRainGridsSumAll                map[string][]int
 	harvestRainDeviationGridsSumAll       map[string][]int
@@ -1518,6 +1630,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.droughtRiskGridsAll = make(map[string][]int)
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
 	p.heatDroughtRiskDeviationGridsAll = make(map[string][]int)
+	p.heatRiskDeviationGridsAll = make(map[string][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonGridSumAll = make(map[string][]int)
@@ -2327,6 +2440,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.droughtRiskGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.heatDroughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.heatRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainDeviationGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
@@ -2620,6 +2734,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 				maxRefNo)
 			p.heatDroughtRiskDeviationGridsAll[scenarioKey.climateSenario] = heatDroughtGrid
 
+			heatGrid := gridHeatRisk(p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey], maxRefNo)
+			p.heatRiskDeviationGridsAll[scenarioKey.climateSenario] = heatGrid
 		}
 
 	}
@@ -3265,6 +3381,23 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 	return newGridDiff
 }
 
+func gridHeatRisk(heatGridT2, heatGridT1 []int, maxRef int) []int {
+	// calculate the difference between 2 grids, save it to new grid
+	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
+	for ref := 0; ref < maxRef; ref++ {
+		if heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
+			newGridDiff[ref] = 0
+			if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
+				newGridDiff[ref] = 1
+			}
+		} else {
+			newGridDiff[ref] = NONEVALUE
+		}
+	}
+
+	return newGridDiff
+}
+
 func gridMaxVal(gridT2, gridT1 []int, maxRef int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newMaxGrid := newSmallGridLookup(maxRef, NONEVALUE)
@@ -3711,7 +3844,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		for idSim := 0; idSim < simValuesLen; idSim++ {
 			val := simValues[idSim][ref]
 			if val != 0 && val != 1 {
-				fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+				//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
 				if val < 0 {
 					val = 0
 				} else {
@@ -3720,6 +3853,25 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			}
 
 			merged[ref] = (val << idSim) + merged[ref]
+		}
+	}
+	listToCrunch := make([]int, 1)
+	var stringBuilder strings.Builder
+	// print a statistic of which varations are present
+	for i := 0; i < (1 << simValuesLen); i++ {
+		count := 0
+		for _, val := range merged {
+			// check if bit is set
+			if (val & (1 << i)) != 0 {
+				count++
+			}
+		}
+		if count > 0 {
+			listToCrunch = append(listToCrunch, i)
+		}
+		_, err := stringBuilder.WriteString(fmt.Sprintln(i, cbarLabel[i], count))
+		if err != nil {
+			log.Println(err)
 		}
 	}
 
@@ -3731,7 +3883,69 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 	file.Close()
 	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
 
-	outC <- filenameDescPart
+	if len(listToCrunch) > 1 {
+		// write crunched file
+		gridFileName = strings.Replace(gridFileName, ".asc", "_crunched.asc", 1)
+		gridFilePath = filepath.Join(asciiOutFolder, gridFileName)
+		file = writeAGridHeader(gridFilePath, extCol, extRow)
+
+		for ref := 0; ref < numRefs; ref++ {
+
+			counter := 0
+			mergeVal := merged[ref]
+			for _, val := range listToCrunch {
+				if mergeVal > val {
+					counter++
+				}
+			}
+			merged[ref] -= counter
+		}
+
+		contains := func(s []int, e int) bool {
+			for _, a := range s {
+				if a == e {
+					return true
+				}
+			}
+			return false
+		}
+		removeStrFromList := func(inList []string, rem []int) []string {
+			if inList != nil {
+				newList := make([]string, 0, len(inList)-len(listToCrunch))
+				index := 0
+				for _, val := range inList {
+					if !contains(listToCrunch, index) {
+						newList = append(newList, val)
+					}
+				}
+				return newList
+			}
+			return nil
+		}
+		removeFloatFromList := func(inList []float64, rem []int) []float64 {
+			if inList != nil {
+				newList := make([]float64, 0, len(inList)-len(listToCrunch))
+				index := 0
+				for _, val := range inList {
+					if !contains(listToCrunch, index) {
+						newList = append(newList, val)
+					}
+				}
+				return newList
+			}
+			return nil
+		}
+		cbarLabel = removeStrFromList(cbarLabel, listToCrunch)
+		ticklist = removeFloatFromList(ticklist, listToCrunch)
+		colorlist = removeStrFromList(colorlist, listToCrunch)
+
+		writeRows(file, extRow, extCol, merged, gridSourceLookup)
+		file.Close()
+		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
+
+	}
+
+	outC <- stringBuilder.String()
 }
 
 // func drawScenarioPerModelMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][][]int, filenameFormat, filenameDescPart string, numsource, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
