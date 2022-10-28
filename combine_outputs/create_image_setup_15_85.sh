@@ -157,19 +157,15 @@ cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_future.asc.gz ${TARGETF
 sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_allRisks_future45.asc.meta
 
 # all risk heatmaps with 5 risks
-cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_historical.asc.meta ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta
+cat ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_historical.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_historical.asc.gz ${TARGETFOLDER}/dev_allRisks_5_historical.asc.gz
 sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta
-cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_future.asc.meta ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta
+cat ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_future.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_allRisks_5_future.asc.gz ${TARGETFOLDER}/dev_allRisks_5_future85.asc.gz
 sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta
-cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_5_future.asc.meta ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
+cat ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_5_future.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_5_future.asc.gz ${TARGETFOLDER}/dev_allRisks_5_future45.asc.gz
 sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
-
-cat ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
-cat ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta
-cat ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta
 
 # all std
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.gz
