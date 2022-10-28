@@ -167,6 +167,10 @@ cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_5_future.asc.meta ${TAR
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_allRisks_5_future.asc.gz ${TARGETFOLDER}/dev_allRisks_5_future45.asc.gz
 sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
 
+cat ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future45.asc.meta
+cat ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_historical.asc.meta
+cat ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/dev_allRisks_5_future85.asc.meta
+
 # all std
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future85.asc.gz
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/avg_over_climScen_stdDev.asc.gz ${TARGETFOLDER}/avg_over_climScen_stdDev_future45.asc.gz
