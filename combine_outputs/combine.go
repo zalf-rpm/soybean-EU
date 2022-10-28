@@ -1358,8 +1358,8 @@ func main() {
 		"mediumspringgreen",    // harvest rain + shortSeason + coldspell + drought risk + heat risk
 	}
 	ristMoreTicklist := make([]float64, len(sidebarMoreRiskLabel))
-	for tick := 0; tick < len(ristTicklist); tick++ {
-		ristTicklist[tick] = float64(tick) + 0.5
+	for tick := 0; tick < len(ristMoreTicklist); tick++ {
+		ristMoreTicklist[tick] = float64(tick)*0.96875 + 0.484375
 	}
 
 	waitForNum++
@@ -1373,7 +1373,7 @@ func main() {
 		"",
 		"",
 		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		16, "", outC,
+		31, "", outC,
 		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
@@ -1391,7 +1391,7 @@ func main() {
 		"",
 		"",
 		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		16, "", outC,
+		31, "", outC,
 		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
@@ -3909,7 +3909,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			}
 			return false
 		}
-		removeStrFromList := func(inList []string, rem []int) []string {
+		removeStrFromList := func(inList []string) []string {
 			if inList != nil {
 				newList := make([]string, 0, len(inList)-len(listToCrunch))
 				index := 0
@@ -3917,12 +3917,13 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 					if !contains(listToCrunch, index) {
 						newList = append(newList, val)
 					}
+					index++
 				}
 				return newList
 			}
 			return nil
 		}
-		removeFloatFromList := func(inList []float64, rem []int) []float64 {
+		removeFloatFromList := func(inList []float64) []float64 {
 			if inList != nil {
 				newList := make([]float64, 0, len(inList)-len(listToCrunch))
 				index := 0
@@ -3930,18 +3931,19 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 					if !contains(listToCrunch, index) {
 						newList = append(newList, val)
 					}
+					index++
 				}
 				return newList
 			}
 			return nil
 		}
-		cbarLabel = removeStrFromList(cbarLabel, listToCrunch)
-		ticklist = removeFloatFromList(ticklist, listToCrunch)
-		colorlist = removeStrFromList(colorlist, listToCrunch)
+		newcbarLabel := removeStrFromList(cbarLabel)
+		newticklist := removeFloatFromList(ticklist)
+		newcolorlist := removeStrFromList(colorlist)
 
 		writeRows(file, extRow, extCol, merged, gridSourceLookup)
 		file.Close()
-		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
+		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, newcolorlist, newcbarLabel, newticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
 
 	}
 
