@@ -3861,12 +3861,11 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 	for i := 0; i < (1 << simValuesLen); i++ {
 		count := 0
 		for _, val := range merged {
-			// check if bit is set
-			if (val & (1 << i)) != 0 {
+			if val == i {
 				count++
 			}
 		}
-		if count > 0 {
+		if count == 0 {
 			listToCrunch = append(listToCrunch, i)
 		}
 		_, err := stringBuilder.WriteString(fmt.Sprintln(i, cbarLabel[i], count))
