@@ -846,7 +846,7 @@ func main() {
 		"dev_heat_stress_days",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "eval"),
-		"(Dev) heat > 30°C during flower: %v %v",
+		"(Dev) heat stress during flower: %v %v",
 		"avg. days",
 		"plasma", "",
 		nil, nil, nil, 1.0,
@@ -1362,8 +1362,7 @@ func main() {
 		ristMoreTicklist[tick] = float64(tick)*0.96875 + 0.484375
 	}
 
-	waitForNum++
-	go drawMergedMaps(gridSourceLookup,
+	crunchFut := drawMergedMaps(gridSourceLookup,
 		"%s_future.asc",
 		"dev_allRisks_5",
 		extCol, extRow,
@@ -1373,15 +1372,15 @@ func main() {
 		"",
 		"",
 		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", outC,
+		31, "", nil,
 		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
 		p.heatRiskDeviationGridsAll["fut_avg"],
 		p.harvestRainDeviationGridsSumAll["fut_avg"],
 	)
-	waitForNum++
-	go drawMergedMaps(gridSourceLookup,
+
+	crunchHist := drawMergedMaps(gridSourceLookup,
 		"%s_historical.asc",
 		"dev_allRisks_5",
 		extCol, extRow,
@@ -1391,13 +1390,78 @@ func main() {
 		"",
 		"",
 		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", outC,
+		31, "", nil,
 		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
 		p.heatRiskDeviationGridsAll["0_0"],
 		p.harvestRainDeviationGridsSumAll["0_0"],
 	)
+
+	if len(crunchFut) > 0 && len(crunchHist) > 0 {
+		mergedCrunch := make([]int, 0, 1)
+		idxf := 0
+		idxh := 0
+		maxlen := max(len(crunchFut), len(crunchHist))
+		for i := 0; i < maxlen; i++ {
+			if idxf >= len(crunchFut) {
+				break
+			}
+			if idxh >= len(crunchHist) {
+				break
+			}
+			if crunchFut[idxf] == crunchHist[idxh] {
+				mergedCrunch = append(mergedCrunch, crunchFut[idxf])
+				idxf++
+				idxh++
+			} else if crunchFut[idxf] < crunchHist[idxh] {
+				idxf++
+			} else {
+				idxh++
+			}
+
+		}
+		if len(mergedCrunch) > 0 {
+			waitForNum++
+			go drawCrunchMaps(gridSourceLookup,
+				"%s_future.asc",
+				"dev_allRisks_5",
+				extCol, extRow,
+				filepath.Join(asciiOutFolder, "dev"),
+				"Future",
+				"Risk factors",
+				"",
+				"",
+				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+				31, "", outC,
+				p.shortSeasonDeviationGridSumAll["fut_avg"],
+				p.coldSpellGrid["fut_avg"],
+				p.droughtRiskDeviationGridsAll["fut_avg"],
+				p.heatRiskDeviationGridsAll["fut_avg"],
+				p.harvestRainDeviationGridsSumAll["fut_avg"],
+			)
+			waitForNum++
+			go drawCrunchMaps(gridSourceLookup,
+				"%s_historical.asc",
+				"dev_allRisks_5",
+				extCol, extRow,
+				filepath.Join(asciiOutFolder, "dev"),
+				"Historical",
+				"Risk factors",
+				"",
+				"",
+				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+				31, "", outC,
+				mergedCrunch,
+				p.shortSeasonDeviationGridSumAll["0_0"],
+				p.coldSpellGrid["0_0"],
+				p.droughtRiskDeviationGridsAll["0_0"],
+				p.heatRiskDeviationGridsAll["0_0"],
+				p.harvestRainDeviationGridsSumAll["0_0"],
+			)
+		}
+
+	}
 
 	for waitForNum > 0 {
 		progessStatus := <-outC
@@ -1451,6 +1515,7 @@ type ProcessedData struct {
 	coolWeatherImpactWeightGrid map[SimKeyTuple][][]int
 	wetHarvestGrid              map[SimKeyTuple][][]int
 	heatStressImpactGrid        map[SimKeyTuple][][]int
+	heatStressYearsGrid         map[SimKeyTuple][][]int
 	coldSpellGrid               map[string][]int
 	coldTempGrid                map[string][]int
 	sumMaxOccurrence            int
@@ -1462,6 +1527,7 @@ type ProcessedData struct {
 	sumMediumOccurrence         int
 	sumHighOccurrence           int
 	maxHeatStressDays           int
+	maxHeatStressYears          int
 	matGroupIDGrids             map[string]int
 	invMatGroupIDGrids          map[int]string
 
@@ -1474,6 +1540,7 @@ type ProcessedData struct {
 	harvestRainGrids                   map[ScenarioKeyTuple][][]int
 	harvestRainDeviationGrids          map[ScenarioKeyTuple][][]int
 	heatStressImpactDeviationGrids     map[ScenarioKeyTuple][][]int
+	heatStressYearDeviationGrids       map[ScenarioKeyTuple][][]int
 	coolweatherDeathGrids              map[ScenarioKeyTuple][][]int
 	coolweatherDeathDeviationGrids     map[ScenarioKeyTuple][][]int
 	potentialWaterStress               map[string][][]int
@@ -1498,6 +1565,7 @@ type ProcessedData struct {
 	harvestRainGridsAll                   map[ScenarioKeyTuple][]int
 	harvestRainDeviationGridsAll          map[ScenarioKeyTuple][]int
 	heatStressImpactDeviationGridsAll     map[ScenarioKeyTuple][]int
+	heatStressYearDeviationGridsAll       map[ScenarioKeyTuple][]int
 	coolweatherDeathGridsAll              map[ScenarioKeyTuple][]int
 	coolweatherDeathDeviationGridsAll     map[ScenarioKeyTuple][]int
 	potentialWaterStressAll               map[string][]int
@@ -1551,6 +1619,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.coolWeatherImpactWeightGrid = make(map[SimKeyTuple][][]int)
 	p.wetHarvestGrid = make(map[SimKeyTuple][][]int)
 	p.heatStressImpactGrid = make(map[SimKeyTuple][][]int)
+	p.heatStressYearsGrid = make(map[SimKeyTuple][][]int)
 	p.coldSpellGrid = make(map[string][]int)
 	p.coldTempGrid = make(map[string][]int)
 	p.allYieldGridsMergedModels = make(map[SimKeyTuple][]int)
@@ -1588,6 +1657,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.harvestRainGrids = make(map[ScenarioKeyTuple][][]int)
 	p.harvestRainDeviationGrids = make(map[ScenarioKeyTuple][][]int)
 	p.heatStressImpactDeviationGrids = make(map[ScenarioKeyTuple][][]int)
+	p.heatStressYearDeviationGrids = make(map[ScenarioKeyTuple][][]int)
 	p.coolweatherDeathGrids = make(map[ScenarioKeyTuple][][]int)
 	p.coolweatherDeathDeviationGrids = make(map[ScenarioKeyTuple][][]int)
 	p.potentialWaterStress = make(map[string][][]int)
@@ -1614,6 +1684,7 @@ func (p *ProcessedData) initProcessedData() {
 	p.harvestRainGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.harvestRainDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.heatStressImpactDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
+	p.heatStressYearDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
 
 	p.sowingScenGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.sowingDiffGridsAll = make(map[ScenarioKeyTuple][]int)
@@ -1868,7 +1939,7 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 								}
 							}
 							// check for heat stress during flowering
-							if tmax > 30 {
+							if (tmax > 30 && simKey.treatNo == "T1") || (tmax > 34.5 && simKey.treatNo == "T2") {
 								startDOY := simDoyFlower[simKey][yearIndex]
 								endDOY := simDoyMature[simKey][yearIndex]
 								if IsDateInGrowSeason(startDOY, endDOY, date) && endDOY-startDOY < 32 {
@@ -1917,10 +1988,15 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 			// heat stress occurence
 			for simKey, simVal := range numOccurrenceHeat {
 				simValSum := 0
+				simValSum3Days := 0
 				for _, val := range simVal {
 					simValSum += val
+					if val >= 3 {
+						simValSum3Days++
+					}
 				}
 				numOccurrenceHeat[simKey][0] = simValSum / len(dateYearOrder[simKey])
+				numOccurrenceHeat[simKey][-1] = simValSum3Days
 			}
 
 			p.coldTempGrid[scenario][refIDIndex] = int(math.Round(tmin))
@@ -1982,6 +2058,10 @@ func (p *ProcessedData) loadAndProcess(idxSource int, sourceFolder []string, sou
 						if _, ok := numOccurrenceHeat[simKey]; ok {
 							p.heatStressImpactGrid[simKey][idxSource][refIDIndex] = numOccurrenceHeat[simKey][0]
 							p.setMaxHeatStress(numOccurrenceHeat[simKey][0])
+						}
+						if _, ok := numOccurrenceHeat[simKey]; ok {
+							p.heatStressYearsGrid[simKey][idxSource][refIDIndex] = numOccurrenceHeat[simKey][-1]
+							p.setMaxHeatStressYears(numOccurrenceHeat[simKey][-1])
 						}
 					}
 				}
@@ -2096,6 +2176,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 		p.harvestRainGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
 		p.harvestRainDeviationGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
 		p.heatStressImpactDeviationGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
+		p.heatStressYearDeviationGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
 		p.coolweatherDeathGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
 		p.coolweatherDeathDeviationGrids[futureSimKey] = newGridLookup(numSource, maxRefNo, -1)
 		p.deviationClimScenAvgOverModel[futureSimKey] = newSmallGridLookup(maxRefNo, 0)
@@ -2112,6 +2193,7 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 				numharvestRainGrids := 0
 				numharvestRainDeviationGrids := 0
 				numHeatStressImpactDeviationGrids := 0
+				numHeatStressYearDeviationGrids := 0
 				numcoolweatherDeathGrids := 0
 				numcoolweatherDeathDeviationGrids := 0
 				numSowingGrids := 0
@@ -2149,6 +2231,13 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 							p.heatStressImpactDeviationGrids[futureSimKey][sIdx][rIdx] = 0
 						}
 						p.heatStressImpactDeviationGrids[futureSimKey][sIdx][rIdx] = p.heatStressImpactDeviationGrids[futureSimKey][sIdx][rIdx] + p.heatStressImpactDeviationGrids[scenariokey][sIdx][rIdx]
+					}
+					if p.heatStressYearDeviationGrids[scenariokey][sIdx][rIdx] >= 0 {
+						numHeatStressYearDeviationGrids++
+						if p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] < 0 {
+							p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] = 0
+						}
+						p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] = p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] + p.heatStressYearDeviationGrids[scenariokey][sIdx][rIdx]
 					}
 					if p.coolweatherDeathGrids[scenariokey][sIdx][rIdx] >= 0 {
 						numcoolweatherDeathGrids++
@@ -2198,6 +2287,9 @@ func (p *ProcessedData) mergeFuture(maxRefNo, numSource int) {
 				}
 				if numHeatStressImpactDeviationGrids > 0 {
 					p.heatStressImpactDeviationGrids[futureSimKey][sIdx][rIdx] = p.heatStressImpactDeviationGrids[futureSimKey][sIdx][rIdx] / numHeatStressImpactDeviationGrids
+				}
+				if numHeatStressYearDeviationGrids > 0 {
+					p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] = p.heatStressYearDeviationGrids[futureSimKey][sIdx][rIdx] / numHeatStressYearDeviationGrids
 				}
 				if numcoolweatherDeathGrids > 0 {
 					p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] = p.coolweatherDeathGrids[futureSimKey][sIdx][rIdx] / numcoolweatherDeathGrids
@@ -2301,6 +2393,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 			p.harvestRainGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
 			p.harvestRainDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
 			p.heatStressImpactDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
+			p.heatStressYearDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
 			p.coolweatherDeathGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
 			p.coolweatherDeathDeviationGrids[scenarioKey] = newGridLookup(numSources, maxRefNo, -1)
 			p.shortSeasonGrid[scenarioKey] = newGridLookup(numSources, maxRefNo, 0)
@@ -2347,6 +2440,7 @@ func (p *ProcessedData) calcYieldMatDistribution(maxRefNo, numSources int) {
 					matGroupDevKey := SimKeyTuple{scenarioKey.treatNo, scenarioKey.climateSenario, matGroupDev, scenarioKey.comment}
 					p.harvestRainDeviationGrids[scenarioKey][sourceID][ref] = p.wetHarvestGrid[matGroupDevKey][sourceID][ref]
 					p.heatStressImpactDeviationGrids[scenarioKey][sourceID][ref] = p.heatStressImpactGrid[matGroupDevKey][sourceID][ref]
+					p.heatStressYearDeviationGrids[scenarioKey][sourceID][ref] = p.heatStressYearsGrid[matGroupDevKey][sourceID][ref]
 					p.coolweatherDeathDeviationGrids[scenarioKey][sourceID][ref] = p.coolWeatherDeathGrid[matGroupDevKey][sourceID][ref]
 					p.shortSeasonDeviationGrid[scenarioKey][sourceID][ref] = p.simNoMaturityGrid[matGroupDevKey][sourceID][ref]
 				} else {
@@ -2431,6 +2525,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.harvestRainGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.harvestRainDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.heatStressImpactDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
+			p.heatStressYearDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.coolweatherDeathGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.coolweatherDeathDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, -1)
 			p.potentialWaterStressAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, -1)
@@ -2471,6 +2566,7 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			numharvestRainGrids := 0
 			numharvestRainDeviationGrids := 0
 			numHeatStressImpactDeviationGrids := 0
+			numHeatStressYearDeviationGrids := 0
 			numcoolweatherDeathGrids := 0
 			numcoolweatherDeathDeviationGrids := 0
 			numsowingScenGrids := 0
@@ -2504,6 +2600,13 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 						p.heatStressImpactDeviationGridsAll[mergedKey][rIdx] = 0
 					}
 					p.heatStressImpactDeviationGridsAll[mergedKey][rIdx] = p.heatStressImpactDeviationGridsAll[mergedKey][rIdx] + p.heatStressImpactDeviationGrids[mergedKey][sIdx][rIdx]
+				}
+				if p.heatStressYearDeviationGrids[mergedKey][sIdx][rIdx] >= 0 {
+					numHeatStressYearDeviationGrids++
+					if p.heatStressYearDeviationGridsAll[mergedKey][rIdx] < 0 {
+						p.heatStressYearDeviationGridsAll[mergedKey][rIdx] = 0
+					}
+					p.heatStressYearDeviationGridsAll[mergedKey][rIdx] = p.heatStressYearDeviationGridsAll[mergedKey][rIdx] + p.heatStressYearDeviationGrids[mergedKey][sIdx][rIdx]
 				}
 
 				if p.coolweatherDeathGrids[mergedKey][sIdx][rIdx] >= 0 {
@@ -2571,6 +2674,9 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			}
 			if numHeatStressImpactDeviationGrids > 0 {
 				p.heatStressImpactDeviationGridsAll[mergedKey][rIdx] = p.heatStressImpactDeviationGridsAll[mergedKey][rIdx] / numHeatStressImpactDeviationGrids
+			}
+			if numHeatStressYearDeviationGrids > 0 {
+				p.heatStressYearDeviationGridsAll[mergedKey][rIdx] = p.heatStressYearDeviationGridsAll[mergedKey][rIdx] / numHeatStressYearDeviationGrids
 			}
 			if numsowingScenGrids > 0 {
 				// avg sowing date over all Scn and models
@@ -2729,12 +2835,16 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			droughtRiskGrid := gridDroughtRisk(p.maxYieldDeviationGridsAll[otherKey], simValue, maxRefNo)
 			p.droughtRiskDeviationGridsAll[scenarioKey.climateSenario] = droughtRiskGrid
 
+			// heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
+			// 	p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey],
+			// 	maxRefNo, 3)
 			heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
-				p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey],
-				maxRefNo)
+				p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey],
+				maxRefNo, 6)
 			p.heatDroughtRiskDeviationGridsAll[scenarioKey.climateSenario] = heatDroughtGrid
 
-			heatGrid := gridHeatRisk(p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey], maxRefNo)
+			//heatGrid := gridHeatRisk(p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey], maxRefNo, 3)
+			heatGrid := gridHeatRisk(p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey], maxRefNo, 6)
 			p.heatRiskDeviationGridsAll[scenarioKey.climateSenario] = heatGrid
 		}
 
@@ -3115,6 +3225,13 @@ func (p *ProcessedData) setMaxHeatStress(val int) {
 	}
 	p.mux.Unlock()
 }
+func (p *ProcessedData) setMaxHeatStressYears(val int) {
+	p.mux.Lock()
+	if p.maxHeatStressYears < val {
+		p.maxHeatStressYears = val
+	}
+	p.mux.Unlock()
+}
 
 func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]float64, numSoures, maxRefNo int) bool {
 
@@ -3136,6 +3253,7 @@ func (p *ProcessedData) setOutputGridsGenerated(simulations map[SimKeyTuple][]fl
 			p.coolWeatherImpactWeightGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.wetHarvestGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			p.heatStressImpactGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
+			p.heatStressYearsGrid[simKey] = newGridLookup(numSoures, maxRefNo, -1)
 			if _, ok := p.coldSpellGrid[simKey.climateSenario]; !ok {
 				p.coldSpellGrid[simKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			}
@@ -3350,7 +3468,7 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 	return newGridDiff
 }
 
-func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGridT1 []int, maxRef int) []int {
+func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGridT1 []int, maxRef int, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
@@ -3366,7 +3484,8 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 					newGridDiff[ref] = 1
 				}
 			}
-			if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
+			// OLD if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
+			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
 				if newGridDiff[ref] == 1 {
 					newGridDiff[ref] = 3
 				} else {
@@ -3381,13 +3500,14 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 	return newGridDiff
 }
 
-func gridHeatRisk(heatGridT2, heatGridT1 []int, maxRef int) []int {
+func gridHeatRisk(heatGridT2, heatGridT1 []int, maxRef, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
 		if heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
 			newGridDiff[ref] = 0
-			if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
+
+			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
 				newGridDiff[ref] = 1
 			}
 		} else {
@@ -3835,7 +3955,7 @@ func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int,
 	outC <- filenameDescPart
 }
 
-func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
+func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) (listToCrunch []int) {
 
 	simValuesLen := len(simValues)
 	numRefs := len(simValues[0])
@@ -3855,10 +3975,10 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
-	listToCrunch := make([]int, 1)
+	listToCrunch = make([]int, 0, 1)
 	var stringBuilder strings.Builder
 	// print a statistic of which varations are present
-	for i := 0; i < (1 << simValuesLen); i++ {
+	for i := 1; i < (1 << simValuesLen); i++ {
 		count := 0
 		for _, val := range merged {
 			if val == i {
@@ -3871,6 +3991,35 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		_, err := stringBuilder.WriteString(fmt.Sprintln(i, cbarLabel[i], count))
 		if err != nil {
 			log.Println(err)
+		}
+	}
+	if outC != nil {
+		outC <- filenameDescPart
+	} else {
+		fmt.Println(stringBuilder.String())
+	}
+
+	return listToCrunch
+}
+
+func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, listToCrunch []int, simValues ...[]int) {
+
+	simValuesLen := len(simValues)
+	numRefs := len(simValues[0])
+	merged := make([]int, numRefs)
+	for ref := 0; ref < numRefs; ref++ {
+		for idSim := 0; idSim < simValuesLen; idSim++ {
+			val := simValues[idSim][ref]
+			if val != 0 && val != 1 {
+				//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+				if val < 0 {
+					val = 0
+				} else {
+					val = 1
+				}
+			}
+
+			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
 
@@ -3922,23 +4071,15 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			}
 			return nil
 		}
-		removeFloatFromList := func(inList []float64) []float64 {
-			if inList != nil {
-				newList := make([]float64, 0, len(inList)-len(listToCrunch))
-				index := 0
-				for _, val := range inList {
-					if !contains(listToCrunch, index) {
-						newList = append(newList, val)
-					}
-					index++
-				}
-				return newList
-			}
-			return nil
-		}
+
 		newcbarLabel := removeStrFromList(cbarLabel)
-		newticklist := removeFloatFromList(ticklist)
 		newcolorlist := removeStrFromList(colorlist)
+		newticklist := make([]float64, len(newcbarLabel))
+		tickfactor := float64(len(newcbarLabel)-1) / float64(len(newcbarLabel))
+		tickfactorStep := factor / 2
+		for tick := 0; tick < len(newticklist); tick++ {
+			newticklist[tick] = float64(tick)*tickfactor + tickfactorStep
+		}
 
 		writeRows(file, extRow, extCol, merged, gridSourceLookup)
 		file.Close()
@@ -3946,7 +4087,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 
 	}
 
-	outC <- stringBuilder.String()
+	outC <- filenameDescPart
 }
 
 // func drawScenarioPerModelMaps(gridSourceLookup [][]int, grids map[ScenarioKeyTuple][][]int, filenameFormat, filenameDescPart string, numsource, extCol, extRow int, asciiOutFolder, titleFormat, labelText string, colormap string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string) {
