@@ -1449,7 +1449,9 @@ func main() {
 				"",
 				"",
 				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-				31, "", outC,
+				31, "",
+				mergedCrunch,
+				outC,
 				p.shortSeasonDeviationGridSumAll["fut_avg"],
 				p.coldSpellGrid["fut_avg"],
 				p.droughtRiskDeviationGridsAll["fut_avg"],
@@ -1467,8 +1469,8 @@ func main() {
 				"",
 				"",
 				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-				31, "", outC,
-				mergedCrunch,
+				31, "",
+				mergedCrunch, outC,
 				p.shortSeasonDeviationGridSumAll["0_0"],
 				p.coldSpellGrid["0_0"],
 				p.droughtRiskDeviationGridsAll["0_0"],
@@ -4028,7 +4030,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 	return listToCrunch
 }
 
-func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, listToCrunch []int, simValues ...[]int) {
+func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, listToCrunch []int, outC chan string, simValues ...[]int) {
 	if len(listToCrunch) > 1 {
 		simValuesLen := len(simValues)
 		numRefs := len(simValues[0])
