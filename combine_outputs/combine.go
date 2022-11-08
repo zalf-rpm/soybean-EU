@@ -846,8 +846,21 @@ func main() {
 		"dev_heat_stress_days",
 		extCol, extRow,
 		filepath.Join(asciiOutFolder, "eval"),
-		"(Dev) heat stress during flower: %v %v",
+		"(Dev) heat stress days during flower: %v %v",
 		"avg. days",
+		"plasma", "",
+		nil, nil, nil, 1.0,
+		0, p.maxHeatStressDays, minColor, outC)
+	waitForNum++
+
+	go drawScenarioMaps(gridSourceLookup,
+		p.heatStressYearDeviationGridsAll,
+		asciiOutTemplate,
+		"dev_heat_stress_years",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "eval"),
+		"(Dev) years with heat stress during flower: %v %v",
+		"avg. years",
 		"plasma", "",
 		nil, nil, nil, 1.0,
 		0, p.maxHeatStressDays, minColor, outC)
@@ -1397,6 +1410,8 @@ func main() {
 		p.heatRiskDeviationGridsAll["0_0"],
 		p.harvestRainDeviationGridsSumAll["0_0"],
 	)
+	fmt.Println("crunchFut", crunchFut)
+	fmt.Println("crunchHist", crunchHist)
 
 	if len(crunchFut) > 0 && len(crunchHist) > 0 {
 		mergedCrunch := make([]int, 0, 1)
@@ -1422,6 +1437,7 @@ func main() {
 
 		}
 		if len(mergedCrunch) > 0 {
+			fmt.Println("mergedCrunch", mergedCrunch)
 			waitForNum++
 			go drawCrunchMaps(gridSourceLookup,
 				"%s_future.asc",
@@ -3975,8 +3991,18 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
+
+	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
+	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+	file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+	writeRows(file, extRow, extCol, merged, gridSourceLookup)
+	file.Close()
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
 	listToCrunch = make([]int, 0, 1)
 	var stringBuilder strings.Builder
+	stringBuilder.WriteString(fmt.Sprintln(filenameDescPart))
 	// print a statistic of which varations are present
 	for i := 1; i < (1 << simValuesLen); i++ {
 		count := 0
@@ -4003,39 +4029,31 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 }
 
 func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, listToCrunch []int, simValues ...[]int) {
-
-	simValuesLen := len(simValues)
-	numRefs := len(simValues[0])
-	merged := make([]int, numRefs)
-	for ref := 0; ref < numRefs; ref++ {
-		for idSim := 0; idSim < simValuesLen; idSim++ {
-			val := simValues[idSim][ref]
-			if val != 0 && val != 1 {
-				//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
-				if val < 0 {
-					val = 0
-				} else {
-					val = 1
-				}
-			}
-
-			merged[ref] = (val << idSim) + merged[ref]
-		}
-	}
-
-	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
-	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
-	file := writeAGridHeader(gridFilePath, extCol, extRow)
-
-	writeRows(file, extRow, extCol, merged, gridSourceLookup)
-	file.Close()
-	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
-
 	if len(listToCrunch) > 1 {
+		simValuesLen := len(simValues)
+		numRefs := len(simValues[0])
+		merged := make([]int, numRefs)
+		for ref := 0; ref < numRefs; ref++ {
+			for idSim := 0; idSim < simValuesLen; idSim++ {
+				val := simValues[idSim][ref]
+				if val != 0 && val != 1 {
+					//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+					if val < 0 {
+						val = 0
+					} else {
+						val = 1
+					}
+				}
+
+				merged[ref] = (val << idSim) + merged[ref]
+			}
+		}
+
 		// write crunched file
+		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
 		gridFileName = strings.Replace(gridFileName, ".asc", "_crunched.asc", 1)
-		gridFilePath = filepath.Join(asciiOutFolder, gridFileName)
-		file = writeAGridHeader(gridFilePath, extCol, extRow)
+		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+		file := writeAGridHeader(gridFilePath, extCol, extRow)
 
 		for ref := 0; ref < numRefs; ref++ {
 
@@ -4059,15 +4077,21 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		}
 		removeStrFromList := func(inList []string) []string {
 			if inList != nil {
-				newList := make([]string, 0, len(inList)-len(listToCrunch))
-				index := 0
-				for _, val := range inList {
-					if !contains(listToCrunch, index) {
-						newList = append(newList, val)
+				lenNewList := len(inList) - len(listToCrunch)
+				if lenNewList > 0 {
+					newList := make([]string, 0, lenNewList)
+
+					for index, val := range inList {
+						if !contains(listToCrunch, index) {
+							newList = append(newList, val)
+						}
 					}
-					index++
+					return newList
+				} else {
+					fmt.Println("Error: not enough entries for crunched map: ", lenNewList)
+					fmt.Println("In:", inList)
+					fmt.Println("ListToCrunch:", listToCrunch)
 				}
-				return newList
 			}
 			return nil
 		}
