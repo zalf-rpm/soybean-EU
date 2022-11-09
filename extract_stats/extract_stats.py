@@ -18,8 +18,10 @@ def build() :
     irrigatedArea = "./extract_stats/{0}/irrgated_areas.asc.gz"
     cropland_mask = "./extract_stats/{0}/crop_land_mask_historical.asc.gz"
 
-    asciiAllRisksHistorical = "./extract_stats/{0}/dev_allRisks_historical.asc.gz"
-    asciiAllRisksFuture = "./extract_stats/{0}/dev_allRisks_future.asc.gz"
+    # asciiAllRisksHistorical = "./extract_stats/{0}/dev_allRisks_historical.asc.gz"
+    # asciiAllRisksFuture = "./extract_stats/{0}/dev_allRisks_future.asc.gz"
+    asciiAllRisksHistorical = "./extract_stats/{0}/dev_allRisks_5_historical.asc.gz"
+    asciiAllRisksFuture = "./extract_stats/{0}/dev_allRisks_5_future.asc.gz"
 
     asciiAllStdHistorical = "./extract_stats/{0}/all_historical_stdDev.asc.gz"
     asciiAllStdFuture = "./extract_stats/{0}/all_future_stdDev.asc.gz"
@@ -119,6 +121,37 @@ def build() :
                 if not math.isnan(arr[r][c]) and not math.isnan(cropland[r][c]):
                     resultArray[r][c] = arr[r][c] * (cropland[r][c]/100)
         return resultArray
+
+    def maskedNanMeanCropland(arr, cropland) : 
+        numrows = len(arr)    
+        numcols = len(arr[0])
+        sumW    = 0
+        sumB    = 0
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr[r][c]) and not math.isnan(cropland[r][c]):
+                    sumW = sumW + cropland[r][c]
+                    sumB = sumB + (arr[r][c] * cropland[r][c])
+        return sumB/sumW
+
+    def maskedNanMeanCroplandConcat(arr, arr2, cropland) : 
+        numrows = len(arr)    
+        numcols = len(arr[0])
+        sumW    = 0
+        sumB    = 0
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr[r][c]) and not math.isnan(cropland[r][c]):
+                    sumW = sumW + cropland[r][c]
+                    sumB = sumB + (arr[r][c] * cropland[r][c])
+        for r in range(numrows) :
+            for c in range(numcols) :
+                if not math.isnan(arr2[r][c]) and not math.isnan(cropland[r][c]):
+                    sumW = sumW + cropland[r][c]
+                    sumB = sumB + (arr2[r][c] * cropland[r][c])
+
+        return sumB/sumW
+    
  
     irrigatedFuture = maskedArrayIrrigated(arrYieldfutuT2, irrigated)
     irrigatedhistorical = maskedArrayIrrigated(arrYieldhistT2, irrigated)
@@ -133,12 +166,25 @@ def build() :
     avgYieldrainfedFuture = np.nanmean(rainfedFuture)
     avgYieldrainfedhistorical = np.nanmean(rainfedhistorical)
 
+    avgYieldCroplandIrrigatedFuture = maskedNanMeanCropland(irrigatedFuture,cropland)
+    avgYieldCroplandIrrigatedhistorical = maskedNanMeanCropland(irrigatedhistorical,cropland)
+    avgYieldCroplandRainfedFuture = maskedNanMeanCropland(rainfedFuture,cropland)
+    avgYieldCroplandRainfedhistorical = maskedNanMeanCropland(rainfedhistorical,cropland)
+
     avgYieldfutureMasked = np.nanmean(np.concatenate((irrigatedFuture, rainfedFuture), axis=None))
     avgYieldhistorcalMasked = np.nanmean(np.concatenate((irrigatedhistorical, rainfedhistorical), axis=None))
+
+    avgYieldCroplandfutureMasked = maskedNanMeanCroplandConcat(irrigatedFuture, rainfedFuture,cropland)
+    avgYieldCroplandhistorcalMasked = maskedNanMeanCroplandConcat(irrigatedhistorical, rainfedhistorical,cropland)
 
     avgIrrigatedCompareFuture = np.nanmean(irrigatedCompareFuture) # irrigated
     avgRainfedCompareFuture = np.nanmean(rainfedCompareFuture) # rainfed 
     avgCompareFutureMasked = np.nanmean(np.concatenate((avgIrrigatedCompareFuture, avgRainfedCompareFuture), axis=None)) #Total
+
+    avgCroplandIrrigatedCompareFuture = maskedNanMeanCropland(irrigatedCompareFuture,cropland) # irrigated
+    avgCroplandRainfedCompareFuture = maskedNanMeanCropland(rainfedCompareFuture,cropland) # rainfed 
+    avgCroplandCompareFutureMasked = np.nanmean(np.concatenate((avgCroplandIrrigatedCompareFuture, avgCroplandRainfedCompareFuture), axis=None)) #Total
+
 
 
  # 2) Die Soja-Fläche in der Baseline und die Soja-Fläche in der Zukunft 
@@ -221,21 +267,29 @@ def build() :
     arrAllRisksFuture = arrAllRisksFuture.astype('int')
 
     # bit mask
-	# 1 shortSeason
-	# 2 coldspell
-	#  shortSeason + coldspell
-	# 4 drought risk
-	#  drought risk + shortSeason
-	#  drought risk + coldspell
-	#  drought risk + shortSeason + coldspell
-	# 8 harvest rain
-	#  harvest rain + shortSeason
-	#  harvest rain + coldspell
-	#  harvest rain + shortSeason + coldspell
-	#  harvest rain + drought risk
-	#  harvest rain + shortSeason + drought risk
-	#  harvest rain + coldspell + drought risk
-	#  harvest rain + shortSeason + coldspell + drought risk
+	# 1  shortSeason
+	# 2  coldspell
+	#    shortSeason + coldspell
+	# 4  drought risk
+	#    drought risk + shortSeason
+	#    drought risk + coldspell
+	#    drought risk + shortSeason + coldspell
+	# 8  heat stress
+    #    heat stress + shortSeason
+    #    heat stress + coldspell
+    #    heat stress + shortSeason + coldspell
+    #    heat stress + drought risk
+    #    heat stress + drought risk + shortSeason
+    #    heat stress + drought risk + coldspell
+    #    heat stress + drought risk + shortSeason + coldspell
+    # 16 harvest rain
+	#    harvest rain + shortSeason
+	#    harvest rain + coldspell
+	#    harvest rain + shortSeason + coldspell
+	#    harvest rain + drought risk
+	#    harvest rain + shortSeason + drought risk
+	#    harvest rain + coldspell + drought risk
+	#    harvest rain + shortSeason + coldspell + drought risk
 	
     valShortSeasonRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 1) > 0))
     valShortSeasonRisksFuture = np.count_nonzero(((arrAllRisksFuture & 1) > 0))
@@ -243,8 +297,10 @@ def build() :
     valColdSpellRisksFuture = np.count_nonzero(((arrAllRisksFuture & 2) > 0))
     valDroughtRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 4) > 0))
     valDroughtRisksFuture = np.count_nonzero(((arrAllRisksFuture & 4) > 0))
-    valHarvestRainRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 8) > 0))
-    valHarvestRainRisksFuture = np.count_nonzero(((arrAllRisksFuture & 8) > 0))
+    valHeatRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 8) > 0))
+    valHeatRisksFuture = np.count_nonzero(((arrAllRisksFuture & 8) > 0))
+    valHarvestRainRisksHistorical = np.count_nonzero(((arrAllRisksHistorical & 16) > 0))
+    valHarvestRainRisksFuture = np.count_nonzero(((arrAllRisksFuture & 16) > 0))
 
 # std deviation historic and future
     avgAllStdDevFuture = np.nanmean(allstdFuture)
@@ -266,6 +322,7 @@ def build() :
 
     # print("micra: ")
 
+    print("----------Avg. Yields--------------- ")
     print("Average Yield future irrig:   ", int(avgYieldirrigatedFuture), "[t ha-1]")
     print("Average Yield future rainfed: ", int(avgYieldrainfedFuture), "[t ha-1]")
     print("Average Yield hist. irrig:    ", int(avgYieldirrigatedhistorical), "[t ha-1]")
@@ -274,26 +331,45 @@ def build() :
     print("Average Yield future     :    ", int(avgYieldfutureMasked), "[t ha-1]")
     print("Average Yield historical :    ", int(avgYieldhistorcalMasked), "[t ha-1]")
 
-    print("------------------------------------------- ")
-    print(" --------- compare ------------------------ ")
+    print("----------Apply Cropland mask--------------- ")
 
-    print("Average productivity hist. MG in Future - irrigated:    ",int(avgIrrigatedCompareFuture), "[t ha-1]")
-    print("Average productivity hist. MG in Future - rainfed:    ",int(avgRainfedCompareFuture), "[t ha-1]")
-    print("Average productivity hist. MG in Future - total:    ",int(avgCompareFutureMasked), "[t ha-1]")
+    print("Average Yield in Cropland future irrig:   ", int(avgYieldCroplandIrrigatedFuture), "[t ha-1]")
+    print("Average Yield in Cropland future rainfed: ", int(avgYieldCroplandRainfedFuture), "[t ha-1]")
+    print("Average Yield in Cropland hist. irrig:    ", int(avgYieldCroplandIrrigatedhistorical), "[t ha-1]")
+    print("Average Yield in Cropland hist. rainfed:  ", int(avgYieldCroplandRainfedhistorical), "[t ha-1]")
 
-    print("Average productivity diff (future-hist) irrigated:    ",int(avgIrrigatedCompareFuture - avgYieldirrigatedhistorical), "[t ha-1]")
-    print("Average productivity diff (future-hist) rainfed:    ",int(avgRainfedCompareFuture - avgYieldrainfedhistorical), "[t ha-1]")
-    print("Average productivity diff (future-hist) total:    ",int(avgCompareFutureMasked -avgYieldhistorcalMasked), "[t ha-1]")
+    print("Average Yield in Cropland future     :    ", int(avgYieldCroplandfutureMasked), "[t ha-1]")
+    print("Average Yield in Cropland historical :    ", int(avgYieldCroplandhistorcalMasked), "[t ha-1]")
+
+
+    print(" --------- compare yields------------------------ ")
+
+    print("Average productivity hist. MG in Future - irrigated: ",int(avgIrrigatedCompareFuture), "[t ha-1]")
+    print("Average productivity hist. MG in Future - rainfed:   ",int(avgRainfedCompareFuture), "[t ha-1]")
+    print("Average productivity hist. MG in Future - total:     ",int(avgCompareFutureMasked), "[t ha-1]")
+
+    print("Average productivity diff (future-hist) irrigated: ",int(avgIrrigatedCompareFuture - avgYieldirrigatedhistorical), "[t ha-1]")
+    print("Average productivity diff (future-hist) rainfed:   ",int(avgRainfedCompareFuture - avgYieldrainfedhistorical), "[t ha-1]")
+    print("Average productivity diff (future-hist) total:     ",int(avgCompareFutureMasked -avgYieldhistorcalMasked), "[t ha-1]")
     
-    print("------------------------------------------- ")
+    print("----------Apply Cropland mask-------------- ")
 
+    print("Average productivity in Cropland hist. MG in Future - irrigated: ",int(avgCroplandIrrigatedCompareFuture), "[t ha-1]")
+    print("Average productivity in Cropland hist. MG in Future - rainfed:   ",int(avgCroplandRainfedCompareFuture), "[t ha-1]")
+    print("Average productivity in Cropland hist. MG in Future - total:     ",int(avgCroplandCompareFutureMasked), "[t ha-1]")
+
+    print("Average productivity in Cropland diff (future-hist) irrigated:   ",int(avgCroplandIrrigatedCompareFuture - avgYieldCroplandIrrigatedhistorical), "[t ha-1]")
+    print("Average productivity in Cropland diff (future-hist) rainfed:     ",int(avgCroplandRainfedCompareFuture - avgYieldCroplandRainfedhistorical), "[t ha-1]")
+    print("Average productivity in Cropland diff (future-hist) total:       ",int(avgCroplandCompareFutureMasked - avgYieldCroplandhistorcalMasked), "[t ha-1]")
+
+    print("------------------------------------------- ")
     # print("Soybean Area future T1:     " ,areaYieldfutuT1,"(1x1km pixel)")
     # print("Soybean Area future T2:     " ,areaYieldfutuT2,"(1x1km pixel)")
     # print("Soybean Area historical T1: ", areaYieldhistT1, "(1x1km pixel)")
     # print("Soybean Area historical T2: ", areaYieldhistT2, "(1x1km pixel)")
 
     # print("Note: the irrigated area has not changed much, because we are using the same micra mask")
-
+    print("-------------Soybean areas in 1x1km pixel ------------------------------ ")
     print("Soybean Area irrgated future:     ", areaYieldirrgatedFuture, "(1x1km pixel)")
     print("Soybean Area irrgated historical: ", areaYieldirrgatedhistorical, "(1x1km pixel)")
     print("Soybean Area rainfed future:      ", areaYieldrainfedFuture, "(1x1km pixel)")
@@ -303,6 +379,7 @@ def build() :
     print("Soybean Area All historical:  ", areaYieldrainfedhistorical + areaYieldirrgatedhistorical, "(1x1km pixel)")    
 
     #print("Soybean Area Mask rainfed future:     ", areaYieldfutureMasked, "(1x1km pixel)")
+    print("-----------Apply Cropland mask-------------------------------- ")
     print("Soybean Cropland Area irrgated future:     ", int(areaYieldirrgatedFutureMasked), "(1x1km pixel)")
     print("Soybean Cropland Area irrgated historical: ", int(areaYieldirrgatedhistoricalMasked), "(1x1km pixel)")
     print("Soybean Cropland Area rainfed future:      ", int(areaYieldrainfedFutureMasked), "(1x1km pixel)")
@@ -315,27 +392,33 @@ def build() :
     # print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
     # print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
     # print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
+    print("---------Area---------------------------------- ")
 
     print("Future Yield on baseline irrigated :", int(areaYieldirrigated), "[t ha-1]")
     print("Future Yield on baseline rainfed:   ", int(areaYieldrainfed), "[t ha-1]")
     print("Future Yield addition irrigated:    ", int(areaYieldAddirrigated), "[t ha-1]")
     print("Future Yield addition rainfed:      ", int(areaYieldAddrainfed), "[t ha-1]")
 
+    print("---------Risk Factors ---------------------------------- ")
     print("Soybean Area Short Season historical: ",valShortSeasonRisksHistorical, "(1x1km pixel)")
     print("Soybean Area Short Season future:     ",valShortSeasonRisksFuture, "(1x1km pixel)")
     print("Soybean Area Cold Spell historical:   ",valColdSpellRisksHistorical, "(1x1km pixel)")
     print("Soybean Area Cold Spell future:       ",valColdSpellRisksFuture, "(1x1km pixel)")
     print("Soybean Area Drought historical:      ",valDroughtRisksHistorical, "(1x1km pixel)")
     print("Soybean Area Drought future:          ",valDroughtRisksFuture, "(1x1km pixel)")
+    print("Soybean Area Heat Stress historical:   ",valHeatRisksHistorical, "(1x1km pixel)")
+    print("Soybean Area Heat Stress future:       ",valHeatRisksFuture, "(1x1km pixel)")
     print("Soybean Area Harvest Rain historical: ",valHarvestRainRisksHistorical, "(1x1km pixel)")
     print("Soybean Area Harvest Rain future:     ",valHarvestRainRisksFuture, "(1x1km pixel)")
 
+    print("---------Std. Deviation  ---------------------------------- ")
     print("Standart deviation all historical: ", int(avgAllStdDevhistorical))
     print("Standart deviation all future:     ", int(avgAllStdDevFuture))
     
     print("Standart deviation Climate avg over Model: ", int(avgstdClimAvgModelFuture))
     print("Standart deviation Model avg Climate:      ", int(avgstdModelAvgClimFuture))
 
+    print("---------Sowing Difference  ---------------------------------- ")
     print("Average Sowing Diffenence :      ", int(avgSowDiff), "(days)")
 
 @dataclass
