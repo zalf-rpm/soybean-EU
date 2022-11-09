@@ -250,9 +250,9 @@
     rows:
         - row:
             - sharedColorBar : True
-            - file: dev_allRisks_5_historical.asc.gz
-            - file: dev_allRisks_5_future45.asc.gz
-            - file: dev_allRisks_5_future85.asc.gz
+            - file: dev_allRisks_5_historical_crunched.asc.gz
+            - file: dev_allRisks_5_future_crunched45.asc.gz
+            - file: dev_allRisks_5_future_crunched85.asc.gz
 
 # - image: 
 #     name: std_deviation_model_avg_climate_scn
