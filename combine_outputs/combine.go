@@ -606,6 +606,22 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
+		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
+		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_flowering",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Ant hist.",
+		"Average \\nDOY",
+		"tab20b",
+		"",
+		nil, nil, nil, 1, minANTMerged-1,
+		maxANTMerged, minColor, outC, convertMinValue)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
 		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
 		&irrLookup,
@@ -863,7 +879,7 @@ func main() {
 		"avg. years",
 		"plasma", "",
 		nil, nil, nil, 1.0,
-		0, p.maxHeatStressDays, minColor, outC)
+		0, p.maxHeatStressYears, minColor, outC)
 
 	colorListRainRisk := []string{"lightgrey", "green"}
 	waitForNum++
