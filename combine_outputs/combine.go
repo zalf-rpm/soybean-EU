@@ -1337,38 +1337,38 @@ func main() {
 	}
 
 	riskMoreColorList := []string{
-		"lightgrey",            // default
-		"cyan",                 // shortSeason
-		"mediumpurple",         // coldspell
-		"rebeccapurple",        // shortSeason + coldspell
-		"orange",               // drought risk
-		"violet",               // drought risk + shortSeason
-		"pink",                 // drought risk + coldspell
-		"deeppink",             // drought risk + shortSeason + coldspell
-		"yellow",               // heat risk
-		"gold",                 // heat risk + shortSeason
-		"goldenrod",            // heat risk + coldspell
-		"darkgoldenrod",        // heat risk + shortSeason + coldspell
-		"darkkhaki",            // heat risk + drought risk
-		"khaki",                // heat risk + shortSeason + drought risk
-		"palegoldenrod",        // heat risk + coldspell + drought risk
-		"lightgoldenrodyellow", // heat risk + shortSeason + coldspell + drought risk
-		"limegreen",            // harvest rain
-		"lightseagreen",        // harvest rain + shortSeason
-		"seagreen",             // harvest rain + coldspell
-		"darkgreen",            // harvest rain + shortSeason + coldspell
-		"olive",                // harvest rain + drought risk
-		"olivedrab",            // harvest rain + shortSeason + drought risk
-		"darkolivegreen",       // harvest rain + coldspell + drought risk
-		"darkslategray",        // harvest rain + shortSeason + coldspell + drought risk
-		"lightgreen",           // harvest rain + heat risk
-		"greenyellow",          // harvest rain + shortSeason + heat risk
-		"chartreuse",           // harvest rain + coldspell + heat risk
-		"lawngreen",            // harvest rain + shortSeason + coldspell + heat risk
-		"darkseagreen",         // harvest rain + drought risk + heat risk
-		"mediumseagreen",       // harvest rain + shortSeason + drought risk + heat risk
-		"mediumaquamarine",     // harvest rain + coldspell + drought risk + heat risk
-		"mediumspringgreen",    // harvest rain + shortSeason + coldspell + drought risk + heat risk
+		"lightgrey",         // default
+		"cyan",              // shortSeason
+		"mediumpurple",      // coldspell
+		"rebeccapurple",     // shortSeason + coldspell
+		"orange",            // drought risk
+		"violet",            // drought risk + shortSeason
+		"pink",              // drought risk + coldspell
+		"deeppink",          // drought risk + shortSeason + coldspell
+		"yellow",            // heat risk
+		"gold",              // heat risk + shortSeason
+		"goldenrod",         // heat risk + coldspell
+		"darkgoldenrod",     // heat risk + shortSeason + coldspell
+		"orangered",         // heat risk + drought risk
+		"lightsalmon",       // heat risk + shortSeason + drought risk
+		"tomato",            // heat risk + coldspell + drought risk
+		"firebrick",         // heat risk + shortSeason + coldspell + drought risk
+		"limegreen",         // harvest rain
+		"lightseagreen",     // harvest rain + shortSeason
+		"seagreen",          // harvest rain + coldspell
+		"darkgreen",         // harvest rain + shortSeason + coldspell
+		"olive",             // harvest rain + drought risk
+		"olivedrab",         // harvest rain + shortSeason + drought risk
+		"darkolivegreen",    // harvest rain + coldspell + drought risk
+		"darkslategray",     // harvest rain + shortSeason + coldspell + drought risk
+		"lightgreen",        // harvest rain + heat risk
+		"greenyellow",       // harvest rain + shortSeason + heat risk
+		"chartreuse",        // harvest rain + coldspell + heat risk
+		"lawngreen",         // harvest rain + shortSeason + coldspell + heat risk
+		"darkseagreen",      // harvest rain + drought risk + heat risk
+		"mediumseagreen",    // harvest rain + shortSeason + drought risk + heat risk
+		"mediumaquamarine",  // harvest rain + coldspell + drought risk + heat risk
+		"mediumspringgreen", // harvest rain + shortSeason + coldspell + drought risk + heat risk
 	}
 	ristMoreTicklist := make([]float64, len(sidebarMoreRiskLabel))
 	for tick := 0; tick < len(ristMoreTicklist); tick++ {
