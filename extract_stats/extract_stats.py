@@ -392,7 +392,7 @@ def build() :
     # print("Future Yield on baseline T2:", int(areaYieldT2), "[t ha-1]")
     # print("Future Yield addition T1:   ", int(areaYieldAddT1), "[t ha-1]")
     # print("Future Yield addition T2:   ", int(areaYieldAddT2), "[t ha-1]")
-    print("---------Area---------------------------------- ")
+    print("---------Area Yield---------------------------------- ")
 
     print("Future Yield on baseline irrigated :", int(areaYieldirrigated), "[t ha-1]")
     print("Future Yield on baseline rainfed:   ", int(areaYieldrainfed), "[t ha-1]")
