@@ -38,6 +38,27 @@ const asciiOutCombinedTemplate = "%s_%s.asc" // <descriptio>_<scenario>
 const ignoreSzenario = "0_0"
 const ignoreMaturityGroup = "soybean/III"
 
+var histT1 = ScenarioKeyTuple{
+	treatNo:        "T1",
+	climateSenario: "0_0",
+	comment:        "Actual",
+}
+var histT2 = ScenarioKeyTuple{
+	treatNo:        "T2",
+	climateSenario: "0_0",
+	comment:        "Unlimited water",
+}
+var futT1 = ScenarioKeyTuple{
+	treatNo:        "T1",
+	climateSenario: "fut_avg",
+	comment:        "Actual",
+}
+var futT2 = ScenarioKeyTuple{
+	treatNo:        "T2",
+	climateSenario: "fut_avg",
+	comment:        "Unlimited water",
+}
+
 func main() {
 
 	PATHS := map[string]map[string]string{
@@ -235,17 +256,18 @@ func main() {
 	for tick := 0; tick < len(ticklist); tick++ {
 		ticklist[tick] = float64(tick) + 0.5
 	}
+
 	minColor := "lightgrey"
 
 	// recalulate max values
 	maxHist := maxFromIrrigationGrid(extRow, extCol,
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.maxYieldDeviationGridsAll[histT2],
+		p.maxYieldDeviationGridsAll[histT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxFuture := maxFromIrrigationGrid(extRow, extCol,
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.maxYieldDeviationGridsAll[futT2],
+		p.maxYieldDeviationGridsAll[futT1],
 		&gridSourceLookup,
 		&irrLookup)
 	max := func(v1, v2 int) (out int) {
@@ -258,26 +280,26 @@ func main() {
 	maxMerged := max(maxHist, maxFuture)
 
 	maxHistSOW := maxFromIrrigationGrid(extRow, extCol,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.sowingScenGridsAll[histT2],
+		p.sowingScenGridsAll[histT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxFutureSOW := maxFromIrrigationGrid(extRow, extCol,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.sowingScenGridsAll[futT2],
+		p.sowingScenGridsAll[futT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxSOWMerged := max(maxHistSOW, maxFutureSOW)
 	fmt.Printf("Sow Max Date : %d \n", maxSOWMerged)
 
 	minHistSOW := minFromIrrigationGrid(extRow, extCol,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.sowingScenGridsAll[histT2],
+		p.sowingScenGridsAll[histT1],
 		&gridSourceLookup,
 		&irrLookup, 0)
 	minFutureSOW := minFromIrrigationGrid(extRow, extCol,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.sowingScenGridsAll[futT2],
+		p.sowingScenGridsAll[futT1],
 		&gridSourceLookup,
 		&irrLookup, 0)
 	min := func(v1, v2 int) (out int) {
@@ -291,26 +313,26 @@ func main() {
 	fmt.Printf("Sow Min Date : %d \n", minSOWMerged)
 
 	maxHistANT := maxFromIrrigationGrid(extRow, extCol,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.floweringScenGridsAll[histT2],
+		p.floweringScenGridsAll[histT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxFutureANT := maxFromIrrigationGrid(extRow, extCol,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.floweringScenGridsAll[futT2],
+		p.floweringScenGridsAll[futT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxANTMerged := max(maxHistANT, maxFutureANT)
 	fmt.Printf("Ant Max Date : %d \n", maxANTMerged)
 
 	minHistANT := minFromIrrigationGrid(extRow, extCol,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.floweringScenGridsAll[histT2],
+		p.floweringScenGridsAll[histT1],
 		&gridSourceLookup,
 		&irrLookup, 0)
 	minFutureANT := minFromIrrigationGrid(extRow, extCol,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.floweringScenGridsAll[futT2],
+		p.floweringScenGridsAll[futT1],
 		&gridSourceLookup,
 		&irrLookup, 0)
 
@@ -318,13 +340,13 @@ func main() {
 	fmt.Printf("Ant Min Date : %d \n", minANTMerged)
 
 	maxDevModel := maxFromIrrigationGrid(extRow, extCol,
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.deviationClimScenAvgOverModel[futT2],
+		p.deviationClimScenAvgOverModel[futT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxDevHist := maxFromIrrigationGrid(extRow, extCol,
-		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.deviationModelsAvgOverClimScen[histT2],
+		p.deviationModelsAvgOverClimScen[histT1],
 		&gridSourceLookup,
 		&irrLookup)
 	maxDev := max(maxDevModel, maxDevHist)
@@ -558,8 +580,8 @@ func main() {
 		return strconv.Itoa(val)
 	}
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.sowingScenGridsAll[histT2],
+		p.sowingScenGridsAll[histT1],
 		&irrLookup,
 		"%s_historical.asc",
 		"dev_sowing",
@@ -574,8 +596,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.floweringScenGridsAll[histT2],
+		p.floweringScenGridsAll[histT1],
 		&irrLookup,
 		"%s_historical.asc",
 		"dev_flowering",
@@ -590,8 +612,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.sowingScenGridsAll[futT2],
+		p.sowingScenGridsAll[futT1],
 		&irrLookup,
 		"%s_future.asc",
 		"dev_sowing",
@@ -606,8 +628,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.floweringScenGridsAll[futT2],
+		p.floweringScenGridsAll[futT1],
 		&irrLookup,
 		"%s_future.asc",
 		"dev_flowering",
@@ -622,8 +644,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.maxYieldDeviationGridsAll[histT2],
+		p.maxYieldDeviationGridsAll[histT1],
 		&irrLookup,
 		"%s_historical.asc",
 		"dev_max_yield",
@@ -638,8 +660,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.maxYieldDeviationGridsAll[futT2],
+		p.maxYieldDeviationGridsAll[futT1],
 		&irrLookup,
 		"%s_future.asc",
 		"dev_max_yield",
@@ -654,8 +676,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.maxYieldDeviationGridsCompare[futT2],
+		p.maxYieldDeviationGridsCompare[futT1],
 		&irrLookup,
 		"%s_future.asc",
 		"dev_compare_mg_yield",
@@ -684,8 +706,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.maxYieldDeviationGridsCompare[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.maxYieldDeviationGridsCompare[histT2],
+		p.maxYieldDeviationGridsCompare[histT1],
 		&irrLookup,
 		"%s_historical.asc",
 		"dev_compare_mg_yield",
@@ -701,8 +723,8 @@ func main() {
 	waitForNum++
 	colorListDevMaoC := []string{"cyan", "violet", "green", "blue"}
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.deviationClimScenAvgOverModel[futT2],
+		p.deviationClimScenAvgOverModel[futT1],
 		&irrLookup,
 		"%s_stdDev.asc",
 		"avg_over_models",
@@ -749,8 +771,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.deviationModelsAvgOverClimScen[histT2],
+		p.deviationModelsAvgOverClimScen[histT1],
 		&irrLookup,
 		"%s_stdDev.asc",
 		"all_historical",
@@ -990,8 +1012,6 @@ func main() {
 		colorListDroughtRisk, nil, nil, 1.0, 0,
 		1, "", outC)
 
-	waitForNum++
-
 	sidebarHeatLabel := []string{
 		"none",
 		"Drought",
@@ -1011,19 +1031,33 @@ func main() {
 	for tick := 0; tick < len(heatTicklist); tick++ {
 		heatTicklist[tick] = float64(tick) + 0.5
 	}
-
-	go drawMaps(gridSourceLookup,
-		p.heatDroughtRiskDeviationGridsAll,
-		asciiOutCombinedTemplate,
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.heatDroughtRiskDeviationGridsAll[histT2],
+		p.heatDroughtRiskDeviationGridsAll[histT1],
+		&irrLookup,
+		"%s_historical.asc",
 		"dev_drought_heat_risk",
-		extCol, extRow,
+		extCol, extRow, minRow, minCol,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(dev) drought + heat risk: %v",
-		"",
-		"",
-		"",
-		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0,
-		len(sidebarHeatLabel)-1, "", outC)
+		"(dev) drought+heat risk: %v",
+		"", "", "",
+		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0, len(sidebarHeatLabel)-1,
+		"", outC, nil)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.heatDroughtRiskDeviationGridsAll[futT2],
+		p.heatDroughtRiskDeviationGridsAll[futT1],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_drought_heat_risk",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(dev) drought+heat risk: %v",
+		"", "", "",
+		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0, len(sidebarHeatLabel)-1,
+		"", outC, nil)
 
 	waitForNum++
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}
@@ -1123,8 +1157,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}],
-		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}],
+		p.matGroupDeviationGridsAll[histT2],
+		p.matGroupDeviationGridsAll[histT1],
 		&irrLookup,
 		"%s_historical.asc",
 		"dev_maturity_groups",
@@ -1139,8 +1173,8 @@ func main() {
 
 	waitForNum++
 	go drawIrrigationMaps(&gridSourceLookup,
-		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}],
-		p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}],
+		p.matGroupDeviationGridsAll[futT2],
+		p.matGroupDeviationGridsAll[futT1],
 		&irrLookup,
 		"%s_future.asc",
 		"dev_maturity_groups",
@@ -1390,46 +1424,37 @@ func main() {
 	for tick := 0; tick < len(ristMoreTicklist); tick++ {
 		ristMoreTicklist[tick] = float64(tick)*0.96875 + 0.484375
 	}
-
-	crunchFut := drawMergedMaps(gridSourceLookup,
-		"%s_future.asc",
-		"dev_allRisks_5",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Future",
-		"Risk factors",
-		"",
-		"",
-		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", nil,
-		p.shortSeasonDeviationGridSumAll["fut_avg"],
+	simValuesLen, _, fut_irr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
-		p.heatRiskDeviationGridsAll["fut_avg"],
-		p.harvestRainDeviationGridsSumAll["fut_avg"],
-	)
-
-	crunchHist := drawMergedMaps(gridSourceLookup,
-		"%s_historical.asc",
-		"dev_allRisks_5",
-		extCol, extRow,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Historical",
-		"Risk factors",
-		"",
-		"",
-		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", nil,
-		p.shortSeasonDeviationGridSumAll["0_0"],
+		p.heatRiskDeviationGridsAll[futT2],
+		p.harvestRainDeviationGridsSumAll["fut_avg"]})
+	crunchFut_irr := calculateCrunchList("fut_irr", simValuesLen, fut_irr, sidebarMoreRiskLabel)
+	simValuesLen, _, fut_noirr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["fut_avg"],
+		p.coldSpellGrid["fut_avg"],
+		p.droughtRiskDeviationGridsAll["fut_avg"],
+		p.heatRiskDeviationGridsAll[futT1],
+		p.harvestRainDeviationGridsSumAll["fut_avg"]})
+	crunchFut_noirr := calculateCrunchList("fut_noirr", simValuesLen, fut_noirr, sidebarMoreRiskLabel)
+	simValuesLen, _, hist_irr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
-		p.heatRiskDeviationGridsAll["0_0"],
-		p.harvestRainDeviationGridsSumAll["0_0"],
-	)
-	fmt.Println("crunchFut", crunchFut)
-	fmt.Println("crunchHist", crunchHist)
+		p.heatRiskDeviationGridsAll[histT2],
+		p.harvestRainDeviationGridsSumAll["0_0"]})
+	crunchHist_irr := calculateCrunchList("hist_irr", simValuesLen, hist_irr, sidebarMoreRiskLabel)
+	simValuesLen, _, hist_noirr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["0_0"],
+		p.coldSpellGrid["0_0"],
+		p.droughtRiskDeviationGridsAll["0_0"],
+		p.heatRiskDeviationGridsAll[histT1],
+		p.harvestRainDeviationGridsSumAll["0_0"]})
+	crunchHist_noirr := calculateCrunchList("hist_noirr", simValuesLen, hist_noirr, sidebarMoreRiskLabel)
 
-	if len(crunchFut) > 0 && len(crunchHist) > 0 {
+	fmt.Println("crunchFut_irr", crunchFut_irr)
+	fmt.Println("crunchFut_noirr", crunchFut_noirr)
+	fmt.Println("crunchHist_irr", crunchHist_irr)
+	fmt.Println("crunchHist_noirr", crunchHist_noirr)
+
+	mergedCrunchLists := func(crunchFut, crunchHist []int) []int {
 		mergedCrunch := make([]int, 0, 1)
 		idxf := 0
 		idxh := 0
@@ -1452,49 +1477,77 @@ func main() {
 			}
 
 		}
-		if len(mergedCrunch) > 0 {
-			fmt.Println("mergedCrunch", mergedCrunch)
-			waitForNum++
-			go drawCrunchMaps(gridSourceLookup,
-				"%s_future.asc",
-				"dev_allRisks_5",
-				extCol, extRow,
-				filepath.Join(asciiOutFolder, "dev"),
-				"Future",
-				"Risk factors",
-				"",
-				"",
-				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-				31, "",
-				mergedCrunch,
-				outC,
-				p.shortSeasonDeviationGridSumAll["fut_avg"],
-				p.coldSpellGrid["fut_avg"],
-				p.droughtRiskDeviationGridsAll["fut_avg"],
-				p.heatRiskDeviationGridsAll["fut_avg"],
-				p.harvestRainDeviationGridsSumAll["fut_avg"],
-			)
-			waitForNum++
-			go drawCrunchMaps(gridSourceLookup,
-				"%s_historical.asc",
-				"dev_allRisks_5",
-				extCol, extRow,
-				filepath.Join(asciiOutFolder, "dev"),
-				"Historical",
-				"Risk factors",
-				"",
-				"",
-				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-				31, "",
-				mergedCrunch, outC,
-				p.shortSeasonDeviationGridSumAll["0_0"],
-				p.coldSpellGrid["0_0"],
-				p.droughtRiskDeviationGridsAll["0_0"],
-				p.heatRiskDeviationGridsAll["0_0"],
-				p.harvestRainDeviationGridsSumAll["0_0"],
-			)
-		}
+		return mergedCrunch
+	}
+	mergedList1 := mergedCrunchLists(crunchFut_irr, crunchHist_irr)
+	mergedList2 := mergedCrunchLists(crunchFut_noirr, crunchHist_noirr)
+	mergedListFinal := mergedCrunchLists(mergedList1, mergedList2)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		fut_irr,
+		fut_noirr,
+		&irrLookup,
+		"%s_future.asc",
+		"dev_allRisks_5",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Future",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		31, "", outC, nil)
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		hist_irr,
+		hist_noirr,
+		&irrLookup,
+		"%s_historical.asc",
+		"dev_allRisks_5",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Historical",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		31, "", outC, nil)
 
+	if len(mergedListFinal) > 0 {
+		fmt.Println("mergedCrunch", mergedListFinal)
+		waitForNum++
+		go drawCrunchMaps(gridSourceLookup,
+			"%s_future.asc",
+			"dev_allRisks_5",
+			extCol, extRow,
+			filepath.Join(asciiOutFolder, "dev"),
+			"Future",
+			"Risk factors",
+			"",
+			"",
+			riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+			31, "",
+			mergedListFinal,
+			outC, &irrLookup,
+			fut_irr,
+			fut_noirr,
+		)
+		waitForNum++
+		go drawCrunchMaps(gridSourceLookup,
+			"%s_historical.asc",
+			"dev_allRisks_5",
+			extCol, extRow,
+			filepath.Join(asciiOutFolder, "dev"),
+			"Historical",
+			"Risk factors",
+			"",
+			"",
+			riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+			31, "",
+			mergedListFinal, outC, &irrLookup,
+			fut_irr,
+			fut_noirr,
+		)
 	}
 
 	for waitForNum > 0 {
@@ -1613,16 +1666,18 @@ type ProcessedData struct {
 	shortSeasonGridAll          map[ScenarioKeyTuple][]int
 	shortSeasonDeviationGridAll map[ScenarioKeyTuple][]int
 
+	heatRiskDeviationGridsAll        map[ScenarioKeyTuple][]int
+	heatDroughtRiskDeviationGridsAll map[ScenarioKeyTuple][]int
+
 	signDroughtYieldLossGridsAll          map[string][]int
 	signDroughtYieldLossDeviationGridsAll map[string][]int
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
-	heatRiskDeviationGridsAll             map[string][]int
-	heatDroughtRiskDeviationGridsAll      map[string][]int
-	harvestRainGridsSumAll                map[string][]int
-	harvestRainDeviationGridsSumAll       map[string][]int
-	shortSeasonGridSumAll                 map[string][]int
-	shortSeasonDeviationGridSumAll        map[string][]int
+
+	harvestRainGridsSumAll          map[string][]int
+	harvestRainDeviationGridsSumAll map[string][]int
+	shortSeasonGridSumAll           map[string][]int
+	shortSeasonDeviationGridSumAll  map[string][]int
 
 	// std deviation over all future scenarios per model ->  average over all models
 	deviationClimScenAvgOverModel map[ScenarioKeyTuple][]int
@@ -1734,8 +1789,8 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.droughtRiskGridsAll = make(map[string][]int)
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
-	p.heatDroughtRiskDeviationGridsAll = make(map[string][]int)
-	p.heatRiskDeviationGridsAll = make(map[string][]int)
+	p.heatDroughtRiskDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
+	p.heatRiskDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonGridSumAll = make(map[string][]int)
@@ -2570,8 +2625,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
-			p.heatDroughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
-			p.heatRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.heatDroughtRiskDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
+			p.heatRiskDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainDeviationGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
@@ -2874,14 +2929,20 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			// heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
 			// 	p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey],
 			// 	maxRefNo, 3)
-			heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
-				p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey],
+			heatDroughtGridT1 := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
+				p.heatStressYearDeviationGridsAll[scenarioKey],
 				maxRefNo, 6)
-			p.heatDroughtRiskDeviationGridsAll[scenarioKey.climateSenario] = heatDroughtGrid
+			heatDroughtGridT2 := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
+				p.heatStressYearDeviationGridsAll[otherKey],
+				maxRefNo, 6)
+			p.heatDroughtRiskDeviationGridsAll[scenarioKey] = heatDroughtGridT1
+			p.heatDroughtRiskDeviationGridsAll[otherKey] = heatDroughtGridT2
 
 			//heatGrid := gridHeatRisk(p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey], maxRefNo, 3)
-			heatGrid := gridHeatRisk(p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey], maxRefNo, 6)
-			p.heatRiskDeviationGridsAll[scenarioKey.climateSenario] = heatGrid
+			heatGridT1 := gridHeatRisk(p.heatStressYearDeviationGridsAll[scenarioKey], maxRefNo, 6)
+			heatGridT2 := gridHeatRisk(p.heatStressYearDeviationGridsAll[otherKey], maxRefNo, 6)
+			p.heatRiskDeviationGridsAll[scenarioKey] = heatGridT1
+			p.heatRiskDeviationGridsAll[otherKey] = heatGridT2
 		}
 
 	}
@@ -2897,80 +2958,80 @@ func (p *ProcessedData) factorInRisks(maxRefNo int) {
 		}
 	}
 	// apply cold spell to historic grids
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[histT2], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[histT1], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[histT2], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[histT1], p.coldSpellGrid["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[histT2], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[histT1], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[histT2], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[histT1], p.coldSpellGrid["0_0"], maxRefNo, 0)
 
 	// apply harvest rain to historic grids
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[histT2], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[histT1], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[histT2], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[histT1], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "0_0", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "0_0", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[histT2], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[histT1], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[histT2], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[histT1], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 
 	// apply cold spell to future
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[futT2], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[futT1], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[futT2], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[futT1], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[futT2], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[futT1], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[futT2], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[futT1], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 
 	// apply harvest rain to future
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.maxYieldDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.matGroupDeviationGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[futT2], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.maxYieldDeviationGridsAll[futT1], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[futT2], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.matGroupDeviationGridsAll[futT1], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/000", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/000", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T2", "fut_avg", "soybean/II", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.allYieldGridsMergedModels[SimKeyTuple{"T1", "fut_avg", "soybean/II", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.sowingScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.floweringScenGridsAll[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[futT2], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.sowingScenGridsAll[futT1], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[futT2], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.floweringScenGridsAll[futT1], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 
 	// apply mask to deviation grids
 
 	// apply cold spell to historic grids
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[histT2], p.coldSpellGrid["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[histT1], p.coldSpellGrid["0_0"], maxRefNo, 0)
 	// apply harvest rain to historic grids
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "0_0", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
-	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "0_0", "Actual"}], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[histT2], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
+	applyRiskFactor(p.deviationModelsAvgOverClimScen[histT1], p.harvestRainDeviationGridsSumAll["0_0"], maxRefNo, 0)
 
 	// apply cold spell to future
 	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[futT2], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[futT1], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
 	// apply harvest rain to future
 	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 	applyRiskFactor(p.deviationModelsAvgOverClimScen[ScenarioKeyTuple{"T1", "fut_avg", ""}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T2", "fut_avg", "Unlimited water"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
-	applyRiskFactor(p.deviationClimScenAvgOverModel[ScenarioKeyTuple{"T1", "fut_avg", "Actual"}], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[futT2], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
+	applyRiskFactor(p.deviationClimScenAvgOverModel[futT1], p.harvestRainDeviationGridsSumAll["fut_avg"], maxRefNo, 0)
 
 	// apply cold spell to future
 	applyRiskFactor(p.deviationModelsAndClimScen[ScenarioKeyTuple{"T2", "fut_avg", ""}], p.coldSpellGrid["fut_avg"], maxRefNo, 0)
@@ -3504,12 +3565,12 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 	return newGridDiff
 }
 
-func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGridT1 []int, maxRef int, threshold int) []int {
+func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGrid []int, maxRef int, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
 		if yieldGridT2[ref] != NONEVALUE && yieldGridT1[ref] != NONEVALUE &&
-			heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
+			heatGrid[ref] != NONEVALUE {
 			newGridDiff[ref] = 0
 			if yieldGridT1[ref] < 2000 {
 				gridT1value := 1
@@ -3521,7 +3582,7 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 				}
 			}
 			// OLD if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
-			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
+			if heatGrid[ref] > threshold {
 				if newGridDiff[ref] == 1 {
 					newGridDiff[ref] = 3
 				} else {
@@ -3536,14 +3597,14 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGri
 	return newGridDiff
 }
 
-func gridHeatRisk(heatGridT2, heatGridT1 []int, maxRef, threshold int) []int {
+func gridHeatRisk(heatGrid []int, maxRef, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
-		if heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
+		if heatGrid[ref] != NONEVALUE {
 			newGridDiff[ref] = 0
 
-			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
+			if heatGrid[ref] > threshold {
 				newGridDiff[ref] = 1
 			}
 		} else {
@@ -3991,8 +4052,24 @@ func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int,
 	outC <- filenameDescPart
 }
 
-func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) (listToCrunch []int) {
+func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
 
+	//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+	_, _, merged := mergeMaps(simValues)
+
+	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
+	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+	file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+	writeRows(file, extRow, extCol, merged, gridSourceLookup)
+	file.Close()
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
+	outC <- filenameDescPart
+
+}
+
+func mergeMaps(simValues [][]int) (int, int, []int) {
 	simValuesLen := len(simValues)
 	numRefs := len(simValues[0])
 	merged := make([]int, numRefs)
@@ -4000,7 +4077,7 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		for idSim := 0; idSim < simValuesLen; idSim++ {
 			val := simValues[idSim][ref]
 			if val != 0 && val != 1 {
-				//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+
 				if val < 0 {
 					val = 0
 				} else {
@@ -4011,19 +4088,14 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
+	return simValuesLen, numRefs, merged
+}
 
-	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
-	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
-	file := writeAGridHeader(gridFilePath, extCol, extRow)
-
-	writeRows(file, extRow, extCol, merged, gridSourceLookup)
-	file.Close()
-	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
-
-	listToCrunch = make([]int, 0, 1)
+func calculateCrunchList(description string, simValuesLen int, merged []int, cbarLabel []string) []int {
+	listToCrunch := make([]int, 0, 1)
 	var stringBuilder strings.Builder
-	stringBuilder.WriteString(fmt.Sprintln(filenameDescPart))
-	// print a statistic of which varations are present
+	stringBuilder.WriteString(fmt.Sprintln(description))
+
 	for i := 1; i < (1 << simValuesLen); i++ {
 		count := 0
 		for _, val := range merged {
@@ -4039,35 +4111,13 @@ func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			log.Println(err)
 		}
 	}
-	if outC != nil {
-		outC <- filenameDescPart
-	} else {
-		fmt.Println(stringBuilder.String())
-	}
 
+	fmt.Println(stringBuilder.String())
 	return listToCrunch
 }
 
-func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, listToCrunch []int, outC chan string, simValues ...[]int) {
+func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, listToCrunch []int, outC chan string, irrLookup *map[GridCoord]bool, irr, noirr []int) {
 	if len(listToCrunch) > 1 {
-		simValuesLen := len(simValues)
-		numRefs := len(simValues[0])
-		merged := make([]int, numRefs)
-		for ref := 0; ref < numRefs; ref++ {
-			for idSim := 0; idSim < simValuesLen; idSim++ {
-				val := simValues[idSim][ref]
-				if val != 0 && val != 1 {
-					//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
-					if val < 0 {
-						val = 0
-					} else {
-						val = 1
-					}
-				}
-
-				merged[ref] = (val << idSim) + merged[ref]
-			}
-		}
 
 		// write crunched file
 		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
@@ -4075,17 +4125,22 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 
-		for ref := 0; ref < numRefs; ref++ {
+		numRefs := len(irr)
+		crunch := func(sim []int) {
+			for ref := 0; ref < numRefs; ref++ {
 
-			counter := 0
-			mergeVal := merged[ref]
-			for _, val := range listToCrunch {
-				if mergeVal > val {
-					counter++
+				counter := 0
+				mergeVal := sim[ref]
+				for _, val := range listToCrunch {
+					if mergeVal > val {
+						counter++
+					}
 				}
+				sim[ref] -= counter
 			}
-			merged[ref] -= counter
 		}
+		crunch(irr)
+		crunch(noirr)
 
 		contains := func(s []int, e int) bool {
 			for _, a := range s {
@@ -4125,7 +4180,7 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			newticklist[tick] = float64(tick)*tickfactor + tickfactorStep
 		}
 
-		writeRows(file, extRow, extCol, merged, gridSourceLookup)
+		writeIrrigatedRows(file, extRow, extCol, irr, noirr, &gridSourceLookup, irrLookup, nil)
 		file.Close()
 		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, newcolorlist, newcbarLabel, newticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
 
