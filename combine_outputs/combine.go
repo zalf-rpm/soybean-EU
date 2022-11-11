@@ -1545,8 +1545,8 @@ func main() {
 			riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
 			31, "",
 			mergedListFinal, outC, &irrLookup,
-			fut_irr,
-			fut_noirr,
+			hist_irr,
+			hist_noirr,
 		)
 	}
 
