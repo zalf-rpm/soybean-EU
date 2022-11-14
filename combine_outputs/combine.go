@@ -1032,61 +1032,32 @@ func main() {
 		heatTicklist[tick] = float64(tick) + 0.5
 	}
 	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		p.heatDroughtRiskDeviationGridsAll[histT2],
-		p.heatDroughtRiskDeviationGridsAll[histT1],
-		&irrLookup,
-		"%s_historical.asc",
+	go drawMaps(gridSourceLookup,
+		p.heatDroughtRiskDeviationGridsAll,
+		asciiOutCombinedTemplate,
 		"dev_drought_heat_risk",
-		extCol, extRow, minRow, minCol,
+		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
-		"(dev) drought+heat risk: %v",
-		"", "", "",
-		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0, len(sidebarHeatLabel)-1,
-		"", outC, nil)
-
-	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		p.heatDroughtRiskDeviationGridsAll[futT2],
-		p.heatDroughtRiskDeviationGridsAll[futT1],
-		&irrLookup,
-		"%s_future.asc",
-		"dev_drought_heat_risk",
-		extCol, extRow, minRow, minCol,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(dev) drought+heat risk: %v",
-		"", "", "",
-		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0, len(sidebarHeatLabel)-1,
-		"", outC, nil)
-
+		"(dev) drought + heat risk: %v",
+		"",
+		"",
+		"",
+		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0,
+		len(sidebarHeatLabel)-1, "", outC)
 	colorListHeatRisk := []string{"lightgrey", "deeppink"}
 	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		p.heatRiskDeviationGridsAll[histT2],
-		p.heatRiskDeviationGridsAll[histT1],
-		&irrLookup,
-		"%s_historical.asc",
+	go drawMaps(gridSourceLookup,
+		p.heatRiskDeviationGridsAll,
+		asciiOutCombinedTemplate,
 		"dev_heat_risk",
-		extCol, extRow, minRow, minCol,
+		extCol, extRow,
 		filepath.Join(asciiOutFolder, "dev"),
 		"(dev) heat risk: %v",
-		"", "", "",
+		"",
+		"",
+		"",
 		colorListHeatRisk, nil, nil, 1.0, 0,
-		1, "", outC, nil)
-
-	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		p.heatRiskDeviationGridsAll[futT2],
-		p.heatRiskDeviationGridsAll[futT1],
-		&irrLookup,
-		"%s_future.asc",
-		"dev_heat_risk",
-		extCol, extRow, minRow, minCol,
-		filepath.Join(asciiOutFolder, "dev"),
-		"(dev) heat risk: %v",
-		"", "", "",
-		colorListHeatRisk, nil, nil, 1.0, 0,
-		1, "", outC, nil)
+		1, "", outC)
 
 	waitForNum++
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}
@@ -1453,41 +1424,46 @@ func main() {
 	for tick := 0; tick < len(ristMoreTicklist); tick++ {
 		ristMoreTicklist[tick] = float64(tick)*0.96875 + 0.484375
 	}
-	simValuesLen, _, fut_irr := mergeMaps([][]int{
+
+	crunchFut := drawMergedMaps(gridSourceLookup,
+		"%s_future.asc",
+		"dev_allRisks_5",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Future",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		31, "", nil,
 		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
-		p.heatRiskDeviationGridsAll[futT2],
-		p.harvestRainDeviationGridsSumAll["fut_avg"]})
-	crunchFut_irr := calculateCrunchList("fut_irr", simValuesLen, fut_irr, sidebarMoreRiskLabel)
-	simValuesLen, _, fut_noirr := mergeMaps([][]int{
-		p.shortSeasonDeviationGridSumAll["fut_avg"],
-		p.coldSpellGrid["fut_avg"],
-		p.droughtRiskDeviationGridsAll["fut_avg"],
-		p.heatRiskDeviationGridsAll[futT1],
-		p.harvestRainDeviationGridsSumAll["fut_avg"]})
-	crunchFut_noirr := calculateCrunchList("fut_noirr", simValuesLen, fut_noirr, sidebarMoreRiskLabel)
-	simValuesLen, _, hist_irr := mergeMaps([][]int{
+		p.heatRiskDeviationGridsAll["fut_avg"],
+		p.harvestRainDeviationGridsSumAll["fut_avg"],
+	)
+
+	crunchHist := drawMergedMaps(gridSourceLookup,
+		"%s_historical.asc",
+		"dev_allRisks_5",
+		extCol, extRow,
+		filepath.Join(asciiOutFolder, "dev"),
+		"Historical",
+		"Risk factors",
+		"",
+		"",
+		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+		31, "", nil,
 		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
-		p.heatRiskDeviationGridsAll[histT2],
-		p.harvestRainDeviationGridsSumAll["0_0"]})
-	crunchHist_irr := calculateCrunchList("hist_irr", simValuesLen, hist_irr, sidebarMoreRiskLabel)
-	simValuesLen, _, hist_noirr := mergeMaps([][]int{
-		p.shortSeasonDeviationGridSumAll["0_0"],
-		p.coldSpellGrid["0_0"],
-		p.droughtRiskDeviationGridsAll["0_0"],
-		p.heatRiskDeviationGridsAll[histT1],
-		p.harvestRainDeviationGridsSumAll["0_0"]})
-	crunchHist_noirr := calculateCrunchList("hist_noirr", simValuesLen, hist_noirr, sidebarMoreRiskLabel)
+		p.heatRiskDeviationGridsAll["0_0"],
+		p.harvestRainDeviationGridsSumAll["0_0"],
+	)
+	fmt.Println("crunchFut", crunchFut)
+	fmt.Println("crunchHist", crunchHist)
 
-	fmt.Println("crunchFut_irr", crunchFut_irr)
-	fmt.Println("crunchFut_noirr", crunchFut_noirr)
-	fmt.Println("crunchHist_irr", crunchHist_irr)
-	fmt.Println("crunchHist_noirr", crunchHist_noirr)
-
-	mergedCrunchLists := func(crunchFut, crunchHist []int) []int {
+	if len(crunchFut) > 0 && len(crunchHist) > 0 {
 		mergedCrunch := make([]int, 0, 1)
 		idxf := 0
 		idxh := 0
@@ -1510,77 +1486,49 @@ func main() {
 			}
 
 		}
-		return mergedCrunch
-	}
-	mergedList1 := mergedCrunchLists(crunchFut_irr, crunchHist_irr)
-	mergedList2 := mergedCrunchLists(crunchFut_noirr, crunchHist_noirr)
-	mergedListFinal := mergedCrunchLists(mergedList1, mergedList2)
-	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		fut_irr,
-		fut_noirr,
-		&irrLookup,
-		"%s_future.asc",
-		"dev_allRisks_5",
-		extCol, extRow, minRow, minCol,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Future",
-		"Risk factors",
-		"",
-		"",
-		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", outC, nil)
-	waitForNum++
-	go drawIrrigationMaps(&gridSourceLookup,
-		hist_irr,
-		hist_noirr,
-		&irrLookup,
-		"%s_historical.asc",
-		"dev_allRisks_5",
-		extCol, extRow, minRow, minCol,
-		filepath.Join(asciiOutFolder, "dev"),
-		"Historical",
-		"Risk factors",
-		"",
-		"",
-		riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-		31, "", outC, nil)
+		if len(mergedCrunch) > 0 {
+			fmt.Println("mergedCrunch", mergedCrunch)
+			waitForNum++
+			go drawCrunchMaps(gridSourceLookup,
+				"%s_future.asc",
+				"dev_allRisks_5",
+				extCol, extRow,
+				filepath.Join(asciiOutFolder, "dev"),
+				"Future",
+				"Risk factors",
+				"",
+				"",
+				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+				31, "",
+				mergedCrunch,
+				outC,
+				p.shortSeasonDeviationGridSumAll["fut_avg"],
+				p.coldSpellGrid["fut_avg"],
+				p.droughtRiskDeviationGridsAll["fut_avg"],
+				p.heatRiskDeviationGridsAll["fut_avg"],
+				p.harvestRainDeviationGridsSumAll["fut_avg"],
+			)
+			waitForNum++
+			go drawCrunchMaps(gridSourceLookup,
+				"%s_historical.asc",
+				"dev_allRisks_5",
+				extCol, extRow,
+				filepath.Join(asciiOutFolder, "dev"),
+				"Historical",
+				"Risk factors",
+				"",
+				"",
+				riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
+				31, "",
+				mergedCrunch, outC,
+				p.shortSeasonDeviationGridSumAll["0_0"],
+				p.coldSpellGrid["0_0"],
+				p.droughtRiskDeviationGridsAll["0_0"],
+				p.heatRiskDeviationGridsAll["0_0"],
+				p.harvestRainDeviationGridsSumAll["0_0"],
+			)
+		}
 
-	if len(mergedListFinal) > 0 {
-		fmt.Println("mergedCrunch", mergedListFinal)
-		waitForNum++
-		go drawCrunchMaps(gridSourceLookup,
-			"%s_future.asc",
-			"dev_allRisks_5",
-			extCol, extRow,
-			filepath.Join(asciiOutFolder, "dev"),
-			"Future",
-			"Risk factors",
-			"",
-			"",
-			riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-			31, "",
-			mergedListFinal,
-			outC, &irrLookup,
-			fut_irr,
-			fut_noirr,
-		)
-		waitForNum++
-		go drawCrunchMaps(gridSourceLookup,
-			"%s_historical.asc",
-			"dev_allRisks_5",
-			extCol, extRow,
-			filepath.Join(asciiOutFolder, "dev"),
-			"Historical",
-			"Risk factors",
-			"",
-			"",
-			riskMoreColorList, sidebarMoreRiskLabel, ristMoreTicklist, 1, 0,
-			31, "",
-			mergedListFinal, outC, &irrLookup,
-			hist_irr,
-			hist_noirr,
-		)
 	}
 
 	for waitForNum > 0 {
@@ -1699,18 +1647,16 @@ type ProcessedData struct {
 	shortSeasonGridAll          map[ScenarioKeyTuple][]int
 	shortSeasonDeviationGridAll map[ScenarioKeyTuple][]int
 
-	heatRiskDeviationGridsAll        map[ScenarioKeyTuple][]int
-	heatDroughtRiskDeviationGridsAll map[ScenarioKeyTuple][]int
-
 	signDroughtYieldLossGridsAll          map[string][]int
 	signDroughtYieldLossDeviationGridsAll map[string][]int
 	droughtRiskGridsAll                   map[string][]int
 	droughtRiskDeviationGridsAll          map[string][]int
-
-	harvestRainGridsSumAll          map[string][]int
-	harvestRainDeviationGridsSumAll map[string][]int
-	shortSeasonGridSumAll           map[string][]int
-	shortSeasonDeviationGridSumAll  map[string][]int
+	heatRiskDeviationGridsAll             map[string][]int
+	heatDroughtRiskDeviationGridsAll      map[string][]int
+	harvestRainGridsSumAll                map[string][]int
+	harvestRainDeviationGridsSumAll       map[string][]int
+	shortSeasonGridSumAll                 map[string][]int
+	shortSeasonDeviationGridSumAll        map[string][]int
 
 	// std deviation over all future scenarios per model ->  average over all models
 	deviationClimScenAvgOverModel map[ScenarioKeyTuple][]int
@@ -1822,8 +1768,8 @@ func (p *ProcessedData) initProcessedData() {
 
 	p.droughtRiskGridsAll = make(map[string][]int)
 	p.droughtRiskDeviationGridsAll = make(map[string][]int)
-	p.heatDroughtRiskDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
-	p.heatRiskDeviationGridsAll = make(map[ScenarioKeyTuple][]int)
+	p.heatDroughtRiskDeviationGridsAll = make(map[string][]int)
+	p.heatRiskDeviationGridsAll = make(map[string][]int)
 	p.shortSeasonGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonDeviationGridAll = make(map[ScenarioKeyTuple][]int)
 	p.shortSeasonGridSumAll = make(map[string][]int)
@@ -2658,8 +2604,8 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			p.signDroughtYieldLossDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.droughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
-			p.heatDroughtRiskDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
-			p.heatRiskDeviationGridsAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
+			p.heatDroughtRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
+			p.heatRiskDeviationGridsAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainDeviationGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.harvestRainGridsSumAll[mergedKey.climateSenario] = newSmallGridLookup(maxRefNo, 0)
 			p.shortSeasonDeviationGridAll[mergedKey] = newSmallGridLookup(maxRefNo, 0)
@@ -2962,20 +2908,14 @@ func (p *ProcessedData) mergeSources(maxRefNo, numSource int) {
 			// heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
 			// 	p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey],
 			// 	maxRefNo, 3)
-			heatDroughtGridT1 := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
-				p.heatStressYearDeviationGridsAll[scenarioKey],
+			heatDroughtGrid := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
+				p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey],
 				maxRefNo, 6)
-			heatDroughtGridT2 := gridDroughtRiskHeatRisk(p.maxYieldDeviationGridsAll[otherKey], simValue,
-				p.heatStressYearDeviationGridsAll[otherKey],
-				maxRefNo, 6)
-			p.heatDroughtRiskDeviationGridsAll[scenarioKey] = heatDroughtGridT1
-			p.heatDroughtRiskDeviationGridsAll[otherKey] = heatDroughtGridT2
+			p.heatDroughtRiskDeviationGridsAll[scenarioKey.climateSenario] = heatDroughtGrid
 
 			//heatGrid := gridHeatRisk(p.heatStressImpactDeviationGridsAll[otherKey], p.heatStressImpactDeviationGridsAll[scenarioKey], maxRefNo, 3)
-			heatGridT1 := gridHeatRisk(p.heatStressYearDeviationGridsAll[scenarioKey], maxRefNo, 6)
-			heatGridT2 := gridHeatRisk(p.heatStressYearDeviationGridsAll[otherKey], maxRefNo, 6)
-			p.heatRiskDeviationGridsAll[scenarioKey] = heatGridT1
-			p.heatRiskDeviationGridsAll[otherKey] = heatGridT2
+			heatGrid := gridHeatRisk(p.heatStressYearDeviationGridsAll[otherKey], p.heatStressYearDeviationGridsAll[scenarioKey], maxRefNo, 6)
+			p.heatRiskDeviationGridsAll[scenarioKey.climateSenario] = heatGrid
 		}
 
 	}
@@ -3598,12 +3538,12 @@ func gridDroughtRisk(gridT2, gridT1 []int, maxRef int) []int {
 	return newGridDiff
 }
 
-func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGrid []int, maxRef int, threshold int) []int {
+func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGridT2, heatGridT1 []int, maxRef int, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
 		if yieldGridT2[ref] != NONEVALUE && yieldGridT1[ref] != NONEVALUE &&
-			heatGrid[ref] != NONEVALUE {
+			heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
 			newGridDiff[ref] = 0
 			if yieldGridT1[ref] < 2000 {
 				gridT1value := 1
@@ -3615,7 +3555,7 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGrid []int, max
 				}
 			}
 			// OLD if heatGridT1[ref] > 3 || heatGridT2[ref] > 3 {
-			if heatGrid[ref] > threshold {
+			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
 				if newGridDiff[ref] == 1 {
 					newGridDiff[ref] = 3
 				} else {
@@ -3630,14 +3570,14 @@ func gridDroughtRiskHeatRisk(yieldGridT2, yieldGridT1 []int, heatGrid []int, max
 	return newGridDiff
 }
 
-func gridHeatRisk(heatGrid []int, maxRef, threshold int) []int {
+func gridHeatRisk(heatGridT2, heatGridT1 []int, maxRef, threshold int) []int {
 	// calculate the difference between 2 grids, save it to new grid
 	newGridDiff := newSmallGridLookup(maxRef, NONEVALUE)
 	for ref := 0; ref < maxRef; ref++ {
-		if heatGrid[ref] != NONEVALUE {
+		if heatGridT2[ref] != NONEVALUE && heatGridT1[ref] != NONEVALUE {
 			newGridDiff[ref] = 0
 
-			if heatGrid[ref] > threshold {
+			if heatGridT1[ref] > threshold || heatGridT2[ref] > threshold {
 				newGridDiff[ref] = 1
 			}
 		} else {
@@ -4085,24 +4025,8 @@ func drawIrrigationMaps(gridSourceLookup *[][]int, irrSimVal, noIrrSimVal []int,
 	outC <- filenameDescPart
 }
 
-func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) {
+func drawMergedMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, outC chan string, simValues ...[]int) (listToCrunch []int) {
 
-	//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
-	_, _, merged := mergeMaps(simValues)
-
-	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
-	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
-	file := writeAGridHeader(gridFilePath, extCol, extRow)
-
-	writeRows(file, extRow, extCol, merged, gridSourceLookup)
-	file.Close()
-	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
-
-	outC <- filenameDescPart
-
-}
-
-func mergeMaps(simValues [][]int) (int, int, []int) {
 	simValuesLen := len(simValues)
 	numRefs := len(simValues[0])
 	merged := make([]int, numRefs)
@@ -4110,7 +4034,7 @@ func mergeMaps(simValues [][]int) (int, int, []int) {
 		for idSim := 0; idSim < simValuesLen; idSim++ {
 			val := simValues[idSim][ref]
 			if val != 0 && val != 1 {
-
+				//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
 				if val < 0 {
 					val = 0
 				} else {
@@ -4121,14 +4045,19 @@ func mergeMaps(simValues [][]int) (int, int, []int) {
 			merged[ref] = (val << idSim) + merged[ref]
 		}
 	}
-	return simValuesLen, numRefs, merged
-}
 
-func calculateCrunchList(description string, simValuesLen int, merged []int, cbarLabel []string) []int {
-	listToCrunch := make([]int, 0, 1)
+	gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
+	gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
+	file := writeAGridHeader(gridFilePath, extCol, extRow)
+
+	writeRows(file, extRow, extCol, merged, gridSourceLookup)
+	file.Close()
+	writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, colorlist, cbarLabel, ticklist, factor, maxVal, minVal, minColor)
+
+	listToCrunch = make([]int, 0, 1)
 	var stringBuilder strings.Builder
-	stringBuilder.WriteString(fmt.Sprintln(description))
-
+	stringBuilder.WriteString(fmt.Sprintln(filenameDescPart))
+	// print a statistic of which varations are present
 	for i := 1; i < (1 << simValuesLen); i++ {
 		count := 0
 		for _, val := range merged {
@@ -4144,13 +4073,35 @@ func calculateCrunchList(description string, simValuesLen int, merged []int, cba
 			log.Println(err)
 		}
 	}
+	if outC != nil {
+		outC <- filenameDescPart
+	} else {
+		fmt.Println(stringBuilder.String())
+	}
 
-	fmt.Println(stringBuilder.String())
 	return listToCrunch
 }
 
-func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, listToCrunch []int, outC chan string, irrLookup *map[GridCoord]bool, irr, noirr []int) {
+func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart string, extCol, extRow int, asciiOutFolder, title, labelText string, colormap, colorlistType string, colorlist, cbarLabel []string, ticklist []float64, factor float64, minVal, maxVal int, minColor string, listToCrunch []int, outC chan string, simValues ...[]int) {
 	if len(listToCrunch) > 1 {
+		simValuesLen := len(simValues)
+		numRefs := len(simValues[0])
+		merged := make([]int, numRefs)
+		for ref := 0; ref < numRefs; ref++ {
+			for idSim := 0; idSim < simValuesLen; idSim++ {
+				val := simValues[idSim][ref]
+				if val != 0 && val != 1 {
+					//fmt.Println("Error: not binary ", idSim, ref, simValues[idSim][ref])
+					if val < 0 {
+						val = 0
+					} else {
+						val = 1
+					}
+				}
+
+				merged[ref] = (val << idSim) + merged[ref]
+			}
+		}
 
 		// write crunched file
 		gridFileName := fmt.Sprintf(filenameFormat, filenameDescPart)
@@ -4158,22 +4109,17 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 		gridFilePath := filepath.Join(asciiOutFolder, gridFileName)
 		file := writeAGridHeader(gridFilePath, extCol, extRow)
 
-		numRefs := len(irr)
-		crunch := func(sim []int) {
-			for ref := 0; ref < numRefs; ref++ {
+		for ref := 0; ref < numRefs; ref++ {
 
-				counter := 0
-				mergeVal := sim[ref]
-				for _, val := range listToCrunch {
-					if mergeVal > val {
-						counter++
-					}
+			counter := 0
+			mergeVal := merged[ref]
+			for _, val := range listToCrunch {
+				if mergeVal > val {
+					counter++
 				}
-				sim[ref] -= counter
 			}
+			merged[ref] -= counter
 		}
-		crunch(irr)
-		crunch(noirr)
 
 		contains := func(s []int, e int) bool {
 			for _, a := range s {
@@ -4213,7 +4159,7 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			newticklist[tick] = float64(tick)*tickfactor + tickfactorStep
 		}
 
-		writeIrrigatedRows(file, extRow, extCol, irr, noirr, &gridSourceLookup, irrLookup, defaultOutFormat)
+		writeRows(file, extRow, extCol, merged, gridSourceLookup)
 		file.Close()
 		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, newcolorlist, newcbarLabel, newticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
 
