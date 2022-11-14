@@ -233,6 +233,13 @@ cp ./with_85/density_harvest_rain_future45.asc.meta ${TARGETFOLDER}/density_harv
 cp ./with_85/density_harvest_rain_future85.asc.meta ${TARGETFOLDER}/density_harvest_rain_future85.asc.meta
 cp ./with_85/density_harvest_rain_historical.asc.meta ${TARGETFOLDER}/density_harvest_rain_historical.asc.meta
 
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_heat_risk_historical.asc.gz ${TARGETFOLDER}/density_heat_risk_historical.asc.gz
+cp ${SOURCEFOLDER45}/asciigrid_combined/dev/dev_heat_risk_future.asc.gz ${TARGETFOLDER}/density_heat_risk_future45.asc.gz
+cp ${SOURCEFOLDER}/asciigrid_combined/dev/dev_heat_risk_future.asc.gz ${TARGETFOLDER}/density_heat_risk_future85.asc.gz
+cp ./with_85/density_heat_risk_future45.asc.meta ${TARGETFOLDER}/density_heat_risk_future45.asc.meta
+cp ./with_85/density_heat_risk_future85.asc.meta ${TARGETFOLDER}/density_heat_risk_future85.asc.meta
+cp ./with_85/density_heat_risk_historical.asc.meta ${TARGETFOLDER}/density_heat_risk_historical.asc.meta
+
 # maturity violin plots
 cp ./with_85/violin_maturity_groups_historical.asc.meta ${TARGETFOLDER}/one_violin_maturity_groups_historical.asc.meta
 cp ./with_85/violin_maturity_groups_future85.asc.meta ${TARGETFOLDER}/one_violin_maturity_groups_future85.asc.meta

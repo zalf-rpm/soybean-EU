@@ -1,0 +1,22 @@
+title: 'Heat'
+yTitle: 0.88
+xTitle: 0.11
+renderAs: densityCurvePlot
+densityReduction: 50
+lineColor: 'orangered'
+lineHatch: ':'
+xLabel: 'Rel. occurrence [%]'
+yLabel: 'Latitude'
+YaxisMappingFile: 'stacked_y_lat_buckets.csv'
+YaxisMappingRefColumn: Bucket
+YaxisMappingTarColumn: Latitude
+YaxisMappingFormat: '{:2.0f}°'
+yTicklist: 
+ - 8
+ - 21
+ - 35
+ - 49
+xTicklist: 
+ - 0
+ - 50
+ - 100
