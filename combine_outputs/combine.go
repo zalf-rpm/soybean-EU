@@ -4180,7 +4180,7 @@ func drawCrunchMaps(gridSourceLookup [][]int, filenameFormat, filenameDescPart s
 			newticklist[tick] = float64(tick)*tickfactor + tickfactorStep
 		}
 
-		writeIrrigatedRows(file, extRow, extCol, irr, noirr, &gridSourceLookup, irrLookup, nil)
+		writeIrrigatedRows(file, extRow, extCol, irr, noirr, &gridSourceLookup, irrLookup, defaultOutFormat)
 		file.Close()
 		writeMetaFile(gridFilePath, title, labelText, colormap, colorlistType, newcolorlist, newcbarLabel, newticklist, factor, maxVal-len(listToCrunch), minVal, minColor)
 
