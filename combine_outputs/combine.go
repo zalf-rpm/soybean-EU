@@ -1059,6 +1059,35 @@ func main() {
 		heatColorList, sidebarHeatLabel, heatTicklist, 1.0, 0, len(sidebarHeatLabel)-1,
 		"", outC, nil)
 
+	colorListHeatRisk := []string{"lightgrey", "deeppink"}
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.heatRiskDeviationGridsAll[histT2],
+		p.heatRiskDeviationGridsAll[histT1],
+		&irrLookup,
+		"%s_historical.asc",
+		"dev_heat_risk",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(dev) heat risk: %v",
+		"", "", "",
+		colorListHeatRisk, nil, nil, 1.0, 0,
+		1, "", outC, nil)
+
+	waitForNum++
+	go drawIrrigationMaps(&gridSourceLookup,
+		p.heatRiskDeviationGridsAll[futT2],
+		p.heatRiskDeviationGridsAll[futT1],
+		&irrLookup,
+		"%s_future.asc",
+		"dev_heat_risk",
+		extCol, extRow, minRow, minCol,
+		filepath.Join(asciiOutFolder, "dev"),
+		"(dev) heat risk: %v",
+		"", "", "",
+		colorListHeatRisk, nil, nil, 1.0, 0,
+		1, "", outC, nil)
+
 	waitForNum++
 	colorListColdSpell := []string{"lightgrey", "blueviolet"}
 	go drawMaps(gridSourceLookup,
@@ -1424,25 +1453,29 @@ func main() {
 	for tick := 0; tick < len(ristMoreTicklist); tick++ {
 		ristMoreTicklist[tick] = float64(tick)*0.96875 + 0.484375
 	}
-	simValuesLen, _, fut_irr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["fut_avg"],
+	simValuesLen, _, fut_irr := mergeMaps([][]int{
+		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
 		p.heatRiskDeviationGridsAll[futT2],
 		p.harvestRainDeviationGridsSumAll["fut_avg"]})
 	crunchFut_irr := calculateCrunchList("fut_irr", simValuesLen, fut_irr, sidebarMoreRiskLabel)
-	simValuesLen, _, fut_noirr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["fut_avg"],
+	simValuesLen, _, fut_noirr := mergeMaps([][]int{
+		p.shortSeasonDeviationGridSumAll["fut_avg"],
 		p.coldSpellGrid["fut_avg"],
 		p.droughtRiskDeviationGridsAll["fut_avg"],
 		p.heatRiskDeviationGridsAll[futT1],
 		p.harvestRainDeviationGridsSumAll["fut_avg"]})
 	crunchFut_noirr := calculateCrunchList("fut_noirr", simValuesLen, fut_noirr, sidebarMoreRiskLabel)
-	simValuesLen, _, hist_irr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["0_0"],
+	simValuesLen, _, hist_irr := mergeMaps([][]int{
+		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
 		p.heatRiskDeviationGridsAll[histT2],
 		p.harvestRainDeviationGridsSumAll["0_0"]})
 	crunchHist_irr := calculateCrunchList("hist_irr", simValuesLen, hist_irr, sidebarMoreRiskLabel)
-	simValuesLen, _, hist_noirr := mergeMaps([][]int{p.shortSeasonDeviationGridSumAll["0_0"],
+	simValuesLen, _, hist_noirr := mergeMaps([][]int{
+		p.shortSeasonDeviationGridSumAll["0_0"],
 		p.coldSpellGrid["0_0"],
 		p.droughtRiskDeviationGridsAll["0_0"],
 		p.heatRiskDeviationGridsAll[histT1],
