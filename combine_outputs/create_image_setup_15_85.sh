@@ -209,8 +209,8 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDE
 cat ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 
 sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
-sed -i 's/title: .*/title: b/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
-sed -i 's/title: .*/title: c/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
+sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 
 sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
 sed -i 's/pink/cyan/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
