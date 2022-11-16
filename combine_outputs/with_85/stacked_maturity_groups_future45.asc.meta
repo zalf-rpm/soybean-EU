@@ -25,6 +25,7 @@ colorlist:
  - 'white'
 
 yLabel: 'Latitude'
+xLabel: 'Frequency [%]'
 labeltext: 'Maturity \ngroups %'
 cbarLabel: 
  - 'III'
