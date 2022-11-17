@@ -24,22 +24,22 @@
 #         - hatch: '...'
 #      - file: 'violin_maturity_groups_future85.asc.gz'
 
-- image: 
-    name: stacked_maturity
-    sizeX: 8
-    sizeY: 4
-    adjBottom: 0.15
-    adjTop: 0.95
-    adRight: 0.80
-    adLeft: 0.08
-    adhspace: 0.12
-    adwspace: 0.01
-    rows:
-        - row:
-            - sharedColorBar : True
-            - file: 'stacked_maturity_groups_historical.asc.gz'
-            - file: 'stacked_maturity_groups_future45.asc.gz'
-            - file: 'stacked_maturity_groups_future85.asc.gz'
+# - image: 
+#     name: stacked_maturity
+#     sizeX: 8
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.80
+#     adLeft: 0.08
+#     adhspace: 0.12
+#     adwspace: 0.01
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: 'stacked_maturity_groups_historical.asc.gz'
+#             - file: 'stacked_maturity_groups_future45.asc.gz'
+#             - file: 'stacked_maturity_groups_future85.asc.gz'
 
 # - image: 
 #     name: bars_yield
@@ -257,37 +257,48 @@
 #             - file: dev_allRisks_5_historical_crunched.asc.gz
 #             - file: dev_allRisks_5_future_crunched45.asc.gz
 #             - file: dev_allRisks_5_future_crunched85.asc.gz
-
 - image: 
-    name: std_deviation_model_avg_climate_scn
-    sizeX: 7
+    name: std_deviation_historical
+    sizeX: 8
     sizeY: 4
     adjBottom: 0.15
     adjTop: 0.95
     adRight: 0.80
-    adLeft: 0.05
-    adhspace: 0.0
-    adwspace: 0.0
-    rows:
-        - row:
-            - sharedColorBar : True
-            - file: avg_over_climScen_stdDev_future45.asc.gz
-            - file: avg_over_climScen_stdDev_future85.asc.gz
-- image: 
-    name: std_deviation_climate_avg_model
-    sizeX: 7
-    sizeY: 4
-    adjBottom: 0.15
-    adjTop: 0.95
-    adRight: 0.80
-    adLeft: 0.05
-    adhspace: 0.0
+    adLeft: 0.08
+    adhspace: 0.12
     adwspace: 0.01
-    rows:
-        - row:
-            - sharedColorBar : True
-            - file: avg_over_models_stdDev_future45.asc.gz
-            - file: avg_over_models_stdDev_future85.asc.gz
+    file: all_historical_stdDev.asc.gz
+
+# - image: 
+#     name: std_deviation_model_avg_climate_scn
+#     sizeX: 7
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.80
+#     adLeft: 0.05
+#     adhspace: 0.0
+#     adwspace: 0.0
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: avg_over_climScen_stdDev_future45.asc.gz
+#             - file: avg_over_climScen_stdDev_future85.asc.gz
+# - image: 
+#     name: std_deviation_climate_avg_model
+#     sizeX: 7
+#     sizeY: 4
+#     adjBottom: 0.15
+#     adjTop: 0.95
+#     adRight: 0.80
+#     adLeft: 0.05
+#     adhspace: 0.0
+#     adwspace: 0.01
+#     rows:
+#         - row:
+#             - sharedColorBar : True
+#             - file: avg_over_models_stdDev_future45.asc.gz
+#             - file: avg_over_models_stdDev_future85.asc.gz
 
 # - image: 
 #     name: share_MG_adaptation_historical_future

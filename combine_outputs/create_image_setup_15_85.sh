@@ -198,7 +198,7 @@ sed -i 's/orange/violet/g' ${TARGETFOLDER}/avg_over_models_stdDev_future85.asc.m
 
 cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.gz ${TARGETFOLDER}/all_historical_stdDev.asc.gz
 # cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta ${TARGETFOLDER}/all_historical_stdDev.asc.meta
-cat ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/all_historical_stdDev.asc.met
+cat ${SOURCEFOLDER}/asciigrid_combined/dev/all_historical_stdDev.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/all_historical_stdDev.asc.meta
 
 cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDER}/all_future_stdDev45.asc.gz
 #cp ${SOURCEFOLDER45}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev45.asc.meta
@@ -208,7 +208,7 @@ cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.gz ${TARGETFOLDE
 #cp ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 cat ${SOURCEFOLDER}/asciigrid_combined/dev/all_future_stdDev.asc.meta  ./with_85/yLabel_latidude.meta > ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 
-sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
+#sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_historical_stdDev.asc.meta
 sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev45.asc.meta
 sed -i 's/title: .*/title: a/g' ${TARGETFOLDER}/all_future_stdDev85.asc.meta
 
