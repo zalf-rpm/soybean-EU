@@ -259,7 +259,7 @@
 #             - file: dev_allRisks_5_future_crunched85.asc.gz
 - image: 
     name: std_deviation_historical
-    sizeX: 4
+    sizeX: 5
     sizeY: 4
     adjBottom: 0.15
     adjTop: 0.95
